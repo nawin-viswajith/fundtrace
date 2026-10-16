@@ -28,6 +28,8 @@ Read PLAN.md first. This file tracks what is done and what is next, so work can 
 1. Waiting on user: GCP credentials → `scripts/probe_gemini.py` → `infra/deploy.sh` → `scripts/live_e2e.py` → tune prompts
 
 ## Tomorrow's runbook (with GCP access)
+0. gcloud CLI is installed at `C:	ools\google-cloud-sdk` (Git Bash: `export PATH=/c/tools/google-cloud-sdk/bin:$PATH`).
+   Corporate TLS: if curl/gcloud hits revocation errors, use `curl --ssl-no-revoke`.
 1. `gcloud auth login && gcloud auth application-default login` (or use Cloud Shell)
 2. `cd backend && python -m scripts.probe_gemini --project <P>` → note GEMINI_*_MODELS
 3. Local live test: set GCP_PROJECT + models, `python -m scripts.live_e2e`
