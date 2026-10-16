@@ -1,0 +1,90 @@
+# SYNTHETIC policy library for the FundTrace demo.
+# Clauses are written for this prototype and are *modelled on* public regulatory guidance
+# (e.g. RBI's framework on limiting customer liability in unauthorised electronic banking
+# transactions). They are not any bank's real policy. Verify every value before real use.
+#
+# Conditions are evaluated deterministically by app/services/policy.py.
+# Supported condition keys: report_lag_working_days_max, report_lag_working_days_min,
+# category_in, needs (facts the investigator must establish).
+
+- id: POL-IN-UET
+  version: "1.0"
+  title: Unauthorised electronic transactions — customer protection
+  jurisdiction: IN
+  categories: [unauthorised_transfer, account_takeover, card_not_present]
+  effective_from: "2026-01-01"
+  clauses:
+    - id: POL-IN-UET-2.1
+      text: Every report of an unauthorised electronic transaction is acknowledged with a complaint number and investigated; the customer is told the outcome.
+      kind: process
+    - id: POL-IN-UET-3.1
+      text: Zero customer liability applies where the loss arises from bank-side deficiency, or from a third-party breach (neither bank nor customer at fault) reported within 3 working days of the bank's communication.
+      kind: eligibility
+      conditions: {report_lag_working_days_max: 3}
+      needs: ["whether the breach was bank-side or third-party (not customer negligence)"]
+    - id: POL-IN-UET-3.2
+      text: Where a third-party breach is reported within 4 to 7 working days, customer liability is limited to the lower of the transaction value and the cap set in the bank's board-approved policy.
+      kind: eligibility
+      conditions: {report_lag_working_days_min: 4, report_lag_working_days_max: 7}
+      needs: ["whether the breach was third-party", "account-type liability cap"]
+    - id: POL-IN-UET-3.3
+      text: Where the customer is found negligent (e.g. shared payment credentials), the customer bears the loss until reporting; losses after reporting are borne by the bank.
+      kind: eligibility
+      needs: ["evidence of customer negligence, if alleged — this must be established, never assumed"]
+    - id: POL-IN-UET-4.1
+      text: A shadow credit of the disputed amount is applied within 10 working days of the report, pending investigation.
+      kind: sla
+    - id: POL-IN-UET-4.2
+      text: The complaint is resolved and liability established within 90 days of the report.
+      kind: sla
+    - id: POL-IN-UET-5.1
+      text: The burden of proving customer liability lies with the bank. Missing evidence must not be treated as proof of customer fault.
+      kind: principle
+
+- id: POL-IN-APP
+  version: "1.0"
+  title: Authorised push-payment scams (customer tricked into paying)
+  jurisdiction: IN
+  categories: [app_scam]
+  effective_from: "2026-01-01"
+  clauses:
+    - id: POL-IN-APP-2.1
+      text: The customer authorised the payment but alleges deception. The bank records the scam type, attempts recovery from the beneficiary bank, and files the national cyber-fraud report reference.
+      kind: process
+    - id: POL-IN-APP-3.1
+      text: Recovery depends on funds still being traceable. Holds on beneficiary and downstream accounts are requested as early as possible ("golden hour").
+      kind: process
+    - id: POL-IN-APP-4.1
+      text: Reimbursement decisions consider warnings shown to the customer and the customer's vulnerability; they are made by an authorised officer.
+      kind: eligibility
+      needs: ["warnings shown at payment time", "customer vulnerability indicators"]
+
+- id: POL-IN-ERR
+  version: "1.0"
+  title: Processing errors and duplicate debits
+  jurisdiction: IN
+  categories: [processing_error]
+  effective_from: "2026-01-01"
+  clauses:
+    - id: POL-IN-ERR-2.1
+      text: Failed transactions where the account was debited are auto-reversed within the turnaround time prescribed for the payment system; delays attract compensation under the bank's TAT policy.
+      kind: eligibility
+      needs: ["switch status of the transaction"]
+    - id: POL-IN-ERR-3.1
+      text: Duplicate debits confirmed by reconciliation are reversed in full.
+      kind: eligibility
+
+- id: POL-IN-MER
+  version: "1.0"
+  title: Merchant disputes (goods/services not received or not as described)
+  jurisdiction: IN
+  categories: [merchant_dispute]
+  effective_from: "2026-01-01"
+  clauses:
+    - id: POL-IN-MER-2.1
+      text: The customer first attempts resolution with the merchant; the bank raises a chargeback where the network rules allow, within the network's filing window.
+      kind: process
+      needs: ["proof of contact with the merchant", "network filing window"]
+    - id: POL-IN-MER-3.1
+      text: Proof of delivery or service from the merchant is weighed against the customer's evidence; neither side's silence is treated as proof.
+      kind: principle
