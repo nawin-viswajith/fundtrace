@@ -33,7 +33,8 @@ def ask(db: Session, case: m.DisputeCase, question: str, user: m.User) -> dict:
     ans: CopilotAnswer = res.data
     draft = {"sections": [{"key": "known_facts", "claims": [c.model_dump(mode="json") for c in ans.claims]}], "recommended_actions": []}
     v = validator.validate(draft, snap["records"])
-    return {"status": "ok", "claims": v["claims"], "insufficient_data": ans.insufficient_data,
+    cited = sorted({c for cl in v["claims"] for c in cl.get("citations", []) if c in snap["records"]})
+    return {"status": "ok", "claims": v["claims"], "records": {k: snap["records"][k] for k in cited}, "insufficient_data": ans.insufficient_data,
             "follow_up_questions": ans.follow_up_questions[:3], "model": res.model, "cost_usd": res.cost_usd,
             "flagged": v["claims_with_errors"], "snapshot_hash": snap["hash"]}
 

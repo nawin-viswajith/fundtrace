@@ -75,6 +75,10 @@ def _mins(a: datetime, b: datetime) -> float:
     return round((b - a).total_seconds() / 60, 1)
 
 
+def _ist(d: datetime) -> str:
+    return (d + timedelta(hours=5, minutes=30)).strftime("%H:%M IST")
+
+
 def _cur(ctx: RuleContext, minor: int) -> str:
     return fmt_amount(minor, ctx.root.currency)
 
@@ -111,7 +115,7 @@ def r1_rapid_onward(ctx: RuleContext, p: dict, r: RuleResult) -> None:
     outs = _onward(ctx, p["window_minutes"])
     amount = ctx.root.amount_minor
     cum = 0
-    r.facts.append(_fact(f"{_cur(ctx, amount)} credited to {ctx.payee.id} at {ctx.root.occurred_at:%H:%M} UTC.", ctx.root.id))
+    r.facts.append(_fact(f"{_cur(ctx, amount)} credited to {ctx.payee.id} at {_ist(ctx.root.occurred_at)}.", ctx.root.id))
     for t in outs:
         cum += t.amount_minor
         r.facts.append(_fact(
@@ -189,7 +193,7 @@ def r4_failed_auth(ctx: RuleContext, p: dict, r: RuleResult) -> None:
                          *[e.id for e in fails + succ]))
     if len(fails) >= p["min_failures"] and succ:
         r.status = TRIGGERED
-        r.facts.append(_fact(f"Success at {succ[0].occurred_at:%H:%M} followed {len(fails)} failures; the transfer followed "
+        r.facts.append(_fact(f"Success at {_ist(succ[0].occurred_at)} followed {len(fails)} failures; the transfer followed "
                              f"{_mins(succ[0].occurred_at, ctx.root.occurred_at)} min later.", succ[0].id, ctx.root.id))
     else:
         r.status = NOT_TRIGGERED

@@ -82,8 +82,10 @@ def get_case(case_id: str, user: m.User = Depends(current_user), db: Session = D
     ctx["latest_report"] = report_brief(latest) if latest else None
     ctx["allowed_transitions"] = sorted(TRANSITIONS.get(case.status, []))
     ctx["can_edit"] = can_access_case(user, case)
-    audit.record(db, case.id, user.username, user.role, "case_viewed", {})
-    db.commit()
+    last = db.scalar(select(m.AuditEvent).where(m.AuditEvent.case_id == case.id).order_by(m.AuditEvent.id.desc()).limit(1))
+    if not (last and last.action == "case_viewed" and last.actor == user.username and (m.utcnow() - last.created_at) < timedelta(minutes=30)):
+        audit.record(db, case.id, user.username, user.role, "case_viewed", {})  # access log, de-duplicated
+        db.commit()
     return ctx
 
 

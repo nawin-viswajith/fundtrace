@@ -22,7 +22,7 @@ def build(snap: dict) -> dict:
                                                  "next_actions", "limitations")}
     S["case_overview"].append(_c(f"The customer reports a {case['category'].lower()} concerning {root_id}.", [case_id, root_id], "verified"))
     S["case_overview"].append(_c(f"{root_id} moved {root['amount']} from {root['from_account']} to {root['to_account']} on "
-                                 f"{root.get('time_utc')} via {root['channel']}, reference {root['reference']}.", [root_id], "verified"))
+                                 f"{root.get('time_ist')} via {root['channel']}, reference {root['reference']}.", [root_id], "verified"))
     S["case_overview"].append(_c(f"The case is {case['status'].replace('_', ' ')} with priority {case['priority']}.", [case_id], "derived"))
 
     payer, payee = R.get(root["from_account"], {}), R.get(root["to_account"], {})
@@ -39,7 +39,7 @@ def build(snap: dict) -> dict:
     for tid, t in R.items():
         if t.get("type") != "transaction" or t.get("role") in ("disputed",) or t.get("role") == "backward":
             continue
-        S["transaction_trail"].append(_c(f"{tid} moved {t['amount']} from {t['from_account']} to {t['to_account']} at {t.get('time_utc')}"
+        S["transaction_trail"].append(_c(f"{tid} moved {t['amount']} from {t['from_account']} to {t['to_account']} at {t.get('time_ist')}"
                                          f" (status {t['status']}).", [tid], "verified"))
         a = t.get("attributable_to_disputed_funds")
         if a:

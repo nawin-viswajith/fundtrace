@@ -19,7 +19,7 @@ from app.services.trace import trace
 
 def mule_rings(db: Session, min_cases: int = 2) -> dict:
     store = SqlGraphStore(db)
-    g = nx.Graph()
+    g = nx.MultiGraph()  # transfers and shared devices can link the same pair of accounts
     case_accounts: dict[str, set[str]] = defaultdict(set)
     cases = db.scalars(select(m.DisputeCase)).unique().all()
     amounts: dict[str, int] = {}
@@ -36,7 +36,7 @@ def mule_rings(db: Session, min_cases: int = 2) -> dict:
                     continue
                 case_accounts[c.id].add(a)
             if t.debit_account_id != payer and t.credit_account_id != payer:
-                g.add_edge(t.debit_account_id, t.credit_account_id, kind="transfer", txn=t.id)
+                g.add_edge(t.debit_account_id, t.credit_account_id, key=t.id, kind="transfer", txn=t.id)
             elif t.debit_account_id == payer:
                 g.add_node(t.credit_account_id)
     # shared devices among in-trail accounts
@@ -49,7 +49,7 @@ def mule_rings(db: Session, min_cases: int = 2) -> dict:
     for d, accts in by_dev.items():
         accts = sorted(accts)
         for i in range(len(accts) - 1):
-            g.add_edge(accts[i], accts[i + 1], kind="shared_device", device=d)
+            g.add_edge(accts[i], accts[i + 1], key=d, kind="shared_device", device=d)
     rings = []
     sub = g.subgraph([n for n in g.nodes if n in acct_set])
     for comp in nx.connected_components(sub):

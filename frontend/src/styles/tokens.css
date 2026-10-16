@@ -1,0 +1,231 @@
+/* ==========================================================================
+   Design tokens. Light is the default; dark follows the OS unless the user
+   picked a theme (data-theme on <html>).
+   ========================================================================== */
+:root {
+  color-scheme: light;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* spacing: 8px grid */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 10px;
+  --nav-w: 220px;
+  --topbar-h: 56px;
+  --banner-h: 28px;
+
+  /* neutrals */
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #f2f4f7;
+  --surface-3: #e9ecf1;
+  --border: #e2e5ea;
+  --border-strong: #c9ced7;
+  --text: #141922;
+  --text-2: #444c5c;
+  --text-3: #626a7b;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.14), 0 2px 6px rgba(16, 24, 40, 0.06);
+  --overlay: rgba(15, 18, 26, 0.38);
+
+  /* accent: deep indigo */
+  --accent: #3a3fb3;
+  --accent-hover: #2f339a;
+  --accent-soft: #ecedfb;
+  --accent-text: #2e3299;
+  --on-accent: #ffffff;
+  --focus: #4f55d6;
+
+  /* semantic tones */
+  --good: #1f7a52;
+  --good-soft: #e5f4ec;
+  --good-text: #17603f;
+  --warn: #b26b00;
+  --warn-soft: #fdf1dc;
+  --warn-text: #7f4c00;
+  --bad: #c3342b;
+  --bad-soft: #fdecea;
+  --bad-text: #9a241c;
+  --neutral-soft: #eef0f3;
+  --neutral-text: #4a5262;
+
+  /* provenance */
+  --prov-confirmed: #2e7d5a;
+  --prov-confirmed-soft: #e6f3ec;
+  --prov-confirmed-text: #1c5e41;
+  --prov-derived: #2c68cf;
+  --prov-derived-soft: #e7effc;
+  --prov-derived-text: #1e4d9f;
+  --prov-inferred: #b8740f;
+  --prov-inferred-soft: #fcf1de;
+  --prov-inferred-text: #85520a;
+  --prov-unknown: #8a92a1;
+  --prov-unknown-soft: #eff1f4;
+  --prov-unknown-text: #4f5768;
+  --prov-contradictory: #c8372d;
+  --prov-contradictory-soft: #fdeceb;
+  --prov-contradictory-text: #9c261e;
+
+  /* severity */
+  --sev-high: #c3342b;
+  --sev-high-soft: #fdecea;
+  --sev-high-text: #9a241c;
+  --sev-medium: #b26b00;
+  --sev-medium-soft: #fdf1dc;
+  --sev-medium-text: #7f4c00;
+  --sev-low: #5b6577;
+  --sev-low-soft: #eef0f3;
+  --sev-low-text: #485062;
+
+  /* graph canvas */
+  --canvas: #fafbfc;
+  --canvas-dot: #d8dce3;
+  --disputed: #3a3fb3;
+  /* charts (validated: CVD + lightness band, light surface) */
+  --chart-1: #3a3fb3;
+  --chart-2: #b8740f;
+  --chart-grid: #e8eaee;
+  --chart-axis: #626a7b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0e1116;
+    --surface: #161a21;
+    --surface-2: #1c2129;
+    --surface-3: #242a34;
+    --border: #2a303b;
+    --border-strong: #3a4250;
+    --text: #e7eaf0;
+    --text-2: #b9c0cc;
+    --text-3: #959dab;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+    --overlay: rgba(0, 0, 0, 0.55);
+    --accent: #8d92f2;
+    --accent-hover: #a5a9f6;
+    --accent-soft: #252848;
+    --accent-text: #b4b7f8;
+    --on-accent: #10122a;
+    --focus: #a5a9f6;
+    --good: #4cc08a;
+    --good-soft: #143325;
+    --good-text: #7fd6aa;
+    --warn: #e2a33b;
+    --warn-soft: #3a2a10;
+    --warn-text: #f0c67a;
+    --bad: #f0675d;
+    --bad-soft: #3c1a18;
+    --bad-text: #f6a19a;
+    --neutral-soft: #232832;
+    --neutral-text: #b9c0cc;
+    --prov-confirmed: #52b986;
+    --prov-confirmed-soft: #15301f;
+    --prov-confirmed-text: #86d3ab;
+    --prov-derived: #6a9cf0;
+    --prov-derived-soft: #172640;
+    --prov-derived-text: #a4c3f6;
+    --prov-inferred: #e2a33b;
+    --prov-inferred-soft: #382912;
+    --prov-inferred-text: #f0c67a;
+    --prov-unknown: #858d9c;
+    --prov-unknown-soft: #232832;
+    --prov-unknown-text: #b4bbc7;
+    --prov-contradictory: #f0675d;
+    --prov-contradictory-soft: #3c1a18;
+    --prov-contradictory-text: #f6a19a;
+    --sev-high: #f0675d;
+    --sev-high-soft: #3c1a18;
+    --sev-high-text: #f6a19a;
+    --sev-medium: #e2a33b;
+    --sev-medium-soft: #382912;
+    --sev-medium-text: #f0c67a;
+    --sev-low: #9aa3b2;
+    --sev-low-soft: #232832;
+    --sev-low-text: #c3c9d3;
+    --canvas: #12161c;
+    --canvas-dot: #2a303b;
+    --disputed: #8d92f2;
+    --chart-1: #7b80e8;
+    --chart-2: #b87d1c;
+    --chart-grid: #262c36;
+    --chart-axis: #959dab;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e1116;
+  --surface: #161a21;
+  --surface-2: #1c2129;
+  --surface-3: #242a34;
+  --border: #2a303b;
+  --border-strong: #3a4250;
+  --text: #e7eaf0;
+  --text-2: #b9c0cc;
+  --text-3: #959dab;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --overlay: rgba(0, 0, 0, 0.55);
+  --accent: #8d92f2;
+  --accent-hover: #a5a9f6;
+  --accent-soft: #252848;
+  --accent-text: #b4b7f8;
+  --on-accent: #10122a;
+  --focus: #a5a9f6;
+  --good: #4cc08a;
+  --good-soft: #143325;
+  --good-text: #7fd6aa;
+  --warn: #e2a33b;
+  --warn-soft: #3a2a10;
+  --warn-text: #f0c67a;
+  --bad: #f0675d;
+  --bad-soft: #3c1a18;
+  --bad-text: #f6a19a;
+  --neutral-soft: #232832;
+  --neutral-text: #b9c0cc;
+  --prov-confirmed: #52b986;
+  --prov-confirmed-soft: #15301f;
+  --prov-confirmed-text: #86d3ab;
+  --prov-derived: #6a9cf0;
+  --prov-derived-soft: #172640;
+  --prov-derived-text: #a4c3f6;
+  --prov-inferred: #e2a33b;
+  --prov-inferred-soft: #382912;
+  --prov-inferred-text: #f0c67a;
+  --prov-unknown: #858d9c;
+  --prov-unknown-soft: #232832;
+  --prov-unknown-text: #b4bbc7;
+  --prov-contradictory: #f0675d;
+  --prov-contradictory-soft: #3c1a18;
+  --prov-contradictory-text: #f6a19a;
+  --sev-high: #f0675d;
+  --sev-high-soft: #3c1a18;
+  --sev-high-text: #f6a19a;
+  --sev-medium: #e2a33b;
+  --sev-medium-soft: #382912;
+  --sev-medium-text: #f0c67a;
+  --sev-low: #9aa3b2;
+  --sev-low-soft: #232832;
+  --sev-low-text: #c3c9d3;
+  --canvas: #12161c;
+  --canvas-dot: #2a303b;
+  --disputed: #8d92f2;
+  --chart-1: #7b80e8;
+  --chart-2: #b87d1c;
+  --chart-grid: #262c36;
+  --chart-axis: #959dab;
+}

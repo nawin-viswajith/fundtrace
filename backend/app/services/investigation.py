@@ -172,3 +172,24 @@ def rule_catalogue(db: Session) -> list[dict]:
                     "version": version, "params": {**rd.default_params, **(params or {})}, "default_params": rd.default_params,
                     "enabled": enabled, "needs": rd.needs})
     return out
+
+
+def sync_hold_recommendations(db: Session, case: m.DisputeCase, attribution: dict) -> int:
+    """Create 'recommended' holds for visible accounts that may still hold disputed funds.
+
+    Deterministic (from attribution), idempotent, never applied without investigator approval.
+    """
+    existing = {h.account_id for h in db.scalars(select(m.Hold).where(m.Hold.case_id == case.id)).all()}
+    added = 0
+    for h in attribution.get("holdable", []):
+        if h["account_id"] in existing or h["max_minor"] <= 0:
+            continue
+        db.add(m.Hold(case_id=case.id, account_id=h["account_id"], amount_minor=h["max_minor"], currency=attribution["currency"],
+                      basis={"min_minor": h["min_minor"], "max_minor": h["max_minor"], "by_method": h.get("by_method"),
+                             "citations": [f"HOLD-{h['account_id']}", f"ATTR-{h['account_id']}"],
+                             "method": "attribution upper bound, capped by balance"},
+                      status="recommended", recommended_by="system (attribution)"))
+        added += 1
+    if added:
+        db.flush()
+    return added

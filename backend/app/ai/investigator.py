@@ -252,25 +252,15 @@ def persist_report(db: Session, case: m.DisputeCase, state: State, actor: str) -
                    claims_flagged=metrics["claims_flagged"], hallucination_rate=metrics["hallucination_rate"],
                    confidence=metrics["confidence"], snapshot_hash=state["snapshot"]["hash"], trace_id=current_trace_id())
     db.add(rep)
-    _recommend_holds(db, case, state["snapshot"])
+    from app.services.investigation import build_context, sync_hold_recommendations
+
+    sync_hold_recommendations(db, case, build_context(db, case)["attribution"])
     db.flush()
     audit.record(db, case.id, actor, "investigator" if actor != "system" else "system", "report_generated",
                  {"report_id": rep.id, "version": version, "status": status, "generator": generator,
                   "claims": metrics["claims_total"], "flagged": metrics["claims_flagged"], "snapshot_hash": rep.snapshot_hash,
                   "cost_usd": metrics["cost_usd"]})
     return rep
-
-
-def _recommend_holds(db: Session, case: m.DisputeCase, snap: dict) -> None:
-    """Deterministic hold recommendations from attribution (never applied without investigator approval)."""
-    existing = {h.account_id for h in db.scalars(select(m.Hold).where(m.Hold.case_id == case.id)).all()}
-    for rid, r in snap["records"].items():
-        if r.get("type") != "hold_candidate" or r["account"] in existing or not r.get("max_minor"):
-            continue
-        db.add(m.Hold(case_id=case.id, account_id=r["account"], amount_minor=r["max_minor"], currency=case.disputed_txn.currency,
-                      basis={"range": r["range"], "min_minor": r["min_minor"], "max_minor": r["max_minor"],
-                             "citations": [rid, f"ATTR-{r['account']}"], "method": "attribution upper bound, capped by balance"},
-                      status="recommended", recommended_by="system (attribution)"))
 
 
 def run_investigation(db: Session, case: m.DisputeCase, actor: str = "system", gateway: Gateway | None = None) -> m.Report:

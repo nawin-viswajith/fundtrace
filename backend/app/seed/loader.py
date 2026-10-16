@@ -127,13 +127,15 @@ def _evidence_bytes(db: Session, ev: dict) -> tuple[bytes, str]:
 
 def refresh_case_assessments(db: Session, case_ids: list[str] | None = None) -> None:
     """Recompute priority/SLA from deterministic services and store them on the case rows."""
-    from app.services.investigation import build_context
+    from app.services.investigation import build_context, sync_hold_recommendations
 
     q = select(m.DisputeCase)
     if case_ids:
         q = q.where(m.DisputeCase.id.in_(case_ids))
     for case in db.scalars(q).unique().all():
         ctx = build_context(db, case)
+        if case.status != "resolved" and sync_hold_recommendations(db, case, ctx["attribution"]):
+            ctx["holds"] = []
         cp = ctx["computed_priority"]
         case.priority, case.priority_reasons = cp["priority"], cp["reasons"]
         case.sla_policy = ctx["sla"]["policy"]
