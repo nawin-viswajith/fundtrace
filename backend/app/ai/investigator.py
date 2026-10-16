@@ -228,6 +228,10 @@ def persist_report(db: Session, case: m.DisputeCase, state: State, actor: str) -
     total = metrics["claims_total"] or 1
     if generator == "deterministic":
         status = "facts_only"
+        # No AI-generated claims: AI confidence and hallucination rate do not apply (shown as "Not analysed").
+        metrics["confidence"] = None
+        metrics["hallucination_rate"] = None
+        metrics["confidence_note"] = "Not applicable: this report was generated from records by code, without AI."
     elif metrics["claims_flagged"] == 0 and state.get("judge_status") == "ok":
         status = "verified"
     elif metrics["claims_flagged"] / total <= 0.2:

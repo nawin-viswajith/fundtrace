@@ -75,6 +75,7 @@ def test_llm_down_produces_facts_only_report_and_not_analysed_evidence(db, seede
     rep = run_investigation(db, case, actor="inv.asha", gateway=FakeGateway(lambda n, c: {}, status="disabled"))
     assert rep.status == "facts_only" and rep.generator == "deterministic"
     assert rep.metrics["validation_passed"] and rep.claims_flagged == 0
+    assert rep.confidence is None and rep.hallucination_rate is None  # no AI, so no AI confidence
     ev = db.scalars(select(m.EvidenceItem).where(m.EvidenceItem.case_id == case.id)).all()
     assert ev and all(e.analysis_status == "not_analysed" for e in ev)
     assert all("Not analysed" in (e.analysis_note or "") for e in ev)

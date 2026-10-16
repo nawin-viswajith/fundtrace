@@ -194,12 +194,19 @@ export function DimensionCards() {
           </div>
         ) : (
           <>
-            <div className="dim-stat">
-              <span className="dim-num num">{formatPct(rep.confidence)}</span>
-              <span className="dim-cap">
-                {rep.claims_supported} of {rep.claims_total} claims supported after checks
-              </span>
-            </div>
+            {rep.status === "facts_only" ? (
+              <div className="dim-stat">
+                <span className="dim-num muted">Not analysed</span>
+                <span className="dim-cap">The latest report was built from records by code, without AI, so AI confidence does not apply.</span>
+              </div>
+            ) : (
+              <div className="dim-stat">
+                <span className="dim-num num">{formatPct(rep.confidence)}</span>
+                <span className="dim-cap">
+                  {rep.claims_supported} of {rep.claims_total} claims supported after checks
+                </span>
+              </div>
+            )}
             <div className="endpoint-row">
               <Chip tone={REPORT_STATUS[rep.status]?.tone ?? "neutral"} size="sm">
                 {REPORT_STATUS[rep.status]?.label ?? rep.status}

@@ -19,13 +19,13 @@ Read PLAN.md first. This file tracks what is done and what is next, so work can 
 - Scripts: scripts/probe_gemini.py (find working model ids), scripts/live_e2e.py (live AI pipeline check),
   scripts/export_bigquery.py; Spanner Graph adapter (production path)
 
-## In progress
-- Frontend (React + Vite + TS + React Flow) — being built in `frontend/`
+- Frontend: React + Vite + TS + React Flow — every screen; 31 tests; reviewed via Playwright screenshots (light/dark/mobile)
+- Pitch deck (14 slides, PDF download): https://claude.ai/artifact/SZwE4qvUMaCuxxJiGkRqSf — placeholders [__] for live
+  Gemini metrics, [Team name], [Cloud Run URL], [GitHub repository]; re-shoot the "responsible" slide screenshot after the live run
+- Screenshots in docs/screenshots/
 
 ## Next
-1. Review frontend, screenshot every screen (light/dark/mobile), fix issues; Dockerfile build check
-2. README (setup, architecture, demo script, limitations), deck outline, demo video script
-3. Waiting on user: GCP credentials → `scripts/probe_gemini.py` → `infra/deploy.sh` → `scripts/live_e2e.py` → tune prompts
+1. Waiting on user: GCP credentials → `scripts/probe_gemini.py` → `infra/deploy.sh` → `scripts/live_e2e.py` → tune prompts
 
 ## Tomorrow's runbook (with GCP access)
 1. `gcloud auth login && gcloud auth application-default login` (or use Cloud Shell)
