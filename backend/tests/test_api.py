@@ -173,3 +173,22 @@ def test_error_shape_never_leaks_internals(client):
     assert r.status_code == 422 and set(r.json()["error"]) >= {"code", "message"}
     r = client.post("/api/cases/CASE-24051/ask", json={"question": ""})
     assert r.status_code == 422 and r.json()["error"]["fields"] == ["question"]
+
+
+def test_mule_ring_links_cases_through_shared_beneficiary(client):
+    login(client, "sup.meera")
+    rings = client.get("/api/network/rings").json()["rings"]
+    assert rings, "the synthetic mule (S1/S3a/S3b) should surface as a ring"
+    top = rings[0]
+    assert {"CASE-24051", "CASE-24031", "CASE-24038"} <= set(top["cases"])
+    login(client, "inv.asha")
+    restricted = client.get("/api/network/rings").json()["rings"][0]["cases"]
+    assert "restricted" in restricted  # CASE-24031 belongs to another investigator
+
+
+def test_investigator_can_claim_unassigned_but_not_steal(client):
+    login(client, "inv.asha")
+    me = client.get("/api/auth/me").json()["user"]["id"]
+    assert client.post("/api/cases/CASE-24047/actions", json={"type": "assign", "user_id": me}).status_code == 200
+    login(client, "inv.ravi")
+    assert client.get("/api/cases/CASE-24047").status_code == 404  # now owned by inv.asha
