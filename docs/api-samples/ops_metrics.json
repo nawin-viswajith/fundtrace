@@ -1,0 +1,194 @@
+{
+ "window_days": 14,
+ "llm": {
+  "enabled": false,
+  "configured": false,
+  "fast_models": [
+   "gemini-2.5-flash"
+  ],
+  "pro_models": [
+   "gemini-2.5-pro",
+   "gemini-2.5-flash"
+  ],
+  "location": "global",
+  "daily_budget_usd": 20.0,
+  "case_budget_usd": 1.0
+ },
+ "totals": {
+  "calls": 6,
+  "ok": 6,
+  "error_rate": 0.0,
+  "cost_usd": 0.006,
+  "input_tokens": 6000,
+  "output_tokens": 1800,
+  "reports": 2,
+  "ai_reports": 1,
+  "facts_only_reports": 1,
+  "mean_cost_per_case_usd": 0.006
+ },
+ "nodes": [
+  {
+   "node": "analyse_evidence",
+   "calls": 1,
+   "ok": 1,
+   "errors": {
+    "error": 0,
+    "timeout": 0,
+    "invalid": 0,
+    "budget": 0,
+    "disabled": 0
+   },
+   "p50_ms": 5,
+   "p95_ms": 5,
+   "input_tokens": 1000,
+   "output_tokens": 300,
+   "cost_usd": 0.001,
+   "models": [
+    "fake-gemini"
+   ]
+  },
+  {
+   "node": "draft_report",
+   "calls": 2,
+   "ok": 2,
+   "errors": {
+    "error": 0,
+    "timeout": 0,
+    "invalid": 0,
+    "budget": 0,
+    "disabled": 0
+   },
+   "p50_ms": 5,
+   "p95_ms": 5,
+   "input_tokens": 2000,
+   "output_tokens": 600,
+   "cost_usd": 0.002,
+   "models": [
+    "fake-gemini"
+   ]
+  },
+  {
+   "node": "explore",
+   "calls": 2,
+   "ok": 2,
+   "errors": {
+    "error": 0,
+    "timeout": 0,
+    "invalid": 0,
+    "budget": 0,
+    "disabled": 0
+   },
+   "p50_ms": 5,
+   "p95_ms": 5,
+   "input_tokens": 2000,
+   "output_tokens": 600,
+   "cost_usd": 0.002,
+   "models": [
+    "fake-gemini"
+   ]
+  },
+  {
+   "node": "judge",
+   "calls": 1,
+   "ok": 1,
+   "errors": {
+    "error": 0,
+    "timeout": 0,
+    "invalid": 0,
+    "budget": 0,
+    "disabled": 0
+   },
+   "p50_ms": 5,
+   "p95_ms": 5,
+   "input_tokens": 1000,
+   "output_tokens": 300,
+   "cost_usd": 0.001,
+   "models": [
+    "fake-gemini"
+   ]
+  }
+ ],
+ "per_day": [
+  {
+   "day": "2026-10-16",
+   "cost_usd": 0.006,
+   "calls": 6,
+   "errors": 0
+  }
+ ],
+ "per_case": [
+  {
+   "case_id": "CASE-24044",
+   "cost_usd": 0.006
+  }
+ ],
+ "quality": {
+  "hallucination_trend": [
+   {
+    "report_id": "RPT-EEE7A1B3",
+    "case_id": "CASE-24051",
+    "created_at": "2026-10-16T19:19:10.713102Z",
+    "generator": "deterministic",
+    "hallucination_rate": 0.0,
+    "confidence": 1.0,
+    "claims": 42,
+    "flagged": 0,
+    "status": "facts_only"
+   },
+   {
+    "report_id": "RPT-74088FFE",
+    "case_id": "CASE-24044",
+    "created_at": "2026-10-16T19:19:12.485408Z",
+    "generator": "fake-gemini",
+    "hallucination_rate": 0.0,
+    "confidence": 1.0,
+    "claims": 9,
+    "flagged": 0,
+    "status": "verified"
+   }
+  ],
+  "mean_hallucination_rate": 0.0,
+  "mean_confidence": 1.0,
+  "verdicts": {
+   "supported": 9,
+   "partial": 0,
+   "unsupported": 0,
+   "contradicted": 0,
+   "unjudged": 0,
+   "system_generated": 42
+  },
+  "report_status": {
+   "verified": 1,
+   "partially_verified": 0,
+   "unverified": 0,
+   "facts_only": 1
+  }
+ },
+ "pricing": {
+  "version": "2026-10-17",
+  "source": "https://cloud.google.com/vertex-ai/generative-ai/pricing",
+  "table": {
+   "gemini-2.5-flash": {
+    "input": 0.3,
+    "output": 2.5
+   },
+   "gemini-2.5-flash-lite": {
+    "input": 0.1,
+    "output": 0.4
+   },
+   "gemini-2.5-pro": {
+    "input": 1.25,
+    "output": 10.0
+   },
+   "gemini-3.1-pro": {
+    "input": 2.0,
+    "output": 12.0
+   },
+   "gemini-3.1-flash-lite": {
+    "input": 0.25,
+    "output": 1.5
+   }
+  }
+ },
+ "latest_eval": null
+}

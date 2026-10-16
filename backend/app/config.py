@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     jwt_ttl_minutes: int = 480
     cookie_secure: bool = False
     demo_password: str = "Investigate@2026"
+    show_demo_credentials: bool = True  # synthetic public demo: judges need to log in
     firebase_project_id: str | None = None  # enables Firebase ID-token login when set
 
     # Evidence storage: "local" (./uploads) or "gcs"

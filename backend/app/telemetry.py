@@ -33,6 +33,9 @@ class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         msg = redact(record.getMessage())
         out = {"severity": record.levelname, "message": msg, "logger": record.name}
+        fields = getattr(record, "fields", None)
+        if isinstance(fields, dict):  # structured fields become jsonPayload.* in Cloud Logging
+            out.update({k: v for k, v in fields.items() if k not in out})
         tid = current_trace_id()
         if tid:
             out["trace_id"] = tid

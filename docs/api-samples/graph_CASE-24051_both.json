@@ -1,0 +1,663 @@
+{
+ "graph": {
+  "root_txn_id": "TXN-4001679",
+  "params": {
+   "direction": "both",
+   "depth": 3,
+   "window_hours": 72,
+   "max_nodes": 150,
+   "hub_threshold": 25
+  },
+  "window": {
+   "start": "2026-10-13T17:44:00Z",
+   "end": "2026-10-19T17:44:00Z"
+  },
+  "nodes": [
+   {
+    "id": "ACC-100216",
+    "type": "account",
+    "label": "Priya N savings (synthetic)",
+    "provenance": "confirmed",
+    "source_ids": [
+     "ACC-100216"
+    ],
+    "depth": 0,
+    "roles": [
+     "payer"
+    ],
+    "endpoint": null,
+    "endpoint_reason": null,
+    "data": {
+     "masked_number": "XXXX6816",
+     "institution": "FundTrace Demo Bank (synthetic)",
+     "external": false,
+     "kind": "savings",
+     "opened_at": "2020-10-07T19:19:00Z",
+     "currency": "INR"
+    }
+   },
+   {
+    "id": "ACC-100209",
+    "type": "account",
+    "label": "Rahul K (synthetic)",
+    "provenance": "confirmed",
+    "source_ids": [
+     "ACC-100209"
+    ],
+    "depth": 1,
+    "roles": [
+     "beneficiary"
+    ],
+    "endpoint": null,
+    "endpoint_reason": null,
+    "data": {
+     "masked_number": "XXXX2780",
+     "institution": "FundTrace Demo Bank (synthetic)",
+     "external": false,
+     "kind": "savings",
+     "opened_at": "2026-10-07T19:19:00Z",
+     "currency": "INR"
+    }
+   },
+   {
+    "id": "TXN-4001679",
+    "type": "transaction",
+    "label": "₹50,000 · UPI",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001679",
+     "core:cbs-4001679"
+    ],
+    "depth": 0,
+    "direction": "root",
+    "time": "2026-10-16T17:44:00Z",
+    "data": {
+     "amount_minor": 5000000,
+     "currency": "INR",
+     "status": "posted",
+     "channel": "UPI",
+     "reference": "628900082421",
+     "reference_missing": false,
+     "occurred_at": "2026-10-16T17:44:00Z",
+     "posted_at": "2026-10-16T17:44:04Z",
+     "debit_account_id": "ACC-100216",
+     "credit_account_id": "ACC-100209",
+     "reversal_of_id": null,
+     "device_id": "DEV-9071",
+     "source_system": "core",
+     "source_record_id": "cbs-4001679",
+     "narrative": "UPI transfer"
+    },
+    "roles": [
+     "disputed"
+    ]
+   },
+   {
+    "id": "ACC-100210",
+    "type": "account",
+    "label": "Sunil P (synthetic)",
+    "provenance": "confirmed",
+    "source_ids": [
+     "ACC-100210"
+    ],
+    "depth": 2,
+    "roles": [
+     "downstream"
+    ],
+    "endpoint": null,
+    "endpoint_reason": null,
+    "data": {
+     "masked_number": "XXXX5492",
+     "institution": "FundTrace Demo Bank (synthetic)",
+     "external": false,
+     "kind": "savings",
+     "opened_at": "2026-09-06T19:19:00Z",
+     "currency": "INR"
+    }
+   },
+   {
+    "id": "TXN-4001680",
+    "type": "transaction",
+    "label": "₹30,000 · IMPS",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001680",
+     "core:cbs-4001680"
+    ],
+    "depth": 1,
+    "direction": "forward",
+    "time": "2026-10-16T17:51:00Z",
+    "data": {
+     "amount_minor": 3000000,
+     "currency": "INR",
+     "status": "posted",
+     "channel": "IMPS",
+     "reference": "628900082510",
+     "reference_missing": false,
+     "occurred_at": "2026-10-16T17:51:00Z",
+     "posted_at": "2026-10-16T17:51:04Z",
+     "debit_account_id": "ACC-100209",
+     "credit_account_id": "ACC-100210",
+     "reversal_of_id": null,
+     "device_id": "DEV-9072",
+     "source_system": "core",
+     "source_record_id": "cbs-4001680",
+     "narrative": ""
+    },
+    "attribution": {
+     "min": 2880000,
+     "fifo": 2880000,
+     "pro_rata": 2929688,
+     "max": 3000000,
+     "amount_minor": 3000000,
+     "provenance": "derived",
+     "all_methods_full": false
+    }
+   },
+   {
+    "id": "ACC-100211",
+    "type": "account",
+    "label": "Account at Other Bank A (synthetic)",
+    "provenance": "confirmed",
+    "source_ids": [
+     "ACC-100211"
+    ],
+    "depth": 2,
+    "roles": [
+     "downstream"
+    ],
+    "endpoint": "visibility_ends",
+    "endpoint_reason": "Funds left this bank — visibility ends (request trail from the receiving institution) (Other Bank A (synthetic))",
+    "data": {
+     "masked_number": "XXXX4748",
+     "institution": "Other Bank A (synthetic)",
+     "external": true,
+     "kind": "external",
+     "opened_at": null,
+     "currency": "INR"
+    },
+    "provenance_note": "Beyond this point the trail is unknown, not absent."
+   },
+   {
+    "id": "TXN-4001681",
+    "type": "transaction",
+    "label": "₹20,000 · UPI",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001681",
+     "core:cbs-4001681"
+    ],
+    "depth": 1,
+    "direction": "forward",
+    "time": "2026-10-16T17:57:00Z",
+    "data": {
+     "amount_minor": 2000000,
+     "currency": "INR",
+     "status": "posted",
+     "channel": "UPI",
+     "reference": "628900082597",
+     "reference_missing": false,
+     "occurred_at": "2026-10-16T17:57:00Z",
+     "posted_at": "2026-10-16T17:57:04Z",
+     "debit_account_id": "ACC-100209",
+     "credit_account_id": "ACC-100211",
+     "reversal_of_id": null,
+     "device_id": "DEV-9072",
+     "source_system": "core",
+     "source_record_id": "cbs-4001681",
+     "narrative": ""
+    },
+    "attribution": {
+     "min": 2000000,
+     "fifo": 2000000,
+     "pro_rata": 1953125,
+     "max": 2000000,
+     "amount_minor": 2000000,
+     "provenance": "derived",
+     "all_methods_full": false
+    }
+   },
+   {
+    "id": "ACC-100212",
+    "type": "account",
+    "label": "Account at Other Bank B (synthetic)",
+    "provenance": "confirmed",
+    "source_ids": [
+     "ACC-100212"
+    ],
+    "depth": 3,
+    "roles": [
+     "downstream"
+    ],
+    "endpoint": "visibility_ends",
+    "endpoint_reason": "Funds left this bank — visibility ends (request trail from the receiving institution) (Other Bank B (synthetic))",
+    "data": {
+     "masked_number": "XXXX3382",
+     "institution": "Other Bank B (synthetic)",
+     "external": true,
+     "kind": "external",
+     "opened_at": null,
+     "currency": "INR"
+    },
+    "provenance_note": "Beyond this point the trail is unknown, not absent."
+   },
+   {
+    "id": "TXN-4001682",
+    "type": "transaction",
+    "label": "₹12,000 · IMPS",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001682",
+     "core:cbs-4001682"
+    ],
+    "depth": 2,
+    "direction": "forward",
+    "time": "2026-10-16T18:32:00Z",
+    "data": {
+     "amount_minor": 1200000,
+     "currency": "INR",
+     "status": "posted",
+     "channel": "IMPS",
+     "reference": "628900082607",
+     "reference_missing": false,
+     "occurred_at": "2026-10-16T18:32:00Z",
+     "posted_at": "2026-10-16T18:32:04Z",
+     "debit_account_id": "ACC-100210",
+     "credit_account_id": "ACC-100212",
+     "reversal_of_id": null,
+     "device_id": "DEV-9072",
+     "source_system": "core",
+     "source_record_id": "cbs-4001682",
+     "narrative": ""
+    },
+    "attribution": {
+     "min": 980000,
+     "fifo": 1056000,
+     "pro_rata": 1134073,
+     "max": 1200000,
+     "amount_minor": 1200000,
+     "provenance": "derived",
+     "all_methods_full": false
+    }
+   },
+   {
+    "id": "EV-CD9D4D5A",
+    "type": "evidence",
+    "label": "debit_alert_screenshot.png",
+    "provenance": "unknown",
+    "source_ids": [
+     "EV-CD9D4D5A"
+    ],
+    "depth": 0,
+    "roles": [
+     "evidence"
+    ],
+    "endpoint": null,
+    "data": {
+     "kind": "customer_upload",
+     "analysis_status": "not_analysed",
+     "sha256": "31dc4ff031cc8b8a7df663606ec57e4518e3bba94fb93475b3b4771d93756bf4",
+     "checks": null,
+     "summary": null
+    }
+   }
+  ],
+  "edges": [
+   {
+    "id": "sent:ACC-100216->TXN-4001679",
+    "source": "ACC-100216",
+    "target": "TXN-4001679",
+    "type": "sent",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001679"
+    ],
+    "time": "2026-10-16T17:44:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "received_by:TXN-4001679->ACC-100209",
+    "source": "TXN-4001679",
+    "target": "ACC-100209",
+    "type": "received_by",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001679"
+    ],
+    "time": "2026-10-16T17:44:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "sent:ACC-100209->TXN-4001680",
+    "source": "ACC-100209",
+    "target": "TXN-4001680",
+    "type": "sent",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001680"
+    ],
+    "time": "2026-10-16T17:51:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "received_by:TXN-4001680->ACC-100210",
+    "source": "TXN-4001680",
+    "target": "ACC-100210",
+    "type": "received_by",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001680"
+    ],
+    "time": "2026-10-16T17:51:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "sent:ACC-100209->TXN-4001681",
+    "source": "ACC-100209",
+    "target": "TXN-4001681",
+    "type": "sent",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001681"
+    ],
+    "time": "2026-10-16T17:57:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "received_by:TXN-4001681->ACC-100211",
+    "source": "TXN-4001681",
+    "target": "ACC-100211",
+    "type": "received_by",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001681"
+    ],
+    "time": "2026-10-16T17:57:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "sent:ACC-100210->TXN-4001682",
+    "source": "ACC-100210",
+    "target": "TXN-4001682",
+    "type": "sent",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001682"
+    ],
+    "time": "2026-10-16T18:32:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "received_by:TXN-4001682->ACC-100212",
+    "source": "TXN-4001682",
+    "target": "ACC-100212",
+    "type": "received_by",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001682"
+    ],
+    "time": "2026-10-16T18:32:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "possible_onward_funding:TXN-4001679->TXN-4001680",
+    "source": "TXN-4001679",
+    "target": "TXN-4001680",
+    "type": "possible_onward_funding",
+    "provenance": "derived",
+    "source_ids": [
+     "TXN-4001679",
+     "TXN-4001680"
+    ],
+    "time": "2026-10-16T17:51:00Z",
+    "label": "at least ₹28,800 must be disputed funds (balance arithmetic)",
+    "data": {
+     "min": 2880000,
+     "fifo": 2880000,
+     "pro_rata": 2929688,
+     "max": 3000000
+    }
+   },
+   {
+    "id": "possible_onward_funding:TXN-4001679->TXN-4001681",
+    "source": "TXN-4001679",
+    "target": "TXN-4001681",
+    "type": "possible_onward_funding",
+    "provenance": "derived",
+    "source_ids": [
+     "TXN-4001679",
+     "TXN-4001681"
+    ],
+    "time": "2026-10-16T17:57:00Z",
+    "label": "at least ₹20,000 must be disputed funds (balance arithmetic)",
+    "data": {
+     "min": 2000000,
+     "fifo": 2000000,
+     "pro_rata": 1953125,
+     "max": 2000000
+    }
+   },
+   {
+    "id": "possible_onward_funding:TXN-4001680->TXN-4001682",
+    "source": "TXN-4001680",
+    "target": "TXN-4001682",
+    "type": "possible_onward_funding",
+    "provenance": "derived",
+    "source_ids": [
+     "TXN-4001680",
+     "TXN-4001682"
+    ],
+    "time": "2026-10-16T18:32:00Z",
+    "label": "at least ₹9,800 must be disputed funds (balance arithmetic)",
+    "data": {
+     "min": 980000,
+     "fifo": 1056000,
+     "pro_rata": 1134073,
+     "max": 1200000
+    }
+   },
+   {
+    "id": "relates_to:EV-CD9D4D5A->TXN-4001679",
+    "source": "EV-CD9D4D5A",
+    "target": "TXN-4001679",
+    "type": "relates_to",
+    "provenance": "unknown",
+    "source_ids": [
+     "EV-CD9D4D5A",
+     "TXN-4001679"
+    ],
+    "time": null,
+    "label": "not analysed",
+    "data": {}
+   }
+  ],
+  "paths": [
+   {
+    "endpoint_account_id": "ACC-100211",
+    "endpoint": "visibility_ends",
+    "txn_ids": [
+     "TXN-4001679",
+     "TXN-4001681"
+    ],
+    "provenance": "confirmed",
+    "note": "Each hop is a recorded transfer. Whether these hops carried the disputed funds is shown by attribution, not by the path itself."
+   },
+   {
+    "endpoint_account_id": "ACC-100212",
+    "endpoint": "visibility_ends",
+    "txn_ids": [
+     "TXN-4001679",
+     "TXN-4001680",
+     "TXN-4001682"
+    ],
+    "provenance": "confirmed",
+    "note": "Each hop is a recorded transfer. Whether these hops carried the disputed funds is shown by attribution, not by the path itself."
+   }
+  ],
+  "cycles": [],
+  "truncated": false,
+  "warnings": [],
+  "stats": {
+   "nodes": 10,
+   "edges": 12,
+   "transactions": 4,
+   "accounts": 5,
+   "endpoints": 2
+  }
+ },
+ "attribution": {
+  "disputed_txn_id": "TXN-4001679",
+  "disputed_amount_minor": 5000000,
+  "currency": "INR",
+  "methods": {
+   "min": "Lower bound (clean funds spent first; lowest intermediate balance)",
+   "fifo": "First in, first out",
+   "pro_rata": "Pro-rata (proportional mix)",
+   "max": "Upper bound (disputed funds spent first)"
+  },
+  "per_transaction": {
+   "TXN-4001680": {
+    "min": 2880000,
+    "fifo": 2880000,
+    "pro_rata": 2929688,
+    "max": 3000000,
+    "amount_minor": 3000000,
+    "provenance": "derived",
+    "all_methods_full": false
+   },
+   "TXN-4001681": {
+    "min": 2000000,
+    "fifo": 2000000,
+    "pro_rata": 1953125,
+    "max": 2000000,
+    "amount_minor": 2000000,
+    "provenance": "derived",
+    "all_methods_full": false
+   },
+   "TXN-4001682": {
+    "min": 980000,
+    "fifo": 1056000,
+    "pro_rata": 1134073,
+    "max": 1200000,
+    "amount_minor": 1200000,
+    "provenance": "derived",
+    "all_methods_full": false
+   }
+  },
+  "per_account": {
+   "ACC-100209": {
+    "residual": {
+     "min": 120000,
+     "fifo": 120000,
+     "pro_rata": 117187,
+     "max": 0
+    },
+    "balance_at_window_end": 120000,
+    "label": "Rahul K (synthetic)"
+   },
+   "ACC-100210": {
+    "residual": {
+     "min": 1900000,
+     "fifo": 1824000,
+     "pro_rata": 1795615,
+     "max": 1800000
+    },
+    "balance_at_window_end": 1900000,
+    "label": "Sunil P (synthetic)"
+   }
+  },
+  "buckets": {
+   "min": {
+    "residual_in_visible_accounts": 2020000,
+    "left_visibility": 2980000,
+    "reached_merchant_or_hub": 0,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   },
+   "fifo": {
+    "residual_in_visible_accounts": 1944000,
+    "left_visibility": 3056000,
+    "reached_merchant_or_hub": 0,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   },
+   "pro_rata": {
+    "residual_in_visible_accounts": 1912802,
+    "left_visibility": 3087198,
+    "reached_merchant_or_hub": 0,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   },
+   "max": {
+    "residual_in_visible_accounts": 1800000,
+    "left_visibility": 3200000,
+    "reached_merchant_or_hub": 0,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   }
+  },
+  "coverage": {
+   "min": 1.0,
+   "fifo": 1.0,
+   "pro_rata": 1.0,
+   "max": 1.0
+  },
+  "warnings": [],
+  "caveat": "Attribution is balance arithmetic over recorded transactions. A positive lower bound means the ledger forces at least that much to be the disputed funds; the upper bound means it is possible, not established. It does not show who controlled the funds or why they moved.",
+  "evaluable": true,
+  "exits": {
+   "ACC-100211": {
+    "min": 2000000,
+    "fifo": 2000000,
+    "pro_rata": 1953125,
+    "max": 2000000
+   },
+   "ACC-100212": {
+    "min": 980000,
+    "fifo": 1056000,
+    "pro_rata": 1134073,
+    "max": 1200000
+   }
+  },
+  "holdable": [
+   {
+    "account_id": "ACC-100210",
+    "label": "Sunil P (synthetic)",
+    "max_minor": 1900000,
+    "min_minor": 1795615,
+    "balance_minor": 1900000,
+    "by_method": {
+     "min": 1900000,
+     "fifo": 1824000,
+     "pro_rata": 1795615,
+     "max": 1800000
+    }
+   },
+   {
+    "account_id": "ACC-100209",
+    "label": "Rahul K (synthetic)",
+    "max_minor": 120000,
+    "min_minor": 0,
+    "balance_minor": 120000,
+    "by_method": {
+     "min": 120000,
+     "fifo": 120000,
+     "pro_rata": 117187,
+     "max": 0
+    }
+   }
+  ]
+ }
+}

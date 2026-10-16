@@ -1,0 +1,390 @@
+{
+ "rules": [
+  {
+   "rule_id": "R1",
+   "name": "Rapid onward movement",
+   "version": 1,
+   "severity": "high",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "₹50,000 credited to ACC-100209 at 17:44 UTC.",
+     "source_ids": [
+      "TXN-4001679"
+     ]
+    },
+    {
+     "text": "TXN-4001680: ₹30,000 left ACC-100209 7.0 min later (cumulative 60% of the receipt).",
+     "source_ids": [
+      "TXN-4001680"
+     ]
+    },
+    {
+     "text": "TXN-4001681: ₹20,000 left ACC-100209 13.0 min later (cumulative 100% of the receipt).",
+     "source_ids": [
+      "TXN-4001681"
+     ]
+    },
+    {
+     "text": "Threshold met: ≥80% moved on within 60 min.",
+     "source_ids": []
+    }
+   ],
+   "source_ids": [
+    "TXN-4001679",
+    "TXN-4001680",
+    "TXN-4001681"
+   ],
+   "params": {
+    "window_minutes": 60,
+    "min_share": 0.8
+   },
+   "limitations": [
+    "Shows recorded onward transfers; whether they carried the disputed funds is given by attribution, not by timing."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Review attribution bounds and consider a hold on visible downstream accounts still holding funds.",
+   "evaluated_at": "2026-10-16T19:19:09.883415Z"
+  },
+  {
+   "rule_id": "R2",
+   "name": "Split into multiple transfers",
+   "version": 1,
+   "severity": "high",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "2 onward transfers to 2 distinct accounts within 120 min, totalling ₹50,000 (100% of the receipt).",
+     "source_ids": [
+      "TXN-4001680",
+      "TXN-4001681"
+     ]
+    }
+   ],
+   "source_ids": [
+    "TXN-4001679",
+    "TXN-4001680",
+    "TXN-4001681"
+   ],
+   "params": {
+    "window_minutes": 120,
+    "min_transfers": 2,
+    "min_destinations": 2,
+    "min_share": 0.8
+   },
+   "limitations": [
+    "Splitting is common in legitimate use (rent, bills); it is a pattern to review, not evidence of intent."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Check each destination account's ownership and whether destinations appear in other disputes.",
+   "evaluated_at": "2026-10-16T19:19:09.883415Z"
+  },
+  {
+   "rule_id": "R3",
+   "name": "Beneficiary linked to other disputes",
+   "version": 1,
+   "severity": "high",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "ACC-100209 is the beneficiary in 2 other dispute(s): CASE-24031, CASE-24038.",
+     "source_ids": [
+      "ACC-100209",
+      "TXN-4001646",
+      "TXN-4001660"
+     ]
+    }
+   ],
+   "source_ids": [
+    "ACC-100209",
+    "CASE-24031",
+    "CASE-24038"
+   ],
+   "params": {
+    "min_other_cases": 1,
+    "high_severity_cases": 2
+   },
+   "limitations": [
+    "Only disputes recorded in this system are compared; other banks' reports are not visible."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Open the linked cases and compare allegations; consider a coordinated hold request.",
+   "evaluated_at": "2026-10-16T19:19:09.883415Z"
+  },
+  {
+   "rule_id": "R4",
+   "name": "Failed logins before the transfer",
+   "version": 1,
+   "severity": "high",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "4 failed and 1 successful authentication events in the 30 min before the transfer.",
+     "source_ids": [
+      "AUTH-701256",
+      "AUTH-701257",
+      "AUTH-701258",
+      "AUTH-701259",
+      "AUTH-701260"
+     ]
+    },
+    {
+     "text": "Success at 17:36 followed 4 failures; the transfer followed 8.0 min later.",
+     "source_ids": [
+      "AUTH-701260",
+      "TXN-4001679"
+     ]
+    }
+   ],
+   "source_ids": [
+    "AUTH-701256",
+    "AUTH-701257",
+    "AUTH-701258",
+    "AUTH-701259",
+    "AUTH-701260",
+    "TXN-4001679"
+   ],
+   "params": {
+    "window_minutes": 30,
+    "min_failures": 3
+   },
+   "limitations": [
+    "Failed attempts can be the genuine customer mistyping; combine with device and location evidence."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Compare the device and IP of the successful login with the customer's usual devices.",
+   "evaluated_at": "2026-10-16T19:19:09.883415Z"
+  },
+  {
+   "rule_id": "R5",
+   "name": "New device",
+   "version": 1,
+   "severity": "medium",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "Device DEV-9071 was first used on ACC-100216 0.2 h before the disputed transfer (history checked: 180 days).",
+     "source_ids": [
+      "DEV-9071",
+      "TXN-4001679"
+     ]
+    }
+   ],
+   "source_ids": [
+    "TXN-4001679",
+    "DEV-9071",
+    "AUTH-701256",
+    "AUTH-701257",
+    "AUTH-701258"
+   ],
+   "params": {
+    "max_device_age_hours": 24,
+    "history_days": 180
+   },
+   "limitations": [
+    "Customers do change phones; a new device on the account is a signal, not proof of account takeover."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Ask the customer whether they registered a new device; check SIM-swap indicators with the telecom partner.",
+   "evaluated_at": "2026-10-16T19:19:09.883415Z"
+  },
+  {
+   "rule_id": "R6",
+   "name": "Unusual amount",
+   "version": 1,
+   "severity": "medium",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "Disputed amount ₹50,000 is 24.7× the payer's median debit of ₹2,025 over 14 debits in 90 days.",
+     "source_ids": [
+      "TXN-4001679"
+     ]
+    }
+   ],
+   "source_ids": [
+    "TXN-4001679"
+   ],
+   "params": {
+    "lookback_days": 90,
+    "min_history": 5,
+    "multiple": 5.0
+   },
+   "limitations": [
+    "Large one-off payments (deposits, purchases) are normal; baseline is this bank's records only."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Ask the customer about any expected large payments around this date.",
+   "evaluated_at": "2026-10-16T19:19:09.883415Z"
+  },
+  {
+   "rule_id": "R7",
+   "name": "Recently opened beneficiary",
+   "version": 1,
+   "severity": "medium",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "Beneficiary ACC-100209 was opened 8 day(s) before receiving the funds.",
+     "source_ids": [
+      "ACC-100209"
+     ]
+    }
+   ],
+   "source_ids": [
+    "ACC-100209",
+    "TXN-4001679"
+   ],
+   "params": {
+    "max_age_days": 30
+   },
+   "limitations": [
+    "New accounts are mostly legitimate; this matters in combination with rapid onward movement."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Review beneficiary KYC and recent inflow pattern.",
+   "evaluated_at": "2026-10-16T19:19:09.883415Z"
+  },
+  {
+   "rule_id": "R8",
+   "name": "Reversal then resend",
+   "version": 1,
+   "severity": "low",
+   "status": "not_triggered",
+   "facts": [
+    {
+     "text": "No reversal followed by a resend on the payer's account within ±24 h.",
+     "source_ids": []
+    }
+   ],
+   "source_ids": [],
+   "params": {
+    "window_hours": 24
+   },
+   "limitations": [
+    "Reversals happen for technical reasons; check the reversal reason codes."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Check reversal reason codes and whether the customer initiated the resend.",
+   "evaluated_at": "2026-10-16T19:19:09.883415Z"
+  },
+  {
+   "rule_id": "R9",
+   "name": "Evidence contradicts the ledger",
+   "version": 1,
+   "severity": "high",
+   "status": "not_evaluable",
+   "facts": [],
+   "source_ids": [],
+   "params": {},
+   "limitations": [
+    "Not evaluable: the data this rule needs is missing. This is not a negative finding."
+   ],
+   "missing_fields": [
+    "analysed customer evidence (receipt/screenshot/statement)"
+   ],
+   "suggested_step": "Ask the customer for the payment receipt or statement and analyse it.",
+   "evaluated_at": "2026-10-16T19:19:09.883415Z"
+  },
+  {
+   "rule_id": "R10",
+   "name": "Shared device",
+   "version": 1,
+   "severity": "medium",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "Device DEV-9071 is also used by 1 other account(s): ACC-100214.",
+     "source_ids": [
+      "DEV-9071",
+      "ACC-100214"
+     ]
+    }
+   ],
+   "source_ids": [
+    "DEV-9071",
+    "ACC-100214"
+   ],
+   "params": {
+    "min_other_accounts": 1
+   },
+   "limitations": [
+    "Family members legitimately share devices."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Check whether the other accounts belong to the same household or appear in disputes.",
+   "evaluated_at": "2026-10-16T19:19:09.883415Z"
+  },
+  {
+   "rule_id": "R11",
+   "name": "Funds left this bank",
+   "version": 1,
+   "severity": "medium",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "Between ₹20,000 and ₹20,000 of the disputed funds may have left to ACC-100211 (Other Bank A (synthetic)); this bank cannot see further.",
+     "source_ids": [
+      "ACC-100211",
+      "TXN-4001681"
+     ]
+    },
+    {
+     "text": "Between ₹9,800 and ₹12,000 of the disputed funds may have left to ACC-100212 (Other Bank B (synthetic)); this bank cannot see further.",
+     "source_ids": [
+      "ACC-100212",
+      "TXN-4001682"
+     ]
+    }
+   ],
+   "source_ids": [
+    "ACC-100211",
+    "TXN-4001681",
+    "ACC-100212",
+    "TXN-4001682"
+   ],
+   "params": {
+    "min_share": 0.1
+   },
+   "limitations": [
+    "Exits end this bank's visibility; the trail continues only with the receiving institution's records."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Send a trail and hold request to the receiving institution (via the national cyber-fraud reporting process).",
+   "evaluated_at": "2026-10-16T19:19:09.883415Z"
+  },
+  {
+   "rule_id": "R12",
+   "name": "Record inconsistency",
+   "version": 1,
+   "severity": "low",
+   "status": "not_triggered",
+   "facts": [
+    {
+     "text": "All 4 trail records have unique, consistent references.",
+     "source_ids": []
+    }
+   ],
+   "source_ids": [],
+   "params": {},
+   "limitations": [
+    "Missing references are often a data-feed issue, not fraud."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Reconcile the records with the payment switch using amount, time and parties.",
+   "evaluated_at": "2026-10-16T19:19:09.883415Z"
+  }
+ ],
+ "summary": {
+  "triggered": 9,
+  "not_triggered": 2,
+  "not_evaluable": 1,
+  "highest_severity": "high",
+  "by_severity": {
+   "high": 4,
+   "medium": 5,
+   "low": 0
+  }
+ },
+ "ruleset_version": "rules-a5223623eaeb"
+}

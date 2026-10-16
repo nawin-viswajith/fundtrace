@@ -1,0 +1,171 @@
+{
+ "items": [
+  {
+   "time": "2026-10-16T17:30:00Z",
+   "kind": "auth_event",
+   "id": "AUTH-701256",
+   "title": "login failure",
+   "status": "failure",
+   "provenance": "confirmed",
+   "source_ids": [
+    "AUTH-701256"
+   ],
+   "device": "DEV-9071"
+  },
+  {
+   "time": "2026-10-16T17:31:30Z",
+   "kind": "auth_event",
+   "id": "AUTH-701257",
+   "title": "login failure",
+   "status": "failure",
+   "provenance": "confirmed",
+   "source_ids": [
+    "AUTH-701257"
+   ],
+   "device": "DEV-9071"
+  },
+  {
+   "time": "2026-10-16T17:33:00Z",
+   "kind": "auth_event",
+   "id": "AUTH-701258",
+   "title": "login failure",
+   "status": "failure",
+   "provenance": "confirmed",
+   "source_ids": [
+    "AUTH-701258"
+   ],
+   "device": "DEV-9071"
+  },
+  {
+   "time": "2026-10-16T17:34:30Z",
+   "kind": "auth_event",
+   "id": "AUTH-701259",
+   "title": "login failure",
+   "status": "failure",
+   "provenance": "confirmed",
+   "source_ids": [
+    "AUTH-701259"
+   ],
+   "device": "DEV-9071"
+  },
+  {
+   "time": "2026-10-16T17:36:00Z",
+   "kind": "auth_event",
+   "id": "AUTH-701260",
+   "title": "otp success",
+   "status": "success",
+   "provenance": "confirmed",
+   "source_ids": [
+    "AUTH-701260"
+   ],
+   "device": "DEV-9071"
+  },
+  {
+   "time": "2026-10-16T17:44:00Z",
+   "kind": "transaction",
+   "id": "TXN-4001679",
+   "title": "₹50,000 UPI ACC-100216 → ACC-100209",
+   "status": "posted",
+   "reference": "628900082421",
+   "provenance": "confirmed",
+   "source_ids": [
+    "TXN-4001679"
+   ],
+   "role": "disputed",
+   "attribution": null,
+   "note": null
+  },
+  {
+   "time": "2026-10-16T17:51:00Z",
+   "kind": "transaction",
+   "id": "TXN-4001680",
+   "title": "₹30,000 IMPS ACC-100209 → ACC-100210",
+   "status": "posted",
+   "reference": "628900082510",
+   "provenance": "confirmed",
+   "source_ids": [
+    "TXN-4001680"
+   ],
+   "role": "forward",
+   "attribution": {
+    "min": 2880000,
+    "fifo": 2880000,
+    "pro_rata": 2929688,
+    "max": 3000000,
+    "amount_minor": 3000000,
+    "provenance": "derived",
+    "all_methods_full": false
+   },
+   "note": null
+  },
+  {
+   "time": "2026-10-16T17:57:00Z",
+   "kind": "transaction",
+   "id": "TXN-4001681",
+   "title": "₹20,000 UPI ACC-100209 → ACC-100211",
+   "status": "posted",
+   "reference": "628900082597",
+   "provenance": "confirmed",
+   "source_ids": [
+    "TXN-4001681"
+   ],
+   "role": "forward",
+   "attribution": {
+    "min": 2000000,
+    "fifo": 2000000,
+    "pro_rata": 1953125,
+    "max": 2000000,
+    "amount_minor": 2000000,
+    "provenance": "derived",
+    "all_methods_full": false
+   },
+   "note": null
+  },
+  {
+   "time": "2026-10-16T18:19:00Z",
+   "kind": "case",
+   "id": "CASE-24051",
+   "title": "Customer reported the dispute",
+   "provenance": "confirmed",
+   "source_ids": [
+    "CASE-24051"
+   ]
+  },
+  {
+   "time": "2026-10-16T18:19:00Z",
+   "kind": "evidence",
+   "id": "EV-CD9D4D5A",
+   "title": "Evidence received: debit_alert_screenshot.png",
+   "status": "not_analysed",
+   "provenance": "confirmed",
+   "source_ids": [
+    "EV-CD9D4D5A"
+   ]
+  },
+  {
+   "time": "2026-10-16T18:32:00Z",
+   "kind": "transaction",
+   "id": "TXN-4001682",
+   "title": "₹12,000 IMPS ACC-100210 → ACC-100212",
+   "status": "posted",
+   "reference": "628900082607",
+   "provenance": "confirmed",
+   "source_ids": [
+    "TXN-4001682"
+   ],
+   "role": "forward",
+   "attribution": {
+    "min": 980000,
+    "fifo": 1056000,
+    "pro_rata": 1134073,
+    "max": 1200000,
+    "amount_minor": 1200000,
+    "provenance": "derived",
+    "all_methods_full": false
+   },
+   "note": null
+  }
+ ],
+ "disputed_txn_id": "TXN-4001679",
+ "empty": false
+}

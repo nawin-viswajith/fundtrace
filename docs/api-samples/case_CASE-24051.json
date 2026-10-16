@@ -1,0 +1,1422 @@
+{
+ "case": {
+  "id": "CASE-24051",
+  "category": "unauthorised_transfer",
+  "category_label": "Unauthorised transfer",
+  "category_source": "intake",
+  "status": "new",
+  "priority": "P1",
+  "priority_reasons": [
+   "Material value: ₹50,000",
+   "High-severity signals: Rapid onward movement, Split into multiple transfers, Beneficiary linked to other disputes, Failed logins before the transfer",
+   "Golden hour: up to ₹19,000 may still be in visible accounts",
+   "Beneficiary appears in other disputes"
+  ],
+  "owner": {
+   "id": 1,
+   "username": "inv.asha",
+   "full_name": "Asha Raman (synthetic)"
+  },
+  "allegation": "I did not make this payment of ₹50,000. I got a call from someone saying they were from the bank and needed to update my KYC. A few minutes later I got a debit SMS. I did not share any OTP.",
+  "allegation_language": "en",
+  "allegation_translation": null,
+  "reported_at": "2026-10-16T18:19:00Z",
+  "created_at": "2026-10-16T18:19:00Z",
+  "updated_at": "2026-10-16T19:19:09.613864Z",
+  "due_at": "2027-01-14T18:19:00Z",
+  "sla_policy": "IN-UET",
+  "decision": null,
+  "decision_rationale": null,
+  "decided_at": null,
+  "disputed_txn_id": "TXN-4001679",
+  "customer_id": "CUST-1075",
+  "amount_minor": 5000000,
+  "currency": "INR",
+  "txn_status": "posted",
+  "txn_reference": "628900082421",
+  "is_synthetic": true,
+  "scenario": "S1"
+ },
+ "disputed_transaction": {
+  "amount_minor": 5000000,
+  "currency": "INR",
+  "status": "posted",
+  "channel": "UPI",
+  "reference": "628900082421",
+  "reference_missing": false,
+  "occurred_at": "2026-10-16T17:44:00Z",
+  "posted_at": "2026-10-16T17:44:04Z",
+  "debit_account_id": "ACC-100216",
+  "credit_account_id": "ACC-100209",
+  "reversal_of_id": null,
+  "device_id": "DEV-9071",
+  "source_system": "core",
+  "source_record_id": "cbs-4001679",
+  "narrative": "UPI transfer",
+  "id": "TXN-4001679"
+ },
+ "payer": {
+  "id": "ACC-100216",
+  "type": "account",
+  "label": "Priya N savings (synthetic)",
+  "provenance": "confirmed",
+  "source_ids": [
+   "ACC-100216"
+  ],
+  "depth": 0,
+  "roles": [
+   "payer"
+  ],
+  "endpoint": null,
+  "endpoint_reason": null,
+  "data": {
+   "masked_number": "XXXX6816",
+   "institution": "FundTrace Demo Bank (synthetic)",
+   "external": false,
+   "kind": "savings",
+   "opened_at": "2020-10-07T19:19:00Z",
+   "currency": "INR"
+  }
+ },
+ "beneficiary": {
+  "id": "ACC-100209",
+  "type": "account",
+  "label": "Rahul K (synthetic)",
+  "provenance": "confirmed",
+  "source_ids": [
+   "ACC-100209"
+  ],
+  "depth": 1,
+  "roles": [
+   "beneficiary"
+  ],
+  "endpoint": null,
+  "endpoint_reason": null,
+  "data": {
+   "masked_number": "XXXX2780",
+   "institution": "FundTrace Demo Bank (synthetic)",
+   "external": false,
+   "kind": "savings",
+   "opened_at": "2026-10-07T19:19:00Z",
+   "currency": "INR"
+  }
+ },
+ "graph": {
+  "root_txn_id": "TXN-4001679",
+  "params": {
+   "direction": "forward",
+   "depth": 3,
+   "window_hours": 72,
+   "max_nodes": 150,
+   "hub_threshold": 25
+  },
+  "window": {
+   "start": "2026-10-16T17:44:00Z",
+   "end": "2026-10-19T17:44:00Z"
+  },
+  "nodes": [
+   {
+    "id": "ACC-100216",
+    "type": "account",
+    "label": "Priya N savings (synthetic)",
+    "provenance": "confirmed",
+    "source_ids": [
+     "ACC-100216"
+    ],
+    "depth": 0,
+    "roles": [
+     "payer"
+    ],
+    "endpoint": null,
+    "endpoint_reason": null,
+    "data": {
+     "masked_number": "XXXX6816",
+     "institution": "FundTrace Demo Bank (synthetic)",
+     "external": false,
+     "kind": "savings",
+     "opened_at": "2020-10-07T19:19:00Z",
+     "currency": "INR"
+    }
+   },
+   {
+    "id": "ACC-100209",
+    "type": "account",
+    "label": "Rahul K (synthetic)",
+    "provenance": "confirmed",
+    "source_ids": [
+     "ACC-100209"
+    ],
+    "depth": 1,
+    "roles": [
+     "beneficiary"
+    ],
+    "endpoint": null,
+    "endpoint_reason": null,
+    "data": {
+     "masked_number": "XXXX2780",
+     "institution": "FundTrace Demo Bank (synthetic)",
+     "external": false,
+     "kind": "savings",
+     "opened_at": "2026-10-07T19:19:00Z",
+     "currency": "INR"
+    }
+   },
+   {
+    "id": "TXN-4001679",
+    "type": "transaction",
+    "label": "₹50,000 · UPI",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001679",
+     "core:cbs-4001679"
+    ],
+    "depth": 0,
+    "direction": "root",
+    "time": "2026-10-16T17:44:00Z",
+    "data": {
+     "amount_minor": 5000000,
+     "currency": "INR",
+     "status": "posted",
+     "channel": "UPI",
+     "reference": "628900082421",
+     "reference_missing": false,
+     "occurred_at": "2026-10-16T17:44:00Z",
+     "posted_at": "2026-10-16T17:44:04Z",
+     "debit_account_id": "ACC-100216",
+     "credit_account_id": "ACC-100209",
+     "reversal_of_id": null,
+     "device_id": "DEV-9071",
+     "source_system": "core",
+     "source_record_id": "cbs-4001679",
+     "narrative": "UPI transfer"
+    },
+    "roles": [
+     "disputed"
+    ]
+   },
+   {
+    "id": "ACC-100210",
+    "type": "account",
+    "label": "Sunil P (synthetic)",
+    "provenance": "confirmed",
+    "source_ids": [
+     "ACC-100210"
+    ],
+    "depth": 2,
+    "roles": [
+     "downstream"
+    ],
+    "endpoint": null,
+    "endpoint_reason": null,
+    "data": {
+     "masked_number": "XXXX5492",
+     "institution": "FundTrace Demo Bank (synthetic)",
+     "external": false,
+     "kind": "savings",
+     "opened_at": "2026-09-06T19:19:00Z",
+     "currency": "INR"
+    }
+   },
+   {
+    "id": "TXN-4001680",
+    "type": "transaction",
+    "label": "₹30,000 · IMPS",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001680",
+     "core:cbs-4001680"
+    ],
+    "depth": 1,
+    "direction": "forward",
+    "time": "2026-10-16T17:51:00Z",
+    "data": {
+     "amount_minor": 3000000,
+     "currency": "INR",
+     "status": "posted",
+     "channel": "IMPS",
+     "reference": "628900082510",
+     "reference_missing": false,
+     "occurred_at": "2026-10-16T17:51:00Z",
+     "posted_at": "2026-10-16T17:51:04Z",
+     "debit_account_id": "ACC-100209",
+     "credit_account_id": "ACC-100210",
+     "reversal_of_id": null,
+     "device_id": "DEV-9072",
+     "source_system": "core",
+     "source_record_id": "cbs-4001680",
+     "narrative": ""
+    },
+    "attribution": {
+     "min": 2880000,
+     "fifo": 2880000,
+     "pro_rata": 2929688,
+     "max": 3000000,
+     "amount_minor": 3000000,
+     "provenance": "derived",
+     "all_methods_full": false
+    }
+   },
+   {
+    "id": "ACC-100211",
+    "type": "account",
+    "label": "Account at Other Bank A (synthetic)",
+    "provenance": "confirmed",
+    "source_ids": [
+     "ACC-100211"
+    ],
+    "depth": 2,
+    "roles": [
+     "downstream"
+    ],
+    "endpoint": "visibility_ends",
+    "endpoint_reason": "Funds left this bank — visibility ends (request trail from the receiving institution) (Other Bank A (synthetic))",
+    "data": {
+     "masked_number": "XXXX4748",
+     "institution": "Other Bank A (synthetic)",
+     "external": true,
+     "kind": "external",
+     "opened_at": null,
+     "currency": "INR"
+    },
+    "provenance_note": "Beyond this point the trail is unknown, not absent."
+   },
+   {
+    "id": "TXN-4001681",
+    "type": "transaction",
+    "label": "₹20,000 · UPI",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001681",
+     "core:cbs-4001681"
+    ],
+    "depth": 1,
+    "direction": "forward",
+    "time": "2026-10-16T17:57:00Z",
+    "data": {
+     "amount_minor": 2000000,
+     "currency": "INR",
+     "status": "posted",
+     "channel": "UPI",
+     "reference": "628900082597",
+     "reference_missing": false,
+     "occurred_at": "2026-10-16T17:57:00Z",
+     "posted_at": "2026-10-16T17:57:04Z",
+     "debit_account_id": "ACC-100209",
+     "credit_account_id": "ACC-100211",
+     "reversal_of_id": null,
+     "device_id": "DEV-9072",
+     "source_system": "core",
+     "source_record_id": "cbs-4001681",
+     "narrative": ""
+    },
+    "attribution": {
+     "min": 2000000,
+     "fifo": 2000000,
+     "pro_rata": 1953125,
+     "max": 2000000,
+     "amount_minor": 2000000,
+     "provenance": "derived",
+     "all_methods_full": false
+    }
+   },
+   {
+    "id": "ACC-100212",
+    "type": "account",
+    "label": "Account at Other Bank B (synthetic)",
+    "provenance": "confirmed",
+    "source_ids": [
+     "ACC-100212"
+    ],
+    "depth": 3,
+    "roles": [
+     "downstream"
+    ],
+    "endpoint": "visibility_ends",
+    "endpoint_reason": "Funds left this bank — visibility ends (request trail from the receiving institution) (Other Bank B (synthetic))",
+    "data": {
+     "masked_number": "XXXX3382",
+     "institution": "Other Bank B (synthetic)",
+     "external": true,
+     "kind": "external",
+     "opened_at": null,
+     "currency": "INR"
+    },
+    "provenance_note": "Beyond this point the trail is unknown, not absent."
+   },
+   {
+    "id": "TXN-4001682",
+    "type": "transaction",
+    "label": "₹12,000 · IMPS",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001682",
+     "core:cbs-4001682"
+    ],
+    "depth": 2,
+    "direction": "forward",
+    "time": "2026-10-16T18:32:00Z",
+    "data": {
+     "amount_minor": 1200000,
+     "currency": "INR",
+     "status": "posted",
+     "channel": "IMPS",
+     "reference": "628900082607",
+     "reference_missing": false,
+     "occurred_at": "2026-10-16T18:32:00Z",
+     "posted_at": "2026-10-16T18:32:04Z",
+     "debit_account_id": "ACC-100210",
+     "credit_account_id": "ACC-100212",
+     "reversal_of_id": null,
+     "device_id": "DEV-9072",
+     "source_system": "core",
+     "source_record_id": "cbs-4001682",
+     "narrative": ""
+    },
+    "attribution": {
+     "min": 980000,
+     "fifo": 1056000,
+     "pro_rata": 1134073,
+     "max": 1200000,
+     "amount_minor": 1200000,
+     "provenance": "derived",
+     "all_methods_full": false
+    }
+   },
+   {
+    "id": "EV-CD9D4D5A",
+    "type": "evidence",
+    "label": "debit_alert_screenshot.png",
+    "provenance": "unknown",
+    "source_ids": [
+     "EV-CD9D4D5A"
+    ],
+    "depth": 0,
+    "roles": [
+     "evidence"
+    ],
+    "endpoint": null,
+    "data": {
+     "kind": "customer_upload",
+     "analysis_status": "not_analysed",
+     "sha256": "31dc4ff031cc8b8a7df663606ec57e4518e3bba94fb93475b3b4771d93756bf4",
+     "checks": null,
+     "summary": null
+    }
+   }
+  ],
+  "edges": [
+   {
+    "id": "sent:ACC-100216->TXN-4001679",
+    "source": "ACC-100216",
+    "target": "TXN-4001679",
+    "type": "sent",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001679"
+    ],
+    "time": "2026-10-16T17:44:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "received_by:TXN-4001679->ACC-100209",
+    "source": "TXN-4001679",
+    "target": "ACC-100209",
+    "type": "received_by",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001679"
+    ],
+    "time": "2026-10-16T17:44:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "sent:ACC-100209->TXN-4001680",
+    "source": "ACC-100209",
+    "target": "TXN-4001680",
+    "type": "sent",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001680"
+    ],
+    "time": "2026-10-16T17:51:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "received_by:TXN-4001680->ACC-100210",
+    "source": "TXN-4001680",
+    "target": "ACC-100210",
+    "type": "received_by",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001680"
+    ],
+    "time": "2026-10-16T17:51:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "sent:ACC-100209->TXN-4001681",
+    "source": "ACC-100209",
+    "target": "TXN-4001681",
+    "type": "sent",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001681"
+    ],
+    "time": "2026-10-16T17:57:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "received_by:TXN-4001681->ACC-100211",
+    "source": "TXN-4001681",
+    "target": "ACC-100211",
+    "type": "received_by",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001681"
+    ],
+    "time": "2026-10-16T17:57:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "sent:ACC-100210->TXN-4001682",
+    "source": "ACC-100210",
+    "target": "TXN-4001682",
+    "type": "sent",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001682"
+    ],
+    "time": "2026-10-16T18:32:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "received_by:TXN-4001682->ACC-100212",
+    "source": "TXN-4001682",
+    "target": "ACC-100212",
+    "type": "received_by",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001682"
+    ],
+    "time": "2026-10-16T18:32:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "possible_onward_funding:TXN-4001679->TXN-4001680",
+    "source": "TXN-4001679",
+    "target": "TXN-4001680",
+    "type": "possible_onward_funding",
+    "provenance": "derived",
+    "source_ids": [
+     "TXN-4001679",
+     "TXN-4001680"
+    ],
+    "time": "2026-10-16T17:51:00Z",
+    "label": "at least ₹28,800 must be disputed funds (balance arithmetic)",
+    "data": {
+     "min": 2880000,
+     "fifo": 2880000,
+     "pro_rata": 2929688,
+     "max": 3000000
+    }
+   },
+   {
+    "id": "possible_onward_funding:TXN-4001679->TXN-4001681",
+    "source": "TXN-4001679",
+    "target": "TXN-4001681",
+    "type": "possible_onward_funding",
+    "provenance": "derived",
+    "source_ids": [
+     "TXN-4001679",
+     "TXN-4001681"
+    ],
+    "time": "2026-10-16T17:57:00Z",
+    "label": "at least ₹20,000 must be disputed funds (balance arithmetic)",
+    "data": {
+     "min": 2000000,
+     "fifo": 2000000,
+     "pro_rata": 1953125,
+     "max": 2000000
+    }
+   },
+   {
+    "id": "possible_onward_funding:TXN-4001680->TXN-4001682",
+    "source": "TXN-4001680",
+    "target": "TXN-4001682",
+    "type": "possible_onward_funding",
+    "provenance": "derived",
+    "source_ids": [
+     "TXN-4001680",
+     "TXN-4001682"
+    ],
+    "time": "2026-10-16T18:32:00Z",
+    "label": "at least ₹9,800 must be disputed funds (balance arithmetic)",
+    "data": {
+     "min": 980000,
+     "fifo": 1056000,
+     "pro_rata": 1134073,
+     "max": 1200000
+    }
+   },
+   {
+    "id": "relates_to:EV-CD9D4D5A->TXN-4001679",
+    "source": "EV-CD9D4D5A",
+    "target": "TXN-4001679",
+    "type": "relates_to",
+    "provenance": "unknown",
+    "source_ids": [
+     "EV-CD9D4D5A",
+     "TXN-4001679"
+    ],
+    "time": null,
+    "label": "not analysed",
+    "data": {}
+   }
+  ],
+  "paths": [
+   {
+    "endpoint_account_id": "ACC-100211",
+    "endpoint": "visibility_ends",
+    "txn_ids": [
+     "TXN-4001679",
+     "TXN-4001681"
+    ],
+    "provenance": "confirmed",
+    "note": "Each hop is a recorded transfer. Whether these hops carried the disputed funds is shown by attribution, not by the path itself."
+   },
+   {
+    "endpoint_account_id": "ACC-100212",
+    "endpoint": "visibility_ends",
+    "txn_ids": [
+     "TXN-4001679",
+     "TXN-4001680",
+     "TXN-4001682"
+    ],
+    "provenance": "confirmed",
+    "note": "Each hop is a recorded transfer. Whether these hops carried the disputed funds is shown by attribution, not by the path itself."
+   }
+  ],
+  "cycles": [],
+  "truncated": false,
+  "warnings": [],
+  "stats": {
+   "nodes": 10,
+   "edges": 12,
+   "transactions": 4,
+   "accounts": 5,
+   "endpoints": 2
+  }
+ },
+ "attribution": {
+  "disputed_txn_id": "TXN-4001679",
+  "disputed_amount_minor": 5000000,
+  "currency": "INR",
+  "methods": {
+   "min": "Lower bound (clean funds spent first; lowest intermediate balance)",
+   "fifo": "First in, first out",
+   "pro_rata": "Pro-rata (proportional mix)",
+   "max": "Upper bound (disputed funds spent first)"
+  },
+  "per_transaction": {
+   "TXN-4001680": {
+    "min": 2880000,
+    "fifo": 2880000,
+    "pro_rata": 2929688,
+    "max": 3000000,
+    "amount_minor": 3000000,
+    "provenance": "derived",
+    "all_methods_full": false
+   },
+   "TXN-4001681": {
+    "min": 2000000,
+    "fifo": 2000000,
+    "pro_rata": 1953125,
+    "max": 2000000,
+    "amount_minor": 2000000,
+    "provenance": "derived",
+    "all_methods_full": false
+   },
+   "TXN-4001682": {
+    "min": 980000,
+    "fifo": 1056000,
+    "pro_rata": 1134073,
+    "max": 1200000,
+    "amount_minor": 1200000,
+    "provenance": "derived",
+    "all_methods_full": false
+   }
+  },
+  "per_account": {
+   "ACC-100209": {
+    "residual": {
+     "min": 120000,
+     "fifo": 120000,
+     "pro_rata": 117187,
+     "max": 0
+    },
+    "balance_at_window_end": 120000,
+    "label": "Rahul K (synthetic)"
+   },
+   "ACC-100210": {
+    "residual": {
+     "min": 1900000,
+     "fifo": 1824000,
+     "pro_rata": 1795615,
+     "max": 1800000
+    },
+    "balance_at_window_end": 1900000,
+    "label": "Sunil P (synthetic)"
+   }
+  },
+  "buckets": {
+   "min": {
+    "residual_in_visible_accounts": 2020000,
+    "left_visibility": 2980000,
+    "reached_merchant_or_hub": 0,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   },
+   "fifo": {
+    "residual_in_visible_accounts": 1944000,
+    "left_visibility": 3056000,
+    "reached_merchant_or_hub": 0,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   },
+   "pro_rata": {
+    "residual_in_visible_accounts": 1912802,
+    "left_visibility": 3087198,
+    "reached_merchant_or_hub": 0,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   },
+   "max": {
+    "residual_in_visible_accounts": 1800000,
+    "left_visibility": 3200000,
+    "reached_merchant_or_hub": 0,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   }
+  },
+  "coverage": {
+   "min": 1.0,
+   "fifo": 1.0,
+   "pro_rata": 1.0,
+   "max": 1.0
+  },
+  "warnings": [],
+  "caveat": "Attribution is balance arithmetic over recorded transactions. A positive lower bound means the ledger forces at least that much to be the disputed funds; the upper bound means it is possible, not established. It does not show who controlled the funds or why they moved.",
+  "evaluable": true,
+  "exits": {
+   "ACC-100211": {
+    "min": 2000000,
+    "fifo": 2000000,
+    "pro_rata": 1953125,
+    "max": 2000000
+   },
+   "ACC-100212": {
+    "min": 980000,
+    "fifo": 1056000,
+    "pro_rata": 1134073,
+    "max": 1200000
+   }
+  },
+  "holdable": [
+   {
+    "account_id": "ACC-100210",
+    "label": "Sunil P (synthetic)",
+    "max_minor": 1900000,
+    "min_minor": 1795615,
+    "balance_minor": 1900000,
+    "by_method": {
+     "min": 1900000,
+     "fifo": 1824000,
+     "pro_rata": 1795615,
+     "max": 1800000
+    }
+   },
+   {
+    "account_id": "ACC-100209",
+    "label": "Rahul K (synthetic)",
+    "max_minor": 120000,
+    "min_minor": 0,
+    "balance_minor": 120000,
+    "by_method": {
+     "min": 120000,
+     "fifo": 120000,
+     "pro_rata": 117187,
+     "max": 0
+    }
+   }
+  ]
+ },
+ "rules": [
+  {
+   "rule_id": "R1",
+   "name": "Rapid onward movement",
+   "version": 1,
+   "severity": "high",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "₹50,000 credited to ACC-100209 at 17:44 UTC.",
+     "source_ids": [
+      "TXN-4001679"
+     ]
+    },
+    {
+     "text": "TXN-4001680: ₹30,000 left ACC-100209 7.0 min later (cumulative 60% of the receipt).",
+     "source_ids": [
+      "TXN-4001680"
+     ]
+    },
+    {
+     "text": "TXN-4001681: ₹20,000 left ACC-100209 13.0 min later (cumulative 100% of the receipt).",
+     "source_ids": [
+      "TXN-4001681"
+     ]
+    },
+    {
+     "text": "Threshold met: ≥80% moved on within 60 min.",
+     "source_ids": []
+    }
+   ],
+   "source_ids": [
+    "TXN-4001679",
+    "TXN-4001680",
+    "TXN-4001681"
+   ],
+   "params": {
+    "window_minutes": 60,
+    "min_share": 0.8
+   },
+   "limitations": [
+    "Shows recorded onward transfers; whether they carried the disputed funds is given by attribution, not by timing."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Review attribution bounds and consider a hold on visible downstream accounts still holding funds.",
+   "evaluated_at": "2026-10-16T19:19:09.800872Z"
+  },
+  {
+   "rule_id": "R2",
+   "name": "Split into multiple transfers",
+   "version": 1,
+   "severity": "high",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "2 onward transfers to 2 distinct accounts within 120 min, totalling ₹50,000 (100% of the receipt).",
+     "source_ids": [
+      "TXN-4001680",
+      "TXN-4001681"
+     ]
+    }
+   ],
+   "source_ids": [
+    "TXN-4001679",
+    "TXN-4001680",
+    "TXN-4001681"
+   ],
+   "params": {
+    "window_minutes": 120,
+    "min_transfers": 2,
+    "min_destinations": 2,
+    "min_share": 0.8
+   },
+   "limitations": [
+    "Splitting is common in legitimate use (rent, bills); it is a pattern to review, not evidence of intent."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Check each destination account's ownership and whether destinations appear in other disputes.",
+   "evaluated_at": "2026-10-16T19:19:09.800872Z"
+  },
+  {
+   "rule_id": "R3",
+   "name": "Beneficiary linked to other disputes",
+   "version": 1,
+   "severity": "high",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "ACC-100209 is the beneficiary in 2 other dispute(s): CASE-24031, CASE-24038.",
+     "source_ids": [
+      "ACC-100209",
+      "TXN-4001646",
+      "TXN-4001660"
+     ]
+    }
+   ],
+   "source_ids": [
+    "ACC-100209",
+    "CASE-24031",
+    "CASE-24038"
+   ],
+   "params": {
+    "min_other_cases": 1,
+    "high_severity_cases": 2
+   },
+   "limitations": [
+    "Only disputes recorded in this system are compared; other banks' reports are not visible."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Open the linked cases and compare allegations; consider a coordinated hold request.",
+   "evaluated_at": "2026-10-16T19:19:09.800872Z"
+  },
+  {
+   "rule_id": "R4",
+   "name": "Failed logins before the transfer",
+   "version": 1,
+   "severity": "high",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "4 failed and 1 successful authentication events in the 30 min before the transfer.",
+     "source_ids": [
+      "AUTH-701256",
+      "AUTH-701257",
+      "AUTH-701258",
+      "AUTH-701259",
+      "AUTH-701260"
+     ]
+    },
+    {
+     "text": "Success at 17:36 followed 4 failures; the transfer followed 8.0 min later.",
+     "source_ids": [
+      "AUTH-701260",
+      "TXN-4001679"
+     ]
+    }
+   ],
+   "source_ids": [
+    "AUTH-701256",
+    "AUTH-701257",
+    "AUTH-701258",
+    "AUTH-701259",
+    "AUTH-701260",
+    "TXN-4001679"
+   ],
+   "params": {
+    "window_minutes": 30,
+    "min_failures": 3
+   },
+   "limitations": [
+    "Failed attempts can be the genuine customer mistyping; combine with device and location evidence."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Compare the device and IP of the successful login with the customer's usual devices.",
+   "evaluated_at": "2026-10-16T19:19:09.800872Z"
+  },
+  {
+   "rule_id": "R5",
+   "name": "New device",
+   "version": 1,
+   "severity": "medium",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "Device DEV-9071 was first used on ACC-100216 0.2 h before the disputed transfer (history checked: 180 days).",
+     "source_ids": [
+      "DEV-9071",
+      "TXN-4001679"
+     ]
+    }
+   ],
+   "source_ids": [
+    "TXN-4001679",
+    "DEV-9071",
+    "AUTH-701256",
+    "AUTH-701257",
+    "AUTH-701258"
+   ],
+   "params": {
+    "max_device_age_hours": 24,
+    "history_days": 180
+   },
+   "limitations": [
+    "Customers do change phones; a new device on the account is a signal, not proof of account takeover."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Ask the customer whether they registered a new device; check SIM-swap indicators with the telecom partner.",
+   "evaluated_at": "2026-10-16T19:19:09.800872Z"
+  },
+  {
+   "rule_id": "R6",
+   "name": "Unusual amount",
+   "version": 1,
+   "severity": "medium",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "Disputed amount ₹50,000 is 24.7× the payer's median debit of ₹2,025 over 14 debits in 90 days.",
+     "source_ids": [
+      "TXN-4001679"
+     ]
+    }
+   ],
+   "source_ids": [
+    "TXN-4001679"
+   ],
+   "params": {
+    "lookback_days": 90,
+    "min_history": 5,
+    "multiple": 5.0
+   },
+   "limitations": [
+    "Large one-off payments (deposits, purchases) are normal; baseline is this bank's records only."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Ask the customer about any expected large payments around this date.",
+   "evaluated_at": "2026-10-16T19:19:09.800872Z"
+  },
+  {
+   "rule_id": "R7",
+   "name": "Recently opened beneficiary",
+   "version": 1,
+   "severity": "medium",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "Beneficiary ACC-100209 was opened 8 day(s) before receiving the funds.",
+     "source_ids": [
+      "ACC-100209"
+     ]
+    }
+   ],
+   "source_ids": [
+    "ACC-100209",
+    "TXN-4001679"
+   ],
+   "params": {
+    "max_age_days": 30
+   },
+   "limitations": [
+    "New accounts are mostly legitimate; this matters in combination with rapid onward movement."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Review beneficiary KYC and recent inflow pattern.",
+   "evaluated_at": "2026-10-16T19:19:09.800872Z"
+  },
+  {
+   "rule_id": "R8",
+   "name": "Reversal then resend",
+   "version": 1,
+   "severity": "low",
+   "status": "not_triggered",
+   "facts": [
+    {
+     "text": "No reversal followed by a resend on the payer's account within ±24 h.",
+     "source_ids": []
+    }
+   ],
+   "source_ids": [],
+   "params": {
+    "window_hours": 24
+   },
+   "limitations": [
+    "Reversals happen for technical reasons; check the reversal reason codes."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Check reversal reason codes and whether the customer initiated the resend.",
+   "evaluated_at": "2026-10-16T19:19:09.800872Z"
+  },
+  {
+   "rule_id": "R9",
+   "name": "Evidence contradicts the ledger",
+   "version": 1,
+   "severity": "high",
+   "status": "not_evaluable",
+   "facts": [],
+   "source_ids": [],
+   "params": {},
+   "limitations": [
+    "Not evaluable: the data this rule needs is missing. This is not a negative finding."
+   ],
+   "missing_fields": [
+    "analysed customer evidence (receipt/screenshot/statement)"
+   ],
+   "suggested_step": "Ask the customer for the payment receipt or statement and analyse it.",
+   "evaluated_at": "2026-10-16T19:19:09.800872Z"
+  },
+  {
+   "rule_id": "R10",
+   "name": "Shared device",
+   "version": 1,
+   "severity": "medium",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "Device DEV-9071 is also used by 1 other account(s): ACC-100214.",
+     "source_ids": [
+      "DEV-9071",
+      "ACC-100214"
+     ]
+    }
+   ],
+   "source_ids": [
+    "DEV-9071",
+    "ACC-100214"
+   ],
+   "params": {
+    "min_other_accounts": 1
+   },
+   "limitations": [
+    "Family members legitimately share devices."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Check whether the other accounts belong to the same household or appear in disputes.",
+   "evaluated_at": "2026-10-16T19:19:09.800872Z"
+  },
+  {
+   "rule_id": "R11",
+   "name": "Funds left this bank",
+   "version": 1,
+   "severity": "medium",
+   "status": "triggered",
+   "facts": [
+    {
+     "text": "Between ₹20,000 and ₹20,000 of the disputed funds may have left to ACC-100211 (Other Bank A (synthetic)); this bank cannot see further.",
+     "source_ids": [
+      "ACC-100211",
+      "TXN-4001681"
+     ]
+    },
+    {
+     "text": "Between ₹9,800 and ₹12,000 of the disputed funds may have left to ACC-100212 (Other Bank B (synthetic)); this bank cannot see further.",
+     "source_ids": [
+      "ACC-100212",
+      "TXN-4001682"
+     ]
+    }
+   ],
+   "source_ids": [
+    "ACC-100211",
+    "TXN-4001681",
+    "ACC-100212",
+    "TXN-4001682"
+   ],
+   "params": {
+    "min_share": 0.1
+   },
+   "limitations": [
+    "Exits end this bank's visibility; the trail continues only with the receiving institution's records."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Send a trail and hold request to the receiving institution (via the national cyber-fraud reporting process).",
+   "evaluated_at": "2026-10-16T19:19:09.800872Z"
+  },
+  {
+   "rule_id": "R12",
+   "name": "Record inconsistency",
+   "version": 1,
+   "severity": "low",
+   "status": "not_triggered",
+   "facts": [
+    {
+     "text": "All 4 trail records have unique, consistent references.",
+     "source_ids": []
+    }
+   ],
+   "source_ids": [],
+   "params": {},
+   "limitations": [
+    "Missing references are often a data-feed issue, not fraud."
+   ],
+   "missing_fields": [],
+   "suggested_step": "Reconcile the records with the payment switch using amount, time and parties.",
+   "evaluated_at": "2026-10-16T19:19:09.800872Z"
+  }
+ ],
+ "rules_summary": {
+  "triggered": 9,
+  "not_triggered": 2,
+  "not_evaluable": 1,
+  "highest_severity": "high",
+  "by_severity": {
+   "high": 4,
+   "medium": 5,
+   "low": 0
+  }
+ },
+ "ruleset_version": "rules-a5223623eaeb",
+ "completeness": {
+  "present": 5,
+  "required": 8,
+  "ratio": 0.625,
+  "items": [
+   {
+    "key": "customer_allegation",
+    "label": "Customer's statement of the dispute",
+    "why_it_matters": "Defines what is being claimed; without it nothing can be tested.",
+    "required": true,
+    "status": "present",
+    "source_ids": []
+   },
+   {
+    "key": "disputed_txn_record",
+    "label": "Ledger record of the disputed transaction",
+    "why_it_matters": "The authoritative amount, time, parties and reference.",
+    "required": true,
+    "status": "present",
+    "source_ids": [
+     "TXN-4001679"
+    ]
+   },
+   {
+    "key": "auth_logs",
+    "label": "Authentication logs around the transfer",
+    "why_it_matters": "Shows how the session was authenticated (failed attempts, OTP, device).",
+    "required": true,
+    "status": "present",
+    "source_ids": []
+   },
+   {
+    "key": "device_record",
+    "label": "Device used for the transfer",
+    "why_it_matters": "Links the transfer to a known or new device.",
+    "required": true,
+    "status": "present",
+    "source_ids": [
+     "DEV-9071"
+    ]
+   },
+   {
+    "key": "customer_evidence",
+    "label": "Customer evidence (receipt, screenshot, statement)",
+    "why_it_matters": "Lets the customer's account be reconciled with the ledger.",
+    "required": true,
+    "status": "received_not_analysed",
+    "source_ids": [
+     "EV-CD9D4D5A"
+    ]
+   },
+   {
+    "key": "cyber_complaint_ack",
+    "label": "National cyber-fraud complaint acknowledgement",
+    "why_it_matters": "Needed to coordinate holds with other banks.",
+    "required": true,
+    "status": "missing",
+    "source_ids": []
+   },
+   {
+    "key": "beneficiary_kyc",
+    "label": "Beneficiary account details (KYC, opening date)",
+    "why_it_matters": "Mule indicators depend on who controls the beneficiary account.",
+    "required": true,
+    "status": "present",
+    "source_ids": [
+     "ACC-100209"
+    ]
+   },
+   {
+    "key": "receiving_bank_trail",
+    "label": "Trail from the receiving institution",
+    "why_it_matters": "This bank cannot see beyond an external transfer.",
+    "required": true,
+    "status": "missing",
+    "source_ids": []
+   }
+  ],
+  "note": "Missing evidence lowers completeness only. It is not evidence for or against the claim."
+ },
+ "consistency": {
+  "consistent": 2,
+  "contradictory": 0,
+  "unverifiable": 1,
+  "checks": [
+   {
+    "check": "Allegation amount vs ledger",
+    "result": "consistent",
+    "detail": "Statement mentions ₹50,000; ledger has ₹50,000.",
+    "source_ids": [
+     "TXN-4001679"
+    ]
+   },
+   {
+    "check": "Evidence EV-CD9D4D5A vs ledger",
+    "result": "unverifiable",
+    "detail": "Not analysed — the document has not been read.",
+    "source_ids": [
+     "EV-CD9D4D5A"
+    ]
+   },
+   {
+    "check": "Source systems agree",
+    "result": "consistent",
+    "detail": "2 source records agree on amount, currency and status (core:cbs-4001679, upi_switch:npci-sw-77120).",
+    "source_ids": [
+     "TXN-4001679"
+    ]
+   }
+  ]
+ },
+ "traceability": {
+  "coverage": {
+   "min": 1.0,
+   "fifo": 1.0,
+   "pro_rata": 1.0,
+   "max": 1.0
+  },
+  "coverage_range": [
+   1.0,
+   1.0
+  ],
+  "buckets": {
+   "min": {
+    "residual_in_visible_accounts": 2020000,
+    "left_visibility": 2980000,
+    "reached_merchant_or_hub": 0,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   },
+   "fifo": {
+    "residual_in_visible_accounts": 1944000,
+    "left_visibility": 3056000,
+    "reached_merchant_or_hub": 0,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   },
+   "pro_rata": {
+    "residual_in_visible_accounts": 1912802,
+    "left_visibility": 3087198,
+    "reached_merchant_or_hub": 0,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   },
+   "max": {
+    "residual_in_visible_accounts": 1800000,
+    "left_visibility": 3200000,
+    "reached_merchant_or_hub": 0,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   }
+  },
+  "endpoints": {
+   "visibility_ends": 2
+  },
+  "paths": 2,
+  "truncated": false,
+  "note": "Coverage is the share of the disputed amount whose position at window end is accounted for by visible records."
+ },
+ "policy": {
+  "category": "unauthorised_transfer",
+  "report_lag_working_days": 0,
+  "overall": "needs_information",
+  "clauses": [
+   {
+    "clause_id": "POL-IN-UET-3.1",
+    "policy_id": "POL-IN-UET",
+    "text": "Zero customer liability applies where the loss arises from bank-side deficiency, or from a third-party breach (neither bank nor customer at fault) reported within 3 working days of the bank's communication.",
+    "status": "conditions_met_needs_information",
+    "reasons": [
+     "reported 0 working day(s) after the transaction (limit ≤ 3)"
+    ],
+    "needs": [
+     "whether the breach was bank-side or third-party (not customer negligence)"
+    ]
+   },
+   {
+    "clause_id": "POL-IN-UET-3.2",
+    "policy_id": "POL-IN-UET",
+    "text": "Where a third-party breach is reported within 4 to 7 working days, customer liability is limited to the lower of the transaction value and the cap set in the bank's board-approved policy.",
+    "status": "not_applicable",
+    "reasons": [
+     "reported 0 working day(s) after the transaction (limit ≤ 7)",
+     "reported 0 working day(s) after the transaction (needs ≥ 4)"
+    ],
+    "needs": [
+     "whether the breach was third-party",
+     "account-type liability cap"
+    ]
+   },
+   {
+    "clause_id": "POL-IN-UET-3.3",
+    "policy_id": "POL-IN-UET",
+    "text": "Where the customer is found negligent (e.g. shared payment credentials), the customer bears the loss until reporting; losses after reporting are borne by the bank.",
+    "status": "needs_information",
+    "reasons": [],
+    "needs": [
+     "evidence of customer negligence, if alleged — this must be established, never assumed"
+    ]
+   }
+  ],
+  "note": "Eligibility is computed from dates and category only; facts in 'needs' must be established by the investigator."
+ },
+ "sla": {
+  "policy": "IN-UET",
+  "milestones": [
+   {
+    "key": "shadow_credit",
+    "label": "Shadow credit due",
+    "due_at": "2026-10-30T18:19:00Z",
+    "remaining_hours": 335.0,
+    "breached": false,
+    "clause_id": "POL-IN-UET-4.1"
+   },
+   {
+    "key": "resolution",
+    "label": "Resolution due",
+    "due_at": "2027-01-14T18:19:00Z",
+    "remaining_hours": 2159.0,
+    "breached": false,
+    "clause_id": "POL-IN-UET-4.2"
+   }
+  ],
+  "due_at": "2027-01-14T18:19:00Z",
+  "note": "SLA values come from configuration modelled on public guidance; verify before real use."
+ },
+ "computed_priority": {
+  "priority": "P1",
+  "reasons": [
+   "Material value: ₹50,000",
+   "High-severity signals: Rapid onward movement, Split into multiple transfers, Beneficiary linked to other disputes, Failed logins before the transfer",
+   "Golden hour: up to ₹19,000 may still be in visible accounts",
+   "Beneficiary appears in other disputes"
+  ]
+ },
+ "evidence": [
+  {
+   "id": "EV-CD9D4D5A",
+   "case_id": "CASE-24051",
+   "kind": "customer_upload",
+   "checklist_key": "customer_evidence",
+   "filename": "debit_alert_screenshot.png",
+   "mime": "image/png",
+   "sha256": "31dc4ff031cc8b8a7df663606ec57e4518e3bba94fb93475b3b4771d93756bf4",
+   "size": 64098,
+   "uploaded_by": "customer (synthetic)",
+   "uploaded_at": "2026-10-16T18:19:00Z",
+   "analysis_status": "not_analysed",
+   "analysis_note": null,
+   "extracted": null,
+   "reconciliation": null,
+   "is_synthetic": true
+  }
+ ],
+ "evidence_requests": [],
+ "holds": [],
+ "generated_at": "2026-10-16T19:19:09.800872Z",
+ "notes": [],
+ "latest_report": null,
+ "allowed_transitions": [
+  "escalated",
+  "investigating",
+  "triage"
+ ],
+ "can_edit": true
+}

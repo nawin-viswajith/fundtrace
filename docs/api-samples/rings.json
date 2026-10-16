@@ -1,0 +1,34 @@
+{
+ "rings": [
+  {
+   "accounts": [
+    "ACC-100209",
+    "ACC-100210"
+   ],
+   "cases": [
+    "CASE-24031",
+    "CASE-24038",
+    "CASE-24051"
+   ],
+   "hub_account": "ACC-100209",
+   "shared_devices": [
+    "DEV-9072"
+   ],
+   "transfers": [],
+   "disputed_amount_minor": 8700000,
+   "currency": "INR",
+   "edges": [
+    {
+     "source": "ACC-100209",
+     "target": "ACC-100210",
+     "kind": "shared_device",
+     "ref": "TXN-4001680"
+    }
+   ],
+   "signal": "2 accounts connected across 3 disputes"
+  }
+ ],
+ "cases_scanned": 11,
+ "accounts_in_trails": 5,
+ "note": "Connected accounts across disputes are a signal for coordinated review, not proof of a mule network."
+}

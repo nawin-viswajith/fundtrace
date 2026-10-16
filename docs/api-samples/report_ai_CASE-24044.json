@@ -1,0 +1,397 @@
+{
+ "id": "RPT-74088FFE",
+ "case_id": "CASE-24044",
+ "version": 1,
+ "status": "verified",
+ "generator": "fake-gemini",
+ "claims_total": 9,
+ "claims_supported": 9,
+ "claims_flagged": 0,
+ "hallucination_rate": 0.0,
+ "confidence": 1.0,
+ "review_status": "pending",
+ "created_at": "2026-10-16T19:19:12.485408Z",
+ "cost_usd": 0.006,
+ "trace_id": "26d837eb805a9a185bb80480c11f6e0f",
+ "sections": [
+  {
+   "key": "case_overview",
+   "title": "Case overview",
+   "claims": [
+    {
+     "text": "The disputed transfer TXN-4001695 of ₹40,000 went to ACC-100218.",
+     "citations": [
+      "TXN-4001695"
+     ],
+     "basis": "verified",
+     "id": "C01",
+     "section": "case_overview",
+     "issues": [],
+     "valid": true,
+     "verdict": "supported",
+     "verdict_reason": "matches record",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "known_facts",
+   "title": "Known facts",
+   "claims": [
+    {
+     "text": "The disputed transfer TXN-4001695 of ₹40,000 went to ACC-100218.",
+     "citations": [
+      "TXN-4001695"
+     ],
+     "basis": "verified",
+     "id": "C02",
+     "section": "known_facts",
+     "issues": [],
+     "valid": true,
+     "verdict": "supported",
+     "verdict_reason": "matches record",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "transaction_trail",
+   "title": "Transaction trail",
+   "claims": [
+    {
+     "text": "The disputed transfer TXN-4001695 of ₹40,000 went to ACC-100218.",
+     "citations": [
+      "TXN-4001695"
+     ],
+     "basis": "verified",
+     "id": "C03",
+     "section": "transaction_trail",
+     "issues": [],
+     "valid": true,
+     "verdict": "supported",
+     "verdict_reason": "matches record",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "risk_indicators",
+   "title": "Risk indicators",
+   "claims": [
+    {
+     "text": "The disputed transfer TXN-4001695 of ₹40,000 went to ACC-100218.",
+     "citations": [
+      "TXN-4001695"
+     ],
+     "basis": "verified",
+     "id": "C04",
+     "section": "risk_indicators",
+     "issues": [],
+     "valid": true,
+     "verdict": "supported",
+     "verdict_reason": "matches record",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "supporting_evidence",
+   "title": "Evidence supporting the claim",
+   "claims": [
+    {
+     "text": "The disputed transfer TXN-4001695 of ₹40,000 went to ACC-100218.",
+     "citations": [
+      "TXN-4001695"
+     ],
+     "basis": "verified",
+     "id": "C05",
+     "section": "supporting_evidence",
+     "issues": [],
+     "valid": true,
+     "verdict": "supported",
+     "verdict_reason": "matches record",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "contradicting_evidence",
+   "title": "Evidence that contradicts or does not establish the claim",
+   "claims": [
+    {
+     "text": "The disputed transfer TXN-4001695 of ₹40,000 went to ACC-100218.",
+     "citations": [
+      "TXN-4001695"
+     ],
+     "basis": "verified",
+     "id": "C06",
+     "section": "contradicting_evidence",
+     "issues": [],
+     "valid": true,
+     "verdict": "supported",
+     "verdict_reason": "matches record",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "missing_information",
+   "title": "Missing information",
+   "claims": [
+    {
+     "text": "The disputed transfer TXN-4001695 of ₹40,000 went to ACC-100218.",
+     "citations": [
+      "TXN-4001695"
+     ],
+     "basis": "verified",
+     "id": "C07",
+     "section": "missing_information",
+     "issues": [],
+     "valid": true,
+     "verdict": "supported",
+     "verdict_reason": "matches record",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "next_actions",
+   "title": "Recommended next actions",
+   "claims": [
+    {
+     "text": "The disputed transfer TXN-4001695 of ₹40,000 went to ACC-100218.",
+     "citations": [
+      "TXN-4001695"
+     ],
+     "basis": "verified",
+     "id": "C08",
+     "section": "next_actions",
+     "issues": [],
+     "valid": true,
+     "verdict": "supported",
+     "verdict_reason": "matches record",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "limitations",
+   "title": "Limitations and uncertainty",
+   "claims": [
+    {
+     "text": "The disputed transfer TXN-4001695 of ₹40,000 went to ACC-100218.",
+     "citations": [
+      "TXN-4001695"
+     ],
+     "basis": "verified",
+     "id": "C09",
+     "section": "limitations",
+     "issues": [],
+     "valid": true,
+     "verdict": "supported",
+     "verdict_reason": "matches record",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  }
+ ],
+ "recommended_actions": [
+  {
+   "action_type": "human_review",
+   "target_id": "TXN-4001695",
+   "description": "Review",
+   "citations": [
+    "TXN-4001695"
+   ]
+  }
+ ],
+ "metrics": {
+  "claims_total": 9,
+  "claims_supported": 9,
+  "claims_partial": 0,
+  "claims_flagged": 0,
+  "claims_unjudged": 0,
+  "hallucinated_claims": 0,
+  "verdicts": {
+   "supported": 9,
+   "partial": 0,
+   "unsupported": 0,
+   "contradicted": 0,
+   "unjudged": 0,
+   "system_generated": 0
+  },
+  "hallucination_rate": 0.0,
+  "confidence": 1.0,
+  "confidence_note": "Share of claims that passed deterministic checks and were judged supported (partial counts half). Unjudged claims do not count as supported.",
+  "by_basis": {
+   "verified": 9,
+   "derived": 0,
+   "inferred": 0,
+   "unknown": 0
+  },
+  "validation_passed": true,
+  "missing_sections": [],
+  "action_issues": [],
+  "draft_attempts": 2,
+  "judge_status": "ok",
+  "ai_calls": 6,
+  "input_tokens": 6000,
+  "output_tokens": 1800,
+  "cost_usd": 0.006,
+  "ai_latency_ms": 30,
+  "tool_calls": 4,
+  "notes": []
+ },
+ "snapshot_hash": "ae193d2d2c9045c1a760de6d190b8f90af69c3463a2af6a07f2eae7171fc485b",
+ "review": null,
+ "trace_url": null,
+ "records": {
+  "TXN-4001695": {
+   "type": "transaction",
+   "provenance": "confirmed (ledger record)",
+   "amount": "₹40,000",
+   "status": "posted",
+   "channel": "UPI",
+   "reference": "628900083317",
+   "from_account": "ACC-100217",
+   "to_account": "ACC-100218",
+   "time_utc": "14 Oct 2026 16:19 UTC",
+   "time_ist": "14 Oct 2026 21:49 IST",
+   "role": "disputed",
+   "source_record": "core:cbs-4001695"
+  }
+ },
+ "run": {
+  "id": "RUN-19AC8E7424",
+  "status": "awaiting_review",
+  "steps": [
+   {
+    "node": "gather",
+    "status": "ok",
+    "ms": 14,
+    "records": 41,
+    "snapshot_hash": "7304eb6be186"
+   },
+   {
+    "node": "explore",
+    "status": "ok",
+    "ms": 2,
+    "tool_calls": 4,
+    "new_records": 0
+   },
+   {
+    "node": "evidence",
+    "status": "ok",
+    "ms": 1693,
+    "analysed": 1,
+    "not_analysed": 0
+   },
+   {
+    "node": "draft",
+    "status": "ok",
+    "ms": 1,
+    "attempt": 1,
+    "model": "fake-gemini"
+   },
+   {
+    "node": "validate",
+    "status": "flags",
+    "ms": 0,
+    "claims": 10,
+    "errors": 1
+   },
+   {
+    "node": "draft",
+    "status": "ok",
+    "ms": 1,
+    "attempt": 2,
+    "model": "fake-gemini"
+   },
+   {
+    "node": "validate",
+    "status": "passed",
+    "ms": 0,
+    "claims": 9,
+    "errors": 0
+   },
+   {
+    "node": "judge",
+    "status": "ok",
+    "ms": 0,
+    "judged": 9,
+    "model": "fake-gemini"
+   },
+   {
+    "node": "finalize",
+    "status": "ok",
+    "ms": 2,
+    "report_id": "RPT-74088FFE",
+    "report_status": "verified"
+   }
+  ],
+  "tool_log": [
+   {
+    "tool": "linked_cases",
+    "target_id": "ACC-100218",
+    "reason": "beneficiary in other disputes?",
+    "status": "ok",
+    "new_records": 0,
+    "record_ids": [],
+    "ms": 0,
+    "round": 1
+   },
+   {
+    "tool": "expand_account",
+    "target_id": "ACC-NOT-REAL",
+    "reason": "probe",
+    "status": "rejected",
+    "new_records": 0,
+    "detail": "target must be a account id present in the snapshot",
+    "round": 1
+   },
+   {
+    "tool": "linked_cases",
+    "target_id": "ACC-100218",
+    "reason": "beneficiary in other disputes?",
+    "status": "ok",
+    "new_records": 0,
+    "record_ids": [],
+    "ms": 0,
+    "round": 2
+   },
+   {
+    "tool": "expand_account",
+    "target_id": "ACC-NOT-REAL",
+    "reason": "probe",
+    "status": "rejected",
+    "new_records": 0,
+    "detail": "target must be a account id present in the snapshot",
+    "round": 2
+   }
+  ],
+  "models": [
+   "fake-gemini"
+  ],
+  "prompt_versions": {
+   "report": "report-v3",
+   "judge": "judge-v2",
+   "explore": "explore-v2",
+   "evidence": "evidence-v2"
+  },
+  "ruleset_version": "rules-a5223623eaeb",
+  "input_tokens": 6000,
+  "output_tokens": 1800,
+  "cost_usd": 0.006,
+  "latency_ms": 1734,
+  "started_at": "2026-10-16T19:19:10.753805Z"
+ }
+}

@@ -13,14 +13,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app import models as m
-from app.seed.synthetic import build
 from app.services.investigation import build_context
 
 
 def evaluate_deterministic(db: Session, truth: dict | None = None) -> dict:
     if truth is None:
-        anchor = db.scalar(select(m.DisputeCase.reported_at).order_by(m.DisputeCase.reported_at.desc()).limit(1))
-        truth = build(anchor).truth if anchor else {}
+        gt = db.scalar(select(m.EvalRun).where(m.EvalRun.kind == "ground_truth").order_by(m.EvalRun.id.desc()).limit(1))
+        truth = gt.details[0] if gt and gt.details else {}
     details, checks, passed = [], 0, 0
     rule_tp = rule_fp = rule_fn = 0
     for scenario, tr in truth.items():

@@ -100,6 +100,7 @@ def seed(db: Session, anchor: datetime | None = None) -> dict:
         audit.record(db, ev["case_id"], "system", "system", "evidence_received", {"evidence_id": eid, "filename": ev["filename"], "sha256": sha256(data)})
     db.flush()
 
+    db.add(m.EvalRun(kind="ground_truth", metrics={"anchor": ds.anchor.isoformat() + "Z"}, details=[ds.truth]))
     refresh_case_assessments(db)
     log.info("Seeded synthetic data: %s transactions (%s merged, %s rejected), %s cases", report.transactions,
              len(report.merged), len(report.rejected), len(ds.cases))

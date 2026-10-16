@@ -1,0 +1,218 @@
+{
+ "rules": [
+  {
+   "rule_id": "R1",
+   "name": "Rapid onward movement",
+   "description": "Most of the received amount leaves the beneficiary quickly.",
+   "severity": "high",
+   "version": 1,
+   "params": {
+    "window_minutes": 60,
+    "min_share": 0.8
+   },
+   "default_params": {
+    "window_minutes": 60,
+    "min_share": 0.8
+   },
+   "enabled": true,
+   "needs": [
+    "beneficiary outgoing transfers"
+   ]
+  },
+  {
+   "rule_id": "R2",
+   "name": "Split into multiple transfers",
+   "description": "Receipt is split into several transfers to different accounts.",
+   "severity": "high",
+   "version": 1,
+   "params": {
+    "window_minutes": 120,
+    "min_transfers": 2,
+    "min_destinations": 2,
+    "min_share": 0.8
+   },
+   "default_params": {
+    "window_minutes": 120,
+    "min_transfers": 2,
+    "min_destinations": 2,
+    "min_share": 0.8
+   },
+   "enabled": true,
+   "needs": [
+    "beneficiary outgoing transfers"
+   ]
+  },
+  {
+   "rule_id": "R3",
+   "name": "Beneficiary linked to other disputes",
+   "description": "An account on the trail is the beneficiary in other disputes.",
+   "severity": "medium",
+   "version": 1,
+   "params": {
+    "min_other_cases": 1,
+    "high_severity_cases": 2
+   },
+   "default_params": {
+    "min_other_cases": 1,
+    "high_severity_cases": 2
+   },
+   "enabled": true,
+   "needs": [
+    "case links"
+   ]
+  },
+  {
+   "rule_id": "R4",
+   "name": "Failed logins before the transfer",
+   "description": "Repeated failed authentication, then success, then the transfer.",
+   "severity": "high",
+   "version": 1,
+   "params": {
+    "window_minutes": 30,
+    "min_failures": 3
+   },
+   "default_params": {
+    "window_minutes": 30,
+    "min_failures": 3
+   },
+   "enabled": true,
+   "needs": [
+    "authentication events"
+   ]
+  },
+  {
+   "rule_id": "R5",
+   "name": "New device",
+   "description": "The transfer was made from a recently first-seen device.",
+   "severity": "medium",
+   "version": 1,
+   "params": {
+    "max_device_age_hours": 24,
+    "history_days": 180
+   },
+   "default_params": {
+    "max_device_age_hours": 24,
+    "history_days": 180
+   },
+   "enabled": true,
+   "needs": [
+    "device history"
+   ]
+  },
+  {
+   "rule_id": "R6",
+   "name": "Unusual amount",
+   "description": "Amount is far above the payer's usual debits.",
+   "severity": "medium",
+   "version": 1,
+   "params": {
+    "lookback_days": 90,
+    "min_history": 5,
+    "multiple": 5.0
+   },
+   "default_params": {
+    "lookback_days": 90,
+    "min_history": 5,
+    "multiple": 5.0
+   },
+   "enabled": true,
+   "needs": [
+    "payer debit history"
+   ]
+  },
+  {
+   "rule_id": "R7",
+   "name": "Recently opened beneficiary",
+   "description": "Beneficiary account was opened shortly before receiving funds.",
+   "severity": "medium",
+   "version": 1,
+   "params": {
+    "max_age_days": 30
+   },
+   "default_params": {
+    "max_age_days": 30
+   },
+   "enabled": true,
+   "needs": [
+    "beneficiary opening date"
+   ]
+  },
+  {
+   "rule_id": "R8",
+   "name": "Reversal then resend",
+   "description": "A reversed transfer is followed by a new transfer.",
+   "severity": "low",
+   "version": 1,
+   "params": {
+    "window_hours": 24
+   },
+   "default_params": {
+    "window_hours": 24
+   },
+   "enabled": true,
+   "needs": [
+    "transaction status history"
+   ]
+  },
+  {
+   "rule_id": "R9",
+   "name": "Evidence contradicts the ledger",
+   "description": "Customer evidence differs from the bank's record.",
+   "severity": "high",
+   "version": 1,
+   "params": {},
+   "default_params": {},
+   "enabled": true,
+   "needs": [
+    "analysed evidence"
+   ]
+  },
+  {
+   "rule_id": "R10",
+   "name": "Shared device",
+   "description": "The session device is used by other accounts.",
+   "severity": "medium",
+   "version": 1,
+   "params": {
+    "min_other_accounts": 1
+   },
+   "default_params": {
+    "min_other_accounts": 1
+   },
+   "enabled": true,
+   "needs": [
+    "device links"
+   ]
+  },
+  {
+   "rule_id": "R11",
+   "name": "Funds left this bank",
+   "description": "Disputed funds may have moved to another institution.",
+   "severity": "medium",
+   "version": 1,
+   "params": {
+    "min_share": 0.1
+   },
+   "default_params": {
+    "min_share": 0.1
+   },
+   "enabled": true,
+   "needs": [
+    "attribution"
+   ]
+  },
+  {
+   "rule_id": "R12",
+   "name": "Record inconsistency",
+   "description": "Missing or conflicting payment references on the trail.",
+   "severity": "low",
+   "version": 1,
+   "params": {},
+   "default_params": {},
+   "enabled": true,
+   "needs": [
+    "transaction references"
+   ]
+  }
+ ]
+}

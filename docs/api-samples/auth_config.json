@@ -1,0 +1,24 @@
+{
+ "demo": true,
+ "demo_users": [
+  {
+   "username": "inv.asha",
+   "role": "investigator"
+  },
+  {
+   "username": "inv.ravi",
+   "role": "investigator"
+  },
+  {
+   "username": "sup.meera",
+   "role": "supervisor"
+  },
+  {
+   "username": "admin",
+   "role": "admin"
+  }
+ ],
+ "demo_password": "Investigate@2026",
+ "firebase_enabled": false,
+ "synthetic_data": true
+}

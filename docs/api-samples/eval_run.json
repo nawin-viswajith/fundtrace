@@ -1,0 +1,584 @@
+{
+ "id": 1,
+ "metrics": {
+  "deterministic": {
+   "checks": 94,
+   "passed": 92,
+   "pass_rate": 0.9787,
+   "rule_precision": 1.0,
+   "rule_recall": 1.0
+  },
+  "ai": {
+   "reports": 1,
+   "claims_total": 9,
+   "claims_supported": 9,
+   "claims_flagged": 0,
+   "mean_hallucination_rate": 0.0,
+   "mean_confidence": 1.0,
+   "calls": 6,
+   "call_error_rate": 0.0,
+   "p50_latency_ms": 5,
+   "total_cost_usd": 0.006
+  }
+ },
+ "details": [
+  {
+   "scenario": "S1",
+   "case_id": "CASE-24051",
+   "checks": [
+    {
+     "check": "R1 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R2 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R3 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R4 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R5 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R6 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R7 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R10 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R11 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R8 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R12 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R9 not evaluable (missing data)",
+     "passed": true,
+     "detail": "not_evaluable"
+    },
+    {
+     "check": "endpoint ACC-100211 = visibility_ends",
+     "passed": true,
+     "detail": "visibility_ends"
+    },
+    {
+     "check": "endpoint ACC-100212 = visibility_ends",
+     "passed": true,
+     "detail": "visibility_ends"
+    },
+    {
+     "check": "attribution bounds TXN-4001679",
+     "passed": false,
+     "detail": "min=None max=None"
+    },
+    {
+     "check": "money conserved (min)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (fifo)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (pro_rata)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (max)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "hold candidate ACC-100210",
+     "passed": true,
+     "detail": ""
+    }
+   ],
+   "passed": 19,
+   "total": 20
+  },
+  {
+   "scenario": "S2",
+   "case_id": "CASE-24044",
+   "checks": [
+    {
+     "check": "R11 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "attribution bounds TXN-4001696",
+     "passed": false,
+     "detail": "min=None max=None"
+    },
+    {
+     "check": "money conserved (min)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (fifo)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (pro_rata)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (max)",
+     "passed": true,
+     "detail": "0"
+    }
+   ],
+   "passed": 5,
+   "total": 6
+  },
+  {
+   "scenario": "S3a",
+   "case_id": "CASE-24031",
+   "checks": [
+    {
+     "check": "R1 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R3 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R4 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R5 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R7 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "money conserved (min)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (fifo)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (pro_rata)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (max)",
+     "passed": true,
+     "detail": "0"
+    }
+   ],
+   "passed": 9,
+   "total": 9
+  },
+  {
+   "scenario": "S3b",
+   "case_id": "CASE-24038",
+   "checks": [
+    {
+     "check": "R1 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R3 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "R7 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "money conserved (min)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (fifo)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (pro_rata)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (max)",
+     "passed": true,
+     "detail": "0"
+    }
+   ],
+   "passed": 7,
+   "total": 7
+  },
+  {
+   "scenario": "S4",
+   "case_id": "CASE-24047",
+   "checks": [
+    {
+     "check": "R4 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R5 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R11 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R1 not evaluable (missing data)",
+     "passed": true,
+     "detail": "not_evaluable"
+    },
+    {
+     "check": "R2 not evaluable (missing data)",
+     "passed": true,
+     "detail": "not_evaluable"
+    },
+    {
+     "check": "endpoint ACC-100111 = merchant",
+     "passed": true,
+     "detail": "merchant"
+    },
+    {
+     "check": "money conserved (min)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (fifo)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (pro_rata)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (max)",
+     "passed": true,
+     "detail": "0"
+    }
+   ],
+   "passed": 10,
+   "total": 10
+  },
+  {
+   "scenario": "S5",
+   "case_id": "CASE-24042",
+   "checks": [
+    {
+     "check": "R8 triggers",
+     "passed": true,
+     "detail": "triggered"
+    },
+    {
+     "check": "money conserved (min)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (fifo)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (pro_rata)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (max)",
+     "passed": true,
+     "detail": "0"
+    }
+   ],
+   "passed": 5,
+   "total": 5
+  },
+  {
+   "scenario": "S6",
+   "case_id": "CASE-24039",
+   "checks": [
+    {
+     "check": "endpoint ACC-100224 = cycle",
+     "passed": true,
+     "detail": "cycle"
+    },
+    {
+     "check": "money conserved (min)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (fifo)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (pro_rata)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (max)",
+     "passed": true,
+     "detail": "0"
+    }
+   ],
+   "passed": 5,
+   "total": 5
+  },
+  {
+   "scenario": "S7",
+   "case_id": "CASE-24049",
+   "checks": [
+    {
+     "check": "money conserved (min)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (fifo)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (pro_rata)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (max)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "contradiction detected",
+     "passed": true,
+     "detail": ""
+    }
+   ],
+   "passed": 5,
+   "total": 5
+  },
+  {
+   "scenario": "S8",
+   "case_id": "CASE-24033",
+   "checks": [
+    {
+     "check": "R3 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R4 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R5 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R6 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R7 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R8 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R10 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R11 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R12 does not trigger",
+     "passed": true,
+     "detail": "not_triggered"
+    },
+    {
+     "check": "R1 not evaluable (missing data)",
+     "passed": true,
+     "detail": "not_evaluable"
+    },
+    {
+     "check": "R2 not evaluable (missing data)",
+     "passed": true,
+     "detail": "not_evaluable"
+    },
+    {
+     "check": "money conserved (min)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (fifo)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (pro_rata)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (max)",
+     "passed": true,
+     "detail": "0"
+    }
+   ],
+   "passed": 15,
+   "total": 15
+  },
+  {
+   "scenario": "S9",
+   "case_id": "CASE-24027",
+   "checks": [
+    {
+     "check": "R4 not evaluable (missing data)",
+     "passed": true,
+     "detail": "not_evaluable"
+    },
+    {
+     "check": "R5 not evaluable (missing data)",
+     "passed": true,
+     "detail": "not_evaluable"
+    },
+    {
+     "check": "money conserved (min)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (fifo)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (pro_rata)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (max)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "policy eligibility",
+     "passed": true,
+     "detail": "needs_information"
+    }
+   ],
+   "passed": 7,
+   "total": 7
+  },
+  {
+   "scenario": "S10",
+   "case_id": "CASE-24045",
+   "checks": [
+    {
+     "check": "money conserved (min)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (fifo)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (pro_rata)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "money conserved (max)",
+     "passed": true,
+     "detail": "0"
+    },
+    {
+     "check": "source discrepancy detected",
+     "passed": true,
+     "detail": ""
+    }
+   ],
+   "passed": 5,
+   "total": 5
+  }
+ ]
+}

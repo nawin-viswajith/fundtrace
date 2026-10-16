@@ -1,0 +1,133 @@
+{
+ "evidence": [
+  {
+   "id": "EV-CD9D4D5A",
+   "case_id": "CASE-24051",
+   "kind": "customer_upload",
+   "checklist_key": "customer_evidence",
+   "filename": "debit_alert_screenshot.png",
+   "mime": "image/png",
+   "sha256": "31dc4ff031cc8b8a7df663606ec57e4518e3bba94fb93475b3b4771d93756bf4",
+   "size": 64098,
+   "uploaded_by": "customer (synthetic)",
+   "uploaded_at": "2026-10-16T18:19:00Z",
+   "analysis_status": "not_analysed",
+   "analysis_note": null,
+   "extracted": null,
+   "reconciliation": null,
+   "is_synthetic": true
+  }
+ ],
+ "checklist": {
+  "present": 5,
+  "required": 8,
+  "ratio": 0.625,
+  "items": [
+   {
+    "key": "customer_allegation",
+    "label": "Customer's statement of the dispute",
+    "why_it_matters": "Defines what is being claimed; without it nothing can be tested.",
+    "required": true,
+    "status": "present",
+    "source_ids": []
+   },
+   {
+    "key": "disputed_txn_record",
+    "label": "Ledger record of the disputed transaction",
+    "why_it_matters": "The authoritative amount, time, parties and reference.",
+    "required": true,
+    "status": "present",
+    "source_ids": [
+     "TXN-4001679"
+    ]
+   },
+   {
+    "key": "auth_logs",
+    "label": "Authentication logs around the transfer",
+    "why_it_matters": "Shows how the session was authenticated (failed attempts, OTP, device).",
+    "required": true,
+    "status": "present",
+    "source_ids": []
+   },
+   {
+    "key": "device_record",
+    "label": "Device used for the transfer",
+    "why_it_matters": "Links the transfer to a known or new device.",
+    "required": true,
+    "status": "present",
+    "source_ids": [
+     "DEV-9071"
+    ]
+   },
+   {
+    "key": "customer_evidence",
+    "label": "Customer evidence (receipt, screenshot, statement)",
+    "why_it_matters": "Lets the customer's account be reconciled with the ledger.",
+    "required": true,
+    "status": "received_not_analysed",
+    "source_ids": [
+     "EV-CD9D4D5A"
+    ]
+   },
+   {
+    "key": "cyber_complaint_ack",
+    "label": "National cyber-fraud complaint acknowledgement",
+    "why_it_matters": "Needed to coordinate holds with other banks.",
+    "required": true,
+    "status": "missing",
+    "source_ids": []
+   },
+   {
+    "key": "beneficiary_kyc",
+    "label": "Beneficiary account details (KYC, opening date)",
+    "why_it_matters": "Mule indicators depend on who controls the beneficiary account.",
+    "required": true,
+    "status": "present",
+    "source_ids": [
+     "ACC-100209"
+    ]
+   },
+   {
+    "key": "receiving_bank_trail",
+    "label": "Trail from the receiving institution",
+    "why_it_matters": "This bank cannot see beyond an external transfer.",
+    "required": true,
+    "status": "missing",
+    "source_ids": []
+   }
+  ],
+  "note": "Missing evidence lowers completeness only. It is not evidence for or against the claim."
+ },
+ "requests": [],
+ "consistency": {
+  "consistent": 2,
+  "contradictory": 0,
+  "unverifiable": 1,
+  "checks": [
+   {
+    "check": "Allegation amount vs ledger",
+    "result": "consistent",
+    "detail": "Statement mentions ₹50,000; ledger has ₹50,000.",
+    "source_ids": [
+     "TXN-4001679"
+    ]
+   },
+   {
+    "check": "Evidence EV-CD9D4D5A vs ledger",
+    "result": "unverifiable",
+    "detail": "Not analysed — the document has not been read.",
+    "source_ids": [
+     "EV-CD9D4D5A"
+    ]
+   },
+   {
+    "check": "Source systems agree",
+    "result": "consistent",
+    "detail": "2 source records agree on amount, currency and status (core:cbs-4001679, upi_switch:npci-sw-77120).",
+    "source_ids": [
+     "TXN-4001679"
+    ]
+   }
+  ]
+ }
+}

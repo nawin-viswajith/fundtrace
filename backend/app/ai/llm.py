@@ -61,6 +61,9 @@ class Gateway(Protocol):
 
 
 def _record(res: LLMResult, node: str, prompt_version: str, case_id: str | None, run_id: str | None, db=None) -> None:
+    log.info("ai_call", extra={"fields": {"event": "ai_call", "node": node, "model": res.model, "status": res.status,
+                                          "input_tokens": res.input_tokens, "output_tokens": res.output_tokens + res.thinking_tokens,
+                                          "cost_usd": res.cost_usd, "latency_ms": res.latency_ms, "prompt_version": prompt_version}})
     try:
         if db is not None:
             db.add(_call_row(res, node, prompt_version, case_id, run_id))

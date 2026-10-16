@@ -1,0 +1,241 @@
+{
+ "graph": {
+  "root_txn_id": "TXN-4001710",
+  "params": {
+   "direction": "forward",
+   "depth": 3,
+   "window_hours": 72,
+   "max_nodes": 150,
+   "hub_threshold": 25
+  },
+  "window": {
+   "start": "2026-10-14T07:19:00Z",
+   "end": "2026-10-17T07:19:00Z"
+  },
+  "nodes": [
+   {
+    "id": "ACC-100220",
+    "type": "account",
+    "label": "Arjun M savings (synthetic)",
+    "provenance": "confirmed",
+    "source_ids": [
+     "ACC-100220"
+    ],
+    "depth": 0,
+    "roles": [
+     "payer"
+    ],
+    "endpoint": null,
+    "endpoint_reason": null,
+    "data": {
+     "masked_number": "XXXX6911",
+     "institution": "FundTrace Demo Bank (synthetic)",
+     "external": false,
+     "kind": "savings",
+     "opened_at": "2021-11-11T19:19:00Z",
+     "currency": "INR"
+    }
+   },
+   {
+    "id": "ACC-100111",
+    "type": "account",
+    "label": "QuickMart marketplace settlement (synthetic)",
+    "provenance": "confirmed",
+    "source_ids": [
+     "ACC-100111"
+    ],
+    "depth": 1,
+    "roles": [
+     "beneficiary"
+    ],
+    "endpoint": "merchant",
+    "endpoint_reason": "Merchant/business account — payment reached a business; its settlements are not followed by default",
+    "data": {
+     "masked_number": "XXXX4931",
+     "institution": "FundTrace Demo Bank (synthetic)",
+     "external": false,
+     "kind": "merchant",
+     "opened_at": "2019-12-12T19:19:00Z",
+     "currency": "INR",
+     "outgoing_in_window": 59
+    },
+    "expandable": true
+   },
+   {
+    "id": "TXN-4001710",
+    "type": "transaction",
+    "label": "₹12,500 · UPI",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001710",
+     "core:cbs-4001710"
+    ],
+    "depth": 0,
+    "direction": "root",
+    "time": "2026-10-14T07:19:00Z",
+    "data": {
+     "amount_minor": 1250000,
+     "currency": "INR",
+     "status": "posted",
+     "channel": "UPI",
+     "reference": "628900084128",
+     "reference_missing": false,
+     "occurred_at": "2026-10-14T07:19:00Z",
+     "posted_at": "2026-10-14T07:19:04Z",
+     "debit_account_id": "ACC-100220",
+     "credit_account_id": "ACC-100111",
+     "reversal_of_id": null,
+     "device_id": "DEV-9077",
+     "source_system": "core",
+     "source_record_id": "cbs-4001710",
+     "narrative": "QuickMart order"
+    },
+    "roles": [
+     "disputed"
+    ]
+   },
+   {
+    "id": "EV-A813E6B2",
+    "type": "evidence",
+    "label": "order_confirmation.txt",
+    "provenance": "unknown",
+    "source_ids": [
+     "EV-A813E6B2"
+    ],
+    "depth": 0,
+    "roles": [
+     "evidence"
+    ],
+    "endpoint": null,
+    "data": {
+     "kind": "customer_upload",
+     "analysis_status": "not_analysed",
+     "sha256": "ea6114b9a0a0978ff180ad2710f48760c9dc3073a1b61a531d5350eca8853833",
+     "checks": null,
+     "summary": null
+    }
+   }
+  ],
+  "edges": [
+   {
+    "id": "sent:ACC-100220->TXN-4001710",
+    "source": "ACC-100220",
+    "target": "TXN-4001710",
+    "type": "sent",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001710"
+    ],
+    "time": "2026-10-14T07:19:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "received_by:TXN-4001710->ACC-100111",
+    "source": "TXN-4001710",
+    "target": "ACC-100111",
+    "type": "received_by",
+    "provenance": "confirmed",
+    "source_ids": [
+     "TXN-4001710"
+    ],
+    "time": "2026-10-14T07:19:00Z",
+    "label": null,
+    "data": {}
+   },
+   {
+    "id": "relates_to:EV-A813E6B2->TXN-4001710",
+    "source": "EV-A813E6B2",
+    "target": "TXN-4001710",
+    "type": "relates_to",
+    "provenance": "unknown",
+    "source_ids": [
+     "EV-A813E6B2",
+     "TXN-4001710"
+    ],
+    "time": null,
+    "label": "not analysed",
+    "data": {}
+   }
+  ],
+  "paths": [
+   {
+    "endpoint_account_id": "ACC-100111",
+    "endpoint": "merchant",
+    "txn_ids": [
+     "TXN-4001710"
+    ],
+    "provenance": "confirmed",
+    "note": "Each hop is a recorded transfer. Whether these hops carried the disputed funds is shown by attribution, not by the path itself."
+   }
+  ],
+  "cycles": [],
+  "truncated": false,
+  "warnings": [],
+  "stats": {
+   "nodes": 4,
+   "edges": 3,
+   "transactions": 1,
+   "accounts": 2,
+   "endpoints": 1
+  }
+ },
+ "attribution": {
+  "disputed_txn_id": "TXN-4001710",
+  "disputed_amount_minor": 1250000,
+  "currency": "INR",
+  "methods": {
+   "min": "Lower bound (clean funds spent first; lowest intermediate balance)",
+   "fifo": "First in, first out",
+   "pro_rata": "Pro-rata (proportional mix)",
+   "max": "Upper bound (disputed funds spent first)"
+  },
+  "per_transaction": {},
+  "per_account": {},
+  "buckets": {
+   "min": {
+    "residual_in_visible_accounts": 0,
+    "left_visibility": 0,
+    "reached_merchant_or_hub": 1250000,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   },
+   "fifo": {
+    "residual_in_visible_accounts": 0,
+    "left_visibility": 0,
+    "reached_merchant_or_hub": 1250000,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   },
+   "pro_rata": {
+    "residual_in_visible_accounts": 0,
+    "left_visibility": 0,
+    "reached_merchant_or_hub": 1250000,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   },
+   "max": {
+    "residual_in_visible_accounts": 0,
+    "left_visibility": 0,
+    "reached_merchant_or_hub": 1250000,
+    "returned_to_payer": 0,
+    "beyond_trace_limits": 0,
+    "unaccounted": 0
+   }
+  },
+  "coverage": {
+   "min": 1.0,
+   "fifo": 1.0,
+   "pro_rata": 1.0,
+   "max": 1.0
+  },
+  "warnings": [],
+  "caveat": "Attribution is balance arithmetic over recorded transactions. A positive lower bound means the ledger forces at least that much to be the disputed funds; the upper bound means it is possible, not established. It does not show who controlled the funds or why they moved.",
+  "evaluable": true,
+  "exits": {},
+  "holdable": []
+ }
+}

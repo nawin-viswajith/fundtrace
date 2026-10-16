@@ -1,0 +1,68 @@
+{
+ "statuses": [
+  "new",
+  "triage",
+  "investigating",
+  "awaiting_evidence",
+  "ready_for_review",
+  "escalated",
+  "resolved"
+ ],
+ "status_labels": {
+  "new": "New",
+  "triage": "Triage",
+  "investigating": "Investigating",
+  "awaiting_evidence": "Awaiting evidence",
+  "ready_for_review": "Ready for review",
+  "escalated": "Escalated",
+  "resolved": "Resolved"
+ },
+ "categories": {
+  "unauthorised_transfer": "Unauthorised transfer",
+  "account_takeover": "Account takeover",
+  "app_scam": "Authorised push-payment scam",
+  "card_not_present": "Card-not-present fraud",
+  "merchant_dispute": "Merchant dispute",
+  "processing_error": "Processing error / duplicate debit"
+ },
+ "decisions": {
+  "uphold_claim": "Uphold claim",
+  "partial": "Partially uphold",
+  "decline_claim": "Decline claim",
+  "refer": "Refer / escalate"
+ },
+ "graph_relations": [
+  "contradicts",
+  "possible_onward_funding",
+  "received_by",
+  "relates_to",
+  "reversal_of",
+  "sent",
+  "supports"
+ ],
+ "assignees": [
+  {
+   "id": 1,
+   "username": "inv.asha",
+   "full_name": "Asha Raman (synthetic)",
+   "role": "investigator"
+  },
+  {
+   "id": 2,
+   "username": "inv.ravi",
+   "full_name": "Ravi Kumar (synthetic)",
+   "role": "investigator"
+  },
+  {
+   "id": 3,
+   "username": "sup.meera",
+   "full_name": "Meera Iyer (synthetic)",
+   "role": "supervisor"
+  }
+ ],
+ "limits": {
+  "max_depth": 5,
+  "max_window_hours": 720,
+  "max_nodes": 300
+ }
+}

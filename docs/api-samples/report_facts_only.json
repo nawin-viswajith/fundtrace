@@ -1,0 +1,1484 @@
+{
+ "id": "RPT-EEE7A1B3",
+ "case_id": "CASE-24051",
+ "version": 1,
+ "status": "facts_only",
+ "generator": "deterministic",
+ "claims_total": 42,
+ "claims_supported": 42,
+ "claims_flagged": 0,
+ "hallucination_rate": 0.0,
+ "confidence": 1.0,
+ "review_status": "pending",
+ "created_at": "2026-10-16T19:19:10.713102Z",
+ "cost_usd": 0,
+ "trace_id": "6e32a6c6f3c41d33d8cc858ae8cd6d1d",
+ "sections": [
+  {
+   "key": "case_overview",
+   "title": "Case overview",
+   "claims": [
+    {
+     "text": "The customer reports a unauthorised transfer concerning TXN-4001679.",
+     "citations": [
+      "CASE-24051",
+      "TXN-4001679"
+     ],
+     "basis": "verified",
+     "id": "C01",
+     "section": "case_overview",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "TXN-4001679 moved ₹50,000 from ACC-100216 to ACC-100209 on 16 Oct 2026 17:44 UTC via UPI, reference 628900082421.",
+     "citations": [
+      "TXN-4001679"
+     ],
+     "basis": "verified",
+     "id": "C02",
+     "section": "case_overview",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "The case is new with priority P1.",
+     "citations": [
+      "CASE-24051"
+     ],
+     "basis": "derived",
+     "id": "C03",
+     "section": "case_overview",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "known_facts",
+   "title": "Known facts",
+   "claims": [
+    {
+     "text": "The beneficiary ACC-100209 is a savings account at FundTrace Demo Bank (synthetic), opened 2026-10-07.",
+     "citations": [
+      "ACC-100209"
+     ],
+     "basis": "verified",
+     "id": "C04",
+     "section": "known_facts",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "4 failed and 1 successful authentication events in the 30 min before the transfer.",
+     "citations": [
+      "FLAG-R4",
+      "AUTH-701256",
+      "AUTH-701257",
+      "AUTH-701258",
+      "AUTH-701259"
+     ],
+     "basis": "derived",
+     "id": "C05",
+     "section": "known_facts",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Success at 17:36 followed 4 failures; the transfer followed 8.0 min later.",
+     "citations": [
+      "FLAG-R4",
+      "AUTH-701256",
+      "AUTH-701257",
+      "AUTH-701258",
+      "AUTH-701259"
+     ],
+     "basis": "derived",
+     "id": "C06",
+     "section": "known_facts",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Device DEV-9071 was first used on ACC-100216 0.2 h before the disputed transfer (history checked: 180 days).",
+     "citations": [
+      "FLAG-R5",
+      "TXN-4001679",
+      "DEV-9071",
+      "AUTH-701256",
+      "AUTH-701257"
+     ],
+     "basis": "derived",
+     "id": "C07",
+     "section": "known_facts",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Device DEV-9071 is also used by 1 other account(s): ACC-100214.",
+     "citations": [
+      "FLAG-R10",
+      "DEV-9071",
+      "ACC-100214"
+     ],
+     "basis": "derived",
+     "id": "C08",
+     "section": "known_facts",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "transaction_trail",
+   "title": "Transaction trail",
+   "claims": [
+    {
+     "text": "TXN-4001680 moved ₹30,000 from ACC-100209 to ACC-100210 at 16 Oct 2026 17:51 UTC (status posted).",
+     "citations": [
+      "TXN-4001680"
+     ],
+     "basis": "verified",
+     "id": "C09",
+     "section": "transaction_trail",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Between ₹28,800 and ₹30,000 of TXN-4001680 can be attributed to the disputed funds by balance arithmetic.",
+     "citations": [
+      "TXN-4001680"
+     ],
+     "basis": "derived",
+     "id": "C10",
+     "section": "transaction_trail",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "TXN-4001681 moved ₹20,000 from ACC-100209 to ACC-100211 at 16 Oct 2026 17:57 UTC (status posted).",
+     "citations": [
+      "TXN-4001681"
+     ],
+     "basis": "verified",
+     "id": "C11",
+     "section": "transaction_trail",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Between ₹20,000 and ₹20,000 of TXN-4001681 can be attributed to the disputed funds by balance arithmetic.",
+     "citations": [
+      "TXN-4001681"
+     ],
+     "basis": "derived",
+     "id": "C12",
+     "section": "transaction_trail",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "TXN-4001682 moved ₹12,000 from ACC-100210 to ACC-100212 at 16 Oct 2026 18:32 UTC (status posted).",
+     "citations": [
+      "TXN-4001682"
+     ],
+     "basis": "verified",
+     "id": "C13",
+     "section": "transaction_trail",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Between ₹9,800 and ₹12,000 of TXN-4001682 can be attributed to the disputed funds by balance arithmetic.",
+     "citations": [
+      "TXN-4001682"
+     ],
+     "basis": "derived",
+     "id": "C14",
+     "section": "transaction_trail",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Visibility ends at ACC-100211 (Other Bank A (synthetic)); the trail beyond it is unknown.",
+     "citations": [
+      "ACC-100211"
+     ],
+     "basis": "unknown",
+     "id": "C15",
+     "section": "transaction_trail",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Visibility ends at ACC-100212 (Other Bank B (synthetic)); the trail beyond it is unknown.",
+     "citations": [
+      "ACC-100212"
+     ],
+     "basis": "unknown",
+     "id": "C16",
+     "section": "transaction_trail",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Recorded hops show where money moved, not that it was the same money as the disputed payment.",
+     "citations": [
+      "TRACE-SUMMARY"
+     ],
+     "basis": "inferred",
+     "id": "C17",
+     "section": "transaction_trail",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "risk_indicators",
+   "title": "Risk indicators",
+   "claims": [
+    {
+     "text": "R1 Rapid onward movement (high): Threshold met: ≥80% moved on within 60 min.",
+     "citations": [
+      "FLAG-R1",
+      "TXN-4001679",
+      "TXN-4001680",
+      "TXN-4001681"
+     ],
+     "basis": "derived",
+     "id": "C18",
+     "section": "risk_indicators",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "R2 Split into multiple transfers (high): 2 onward transfers to 2 distinct accounts within 120 min, totalling ₹50,000 (100% of the receipt).",
+     "citations": [
+      "FLAG-R2",
+      "TXN-4001679",
+      "TXN-4001680",
+      "TXN-4001681"
+     ],
+     "basis": "derived",
+     "id": "C19",
+     "section": "risk_indicators",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "R3 Beneficiary linked to other disputes (high): ACC-100209 is the beneficiary in 2 other dispute(s): CASE-24031, CASE-24038.",
+     "citations": [
+      "FLAG-R3",
+      "ACC-100209",
+      "CASE-24031",
+      "CASE-24038"
+     ],
+     "basis": "derived",
+     "id": "C20",
+     "section": "risk_indicators",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "R4 Failed logins before the transfer (high): Success at 17:36 followed 4 failures; the transfer followed 8.0 min later.",
+     "citations": [
+      "FLAG-R4",
+      "AUTH-701256",
+      "AUTH-701257",
+      "AUTH-701258",
+      "AUTH-701259"
+     ],
+     "basis": "derived",
+     "id": "C21",
+     "section": "risk_indicators",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "R5 New device (medium): Device DEV-9071 was first used on ACC-100216 0.2 h before the disputed transfer (history checked: 180 days).",
+     "citations": [
+      "FLAG-R5",
+      "TXN-4001679",
+      "DEV-9071",
+      "AUTH-701256",
+      "AUTH-701257"
+     ],
+     "basis": "derived",
+     "id": "C22",
+     "section": "risk_indicators",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "R6 Unusual amount (medium): Disputed amount ₹50,000 is 24.7× the payer's median debit of ₹2,025 over 14 debits in 90 days.",
+     "citations": [
+      "FLAG-R6",
+      "TXN-4001679"
+     ],
+     "basis": "derived",
+     "id": "C23",
+     "section": "risk_indicators",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "R7 Recently opened beneficiary (medium): Beneficiary ACC-100209 was opened 8 day(s) before receiving the funds.",
+     "citations": [
+      "FLAG-R7",
+      "ACC-100209",
+      "TXN-4001679"
+     ],
+     "basis": "derived",
+     "id": "C24",
+     "section": "risk_indicators",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "R10 Shared device (medium): Device DEV-9071 is also used by 1 other account(s): ACC-100214.",
+     "citations": [
+      "FLAG-R10",
+      "DEV-9071",
+      "ACC-100214"
+     ],
+     "basis": "derived",
+     "id": "C25",
+     "section": "risk_indicators",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "R11 Funds left this bank (medium): Between ₹9,800 and ₹12,000 of the disputed funds may have left to ACC-100212 (Other Bank B (synthetic)); this bank cannot see further.",
+     "citations": [
+      "FLAG-R11",
+      "ACC-100211",
+      "TXN-4001681",
+      "ACC-100212",
+      "TXN-4001682"
+     ],
+     "basis": "derived",
+     "id": "C26",
+     "section": "risk_indicators",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "1 rule(s) could not be evaluated because data is missing; this is not a negative finding.",
+     "citations": [
+      "FLAG-R9"
+     ],
+     "basis": "derived",
+     "id": "C27",
+     "section": "risk_indicators",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "supporting_evidence",
+   "title": "Evidence supporting the claim",
+   "claims": [
+    {
+     "text": "Allegation amount vs ledger: Statement mentions ₹50,000; ledger has ₹50,000.",
+     "citations": [
+      "CONS-1",
+      "TXN-4001679"
+     ],
+     "basis": "derived",
+     "id": "C28",
+     "section": "supporting_evidence",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Source systems agree: 2 source records agree on amount, currency and status (core:cbs-4001679, upi_switch:npci-sw-77120).",
+     "citations": [
+      "CONS-3",
+      "TXN-4001679"
+     ],
+     "basis": "derived",
+     "id": "C29",
+     "section": "supporting_evidence",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "EV-CD9D4D5A (debit_alert_screenshot.png) has not been analysed, so it neither supports nor contradicts the claim.",
+     "citations": [
+      "EV-CD9D4D5A"
+     ],
+     "basis": "unknown",
+     "id": "C30",
+     "section": "supporting_evidence",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "contradicting_evidence",
+   "title": "Evidence that contradicts or does not establish the claim",
+   "claims": [
+    {
+     "text": "None of the 3 consistency checks found a contradiction.",
+     "citations": [
+      "CONS-1",
+      "CONS-2",
+      "CONS-3"
+     ],
+     "basis": "derived",
+     "id": "C31",
+     "section": "contradicting_evidence",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "missing_information",
+   "title": "Missing information",
+   "claims": [
+    {
+     "text": "Customer evidence (receipt, screenshot, statement) is received not analysed: Lets the customer's account be reconciled with the ledger.",
+     "citations": [
+      "CHK-customer_evidence"
+     ],
+     "basis": "unknown",
+     "id": "C32",
+     "section": "missing_information",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "National cyber-fraud complaint acknowledgement is missing: Needed to coordinate holds with other banks.",
+     "citations": [
+      "CHK-cyber_complaint_ack"
+     ],
+     "basis": "unknown",
+     "id": "C33",
+     "section": "missing_information",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Trail from the receiving institution is missing: This bank cannot see beyond an external transfer.",
+     "citations": [
+      "CHK-receiving_bank_trail"
+     ],
+     "basis": "unknown",
+     "id": "C34",
+     "section": "missing_information",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "next_actions",
+   "title": "Recommended next actions",
+   "claims": [
+    {
+     "text": "Consider a hold on ACC-100210, which may still hold ₹17,956.15 to ₹19,000 of the disputed funds.",
+     "citations": [
+      "HOLD-ACC-100210",
+      "ACC-100210"
+     ],
+     "basis": "derived",
+     "id": "C35",
+     "section": "next_actions",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Consider a hold on ACC-100209, which may still hold ₹0 to ₹1,200 of the disputed funds.",
+     "citations": [
+      "HOLD-ACC-100209",
+      "ACC-100209"
+     ],
+     "basis": "derived",
+     "id": "C36",
+     "section": "next_actions",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Request the onward trail for ACC-100211 from Other Bank A (synthetic).",
+     "citations": [
+      "ACC-100211"
+     ],
+     "basis": "derived",
+     "id": "C37",
+     "section": "next_actions",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Request the onward trail for ACC-100212 from Other Bank B (synthetic).",
+     "citations": [
+      "ACC-100212"
+     ],
+     "basis": "derived",
+     "id": "C38",
+     "section": "next_actions",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "An investigator reviews these findings and records the decision; the system does not decide liability.",
+     "citations": [
+      "CASE-24051"
+     ],
+     "basis": "derived",
+     "id": "C39",
+     "section": "next_actions",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  },
+  {
+   "key": "limitations",
+   "title": "Limitations and uncertainty",
+   "claims": [
+    {
+     "text": "Attribution is balance arithmetic over recorded transactions. A positive lower bound means the ledger forces at least that much to be the disputed funds; the upper bound means it is possible, not established. It does not show who controlled the funds or why they moved.",
+     "citations": [
+      "TRACE-SUMMARY"
+     ],
+     "basis": "derived",
+     "id": "C40",
+     "section": "limitations",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "Only this bank's records are visible; activity at other institutions is unknown.",
+     "citations": [
+      "TRACE-SUMMARY"
+     ],
+     "basis": "unknown",
+     "id": "C41",
+     "section": "limitations",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    },
+    {
+     "text": "This is a facts-only report generated without AI synthesis.",
+     "citations": [],
+     "basis": "unknown",
+     "id": "C42",
+     "section": "limitations",
+     "issues": [],
+     "valid": true,
+     "verdict": "system_generated",
+     "verdict_reason": "generated from records by code",
+     "hallucination": false,
+     "flagged": false
+    }
+   ]
+  }
+ ],
+ "recommended_actions": [
+  {
+   "action_type": "hold_request",
+   "target_id": "ACC-100210",
+   "description": "Review a hold on ACC-100210",
+   "citations": [
+    "HOLD-ACC-100210"
+   ]
+  },
+  {
+   "action_type": "hold_request",
+   "target_id": "ACC-100209",
+   "description": "Review a hold on ACC-100209",
+   "citations": [
+    "HOLD-ACC-100209"
+   ]
+  },
+  {
+   "action_type": "contact_receiving_bank",
+   "target_id": "ACC-100211",
+   "description": "Trail request for ACC-100211",
+   "citations": [
+    "ACC-100211"
+   ]
+  },
+  {
+   "action_type": "contact_receiving_bank",
+   "target_id": "ACC-100212",
+   "description": "Trail request for ACC-100212",
+   "citations": [
+    "ACC-100212"
+   ]
+  },
+  {
+   "action_type": "request_evidence",
+   "target_id": "CHK-cyber_complaint_ack",
+   "description": "Request: National cyber-fraud complaint acknowledgement",
+   "citations": [
+    "CHK-cyber_complaint_ack"
+   ]
+  },
+  {
+   "action_type": "request_evidence",
+   "target_id": "CHK-receiving_bank_trail",
+   "description": "Request: Trail from the receiving institution",
+   "citations": [
+    "CHK-receiving_bank_trail"
+   ]
+  },
+  {
+   "action_type": "human_review",
+   "target_id": "CASE-24051",
+   "description": "Investigator review",
+   "citations": [
+    "CASE-24051"
+   ]
+  }
+ ],
+ "metrics": {
+  "claims_total": 42,
+  "claims_supported": 42,
+  "claims_partial": 0,
+  "claims_flagged": 0,
+  "claims_unjudged": 0,
+  "hallucinated_claims": 0,
+  "verdicts": {
+   "supported": 0,
+   "partial": 0,
+   "unsupported": 0,
+   "contradicted": 0,
+   "unjudged": 0,
+   "system_generated": 42
+  },
+  "hallucination_rate": 0.0,
+  "confidence": 1.0,
+  "confidence_note": "Share of claims that passed deterministic checks and were judged supported (partial counts half). Unjudged claims do not count as supported.",
+  "by_basis": {
+   "verified": 6,
+   "derived": 27,
+   "inferred": 1,
+   "unknown": 8
+  },
+  "validation_passed": true,
+  "missing_sections": [],
+  "action_issues": [],
+  "draft_attempts": 1,
+  "judge_status": "not_needed",
+  "ai_calls": 0,
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "cost_usd": 0,
+  "ai_latency_ms": 0,
+  "tool_calls": 0,
+  "notes": [
+   "1 evidence item(s) not analysed: AI unavailable",
+   "AI unavailable; facts-only report generated"
+  ]
+ },
+ "snapshot_hash": "135b326fe2860a4496cac6c311372d45f81d81c1c40232c110e7ddc0fdbf9c91",
+ "review": null,
+ "trace_url": null,
+ "records": {
+  "ACC-100209": {
+   "type": "account",
+   "holder": "Rahul K (synthetic)",
+   "institution": "FundTrace Demo Bank (synthetic)",
+   "external": false,
+   "kind": "savings",
+   "opened": "2026-10-07",
+   "roles": [
+    "beneficiary"
+   ],
+   "endpoint": null,
+   "endpoint_meaning": null,
+   "expandable": false
+  },
+  "ACC-100210": {
+   "type": "account",
+   "holder": "Sunil P (synthetic)",
+   "institution": "FundTrace Demo Bank (synthetic)",
+   "external": false,
+   "kind": "savings",
+   "opened": "2026-09-06",
+   "roles": [
+    "downstream"
+   ],
+   "endpoint": null,
+   "endpoint_meaning": null,
+   "expandable": false
+  },
+  "ACC-100211": {
+   "type": "account",
+   "holder": "Account at Other Bank A (synthetic)",
+   "institution": "Other Bank A (synthetic)",
+   "external": true,
+   "kind": "external",
+   "opened": null,
+   "roles": [
+    "downstream"
+   ],
+   "endpoint": "visibility_ends",
+   "endpoint_meaning": "Funds left this bank — visibility ends (request trail from the receiving institution) (Other Bank A (synthetic))",
+   "expandable": false
+  },
+  "ACC-100212": {
+   "type": "account",
+   "holder": "Account at Other Bank B (synthetic)",
+   "institution": "Other Bank B (synthetic)",
+   "external": true,
+   "kind": "external",
+   "opened": null,
+   "roles": [
+    "downstream"
+   ],
+   "endpoint": "visibility_ends",
+   "endpoint_meaning": "Funds left this bank — visibility ends (request trail from the receiving institution) (Other Bank B (synthetic))",
+   "expandable": false
+  },
+  "ACC-100214": {
+   "type": "account",
+   "holder": "Victim X savings (synthetic)",
+   "institution": "FundTrace Demo Bank (synthetic)",
+   "external": false,
+   "kind": "savings",
+   "opened": "2022-09-07",
+   "roles": [
+    "referenced"
+   ]
+  },
+  "AUTH-701256": {
+   "type": "auth_event",
+   "account": "ACC-100216",
+   "event": "login",
+   "outcome": "failure",
+   "device": "DEV-9071",
+   "time_utc": "16 Oct 2026 17:30 UTC",
+   "time_ist": "16 Oct 2026 23:00 IST",
+   "source_record": "digital_auth:da-701256"
+  },
+  "AUTH-701257": {
+   "type": "auth_event",
+   "account": "ACC-100216",
+   "event": "login",
+   "outcome": "failure",
+   "device": "DEV-9071",
+   "time_utc": "16 Oct 2026 17:31 UTC",
+   "time_ist": "16 Oct 2026 23:01 IST",
+   "source_record": "digital_auth:da-701257"
+  },
+  "AUTH-701258": {
+   "type": "auth_event",
+   "account": "ACC-100216",
+   "event": "login",
+   "outcome": "failure",
+   "device": "DEV-9071",
+   "time_utc": "16 Oct 2026 17:33 UTC",
+   "time_ist": "16 Oct 2026 23:03 IST",
+   "source_record": "digital_auth:da-701258"
+  },
+  "AUTH-701259": {
+   "type": "auth_event",
+   "account": "ACC-100216",
+   "event": "login",
+   "outcome": "failure",
+   "device": "DEV-9071",
+   "time_utc": "16 Oct 2026 17:34 UTC",
+   "time_ist": "16 Oct 2026 23:04 IST",
+   "source_record": "digital_auth:da-701259"
+  },
+  "CASE-24031": {
+   "type": "linked_case",
+   "status": "awaiting_evidence",
+   "category": "account_takeover",
+   "disputed_txn": "TXN-4001646",
+   "note": "Another dispute on record. Its customer statement is not shared."
+  },
+  "CASE-24038": {
+   "type": "linked_case",
+   "status": "triage",
+   "category": "app_scam",
+   "disputed_txn": "TXN-4001660",
+   "note": "Another dispute on record. Its customer statement is not shared."
+  },
+  "CASE-24051": {
+   "type": "case",
+   "category": "Unauthorised transfer",
+   "status": "new",
+   "priority": "P1",
+   "priority_reasons": [
+    "Material value: ₹50,000",
+    "High-severity signals: Rapid onward movement, Split into multiple transfers, Beneficiary linked to other disputes, Failed logins before the transfer",
+    "Golden hour: up to ₹19,000 may still be in visible accounts",
+    "Beneficiary appears in other disputes"
+   ],
+   "reported": "16 Oct 2026 18:19 UTC",
+   "customer_statement": "<untrusted>I did not make this payment of ₹50,000. I got a call from someone saying they were from the bank and needed to update my KYC. A few minutes later I got a debit SMS. I did not share any OTP.</untrusted>",
+   "statement_translation_ai": null
+  },
+  "CHK-customer_evidence": {
+   "type": "checklist_item",
+   "label": "Customer evidence (receipt, screenshot, statement)",
+   "required": true,
+   "status": "received_not_analysed",
+   "why_it_matters": "Lets the customer's account be reconciled with the ledger.",
+   "source_ids": [
+    "EV-CD9D4D5A"
+   ]
+  },
+  "CHK-cyber_complaint_ack": {
+   "type": "checklist_item",
+   "label": "National cyber-fraud complaint acknowledgement",
+   "required": true,
+   "status": "missing",
+   "why_it_matters": "Needed to coordinate holds with other banks.",
+   "source_ids": []
+  },
+  "CHK-receiving_bank_trail": {
+   "type": "checklist_item",
+   "label": "Trail from the receiving institution",
+   "required": true,
+   "status": "missing",
+   "why_it_matters": "This bank cannot see beyond an external transfer.",
+   "source_ids": []
+  },
+  "CONS-1": {
+   "type": "consistency_check",
+   "basis": "derived",
+   "check": "Allegation amount vs ledger",
+   "result": "consistent",
+   "detail": "Statement mentions ₹50,000; ledger has ₹50,000.",
+   "source_ids": [
+    "TXN-4001679"
+   ]
+  },
+  "CONS-2": {
+   "type": "consistency_check",
+   "basis": "derived",
+   "check": "Evidence EV-CD9D4D5A vs ledger",
+   "result": "unverifiable",
+   "detail": "Not analysed — the document has not been read.",
+   "source_ids": [
+    "EV-CD9D4D5A"
+   ]
+  },
+  "CONS-3": {
+   "type": "consistency_check",
+   "basis": "derived",
+   "check": "Source systems agree",
+   "result": "consistent",
+   "detail": "2 source records agree on amount, currency and status (core:cbs-4001679, upi_switch:npci-sw-77120).",
+   "source_ids": [
+    "TXN-4001679"
+   ]
+  },
+  "DEV-9071": {
+   "type": "device",
+   "label": "Unrecognised Android",
+   "first_seen_anywhere": "10 Oct 2026 18:19 UTC"
+  },
+  "EV-CD9D4D5A": {
+   "type": "evidence",
+   "filename": "debit_alert_screenshot.png",
+   "kind": "customer_upload",
+   "checklist_item": "customer_evidence",
+   "analysis_status": "not_analysed",
+   "sha256": "31dc4ff031cc8b8a…",
+   "extracted_by_ai": null,
+   "reconciliation": null
+  },
+  "FLAG-R1": {
+   "type": "risk_signal",
+   "basis": "derived (deterministic rule)",
+   "rule": "R1",
+   "name": "Rapid onward movement",
+   "status": "triggered",
+   "severity": "high",
+   "facts": [
+    "₹50,000 credited to ACC-100209 at 17:44 UTC.",
+    "TXN-4001680: ₹30,000 left ACC-100209 7.0 min later (cumulative 60% of the receipt).",
+    "TXN-4001681: ₹20,000 left ACC-100209 13.0 min later (cumulative 100% of the receipt).",
+    "Threshold met: ≥80% moved on within 60 min."
+   ],
+   "source_ids": [
+    "TXN-4001679",
+    "TXN-4001680",
+    "TXN-4001681"
+   ],
+   "thresholds": {
+    "window_minutes": 60,
+    "min_share": 0.8
+   },
+   "limitations": [
+    "Shows recorded onward transfers; whether they carried the disputed funds is given by attribution, not by timing."
+   ],
+   "missing": [],
+   "suggested_step": "Review attribution bounds and consider a hold on visible downstream accounts still holding funds."
+  },
+  "FLAG-R10": {
+   "type": "risk_signal",
+   "basis": "derived (deterministic rule)",
+   "rule": "R10",
+   "name": "Shared device",
+   "status": "triggered",
+   "severity": "medium",
+   "facts": [
+    "Device DEV-9071 is also used by 1 other account(s): ACC-100214."
+   ],
+   "source_ids": [
+    "DEV-9071",
+    "ACC-100214"
+   ],
+   "thresholds": {
+    "min_other_accounts": 1
+   },
+   "limitations": [
+    "Family members legitimately share devices."
+   ],
+   "missing": [],
+   "suggested_step": "Check whether the other accounts belong to the same household or appear in disputes."
+  },
+  "FLAG-R11": {
+   "type": "risk_signal",
+   "basis": "derived (deterministic rule)",
+   "rule": "R11",
+   "name": "Funds left this bank",
+   "status": "triggered",
+   "severity": "medium",
+   "facts": [
+    "Between ₹20,000 and ₹20,000 of the disputed funds may have left to ACC-100211 (Other Bank A (synthetic)); this bank cannot see further.",
+    "Between ₹9,800 and ₹12,000 of the disputed funds may have left to ACC-100212 (Other Bank B (synthetic)); this bank cannot see further."
+   ],
+   "source_ids": [
+    "ACC-100211",
+    "TXN-4001681",
+    "ACC-100212",
+    "TXN-4001682"
+   ],
+   "thresholds": {
+    "min_share": 0.1
+   },
+   "limitations": [
+    "Exits end this bank's visibility; the trail continues only with the receiving institution's records."
+   ],
+   "missing": [],
+   "suggested_step": "Send a trail and hold request to the receiving institution (via the national cyber-fraud reporting process)."
+  },
+  "FLAG-R2": {
+   "type": "risk_signal",
+   "basis": "derived (deterministic rule)",
+   "rule": "R2",
+   "name": "Split into multiple transfers",
+   "status": "triggered",
+   "severity": "high",
+   "facts": [
+    "2 onward transfers to 2 distinct accounts within 120 min, totalling ₹50,000 (100% of the receipt)."
+   ],
+   "source_ids": [
+    "TXN-4001679",
+    "TXN-4001680",
+    "TXN-4001681"
+   ],
+   "thresholds": {
+    "window_minutes": 120,
+    "min_transfers": 2,
+    "min_destinations": 2,
+    "min_share": 0.8
+   },
+   "limitations": [
+    "Splitting is common in legitimate use (rent, bills); it is a pattern to review, not evidence of intent."
+   ],
+   "missing": [],
+   "suggested_step": "Check each destination account's ownership and whether destinations appear in other disputes."
+  },
+  "FLAG-R3": {
+   "type": "risk_signal",
+   "basis": "derived (deterministic rule)",
+   "rule": "R3",
+   "name": "Beneficiary linked to other disputes",
+   "status": "triggered",
+   "severity": "high",
+   "facts": [
+    "ACC-100209 is the beneficiary in 2 other dispute(s): CASE-24031, CASE-24038."
+   ],
+   "source_ids": [
+    "ACC-100209",
+    "CASE-24031",
+    "CASE-24038"
+   ],
+   "thresholds": {
+    "min_other_cases": 1,
+    "high_severity_cases": 2
+   },
+   "limitations": [
+    "Only disputes recorded in this system are compared; other banks' reports are not visible."
+   ],
+   "missing": [],
+   "suggested_step": "Open the linked cases and compare allegations; consider a coordinated hold request."
+  },
+  "FLAG-R4": {
+   "type": "risk_signal",
+   "basis": "derived (deterministic rule)",
+   "rule": "R4",
+   "name": "Failed logins before the transfer",
+   "status": "triggered",
+   "severity": "high",
+   "facts": [
+    "4 failed and 1 successful authentication events in the 30 min before the transfer.",
+    "Success at 17:36 followed 4 failures; the transfer followed 8.0 min later."
+   ],
+   "source_ids": [
+    "AUTH-701256",
+    "AUTH-701257",
+    "AUTH-701258",
+    "AUTH-701259",
+    "AUTH-701260",
+    "TXN-4001679"
+   ],
+   "thresholds": {
+    "window_minutes": 30,
+    "min_failures": 3
+   },
+   "limitations": [
+    "Failed attempts can be the genuine customer mistyping; combine with device and location evidence."
+   ],
+   "missing": [],
+   "suggested_step": "Compare the device and IP of the successful login with the customer's usual devices."
+  },
+  "FLAG-R5": {
+   "type": "risk_signal",
+   "basis": "derived (deterministic rule)",
+   "rule": "R5",
+   "name": "New device",
+   "status": "triggered",
+   "severity": "medium",
+   "facts": [
+    "Device DEV-9071 was first used on ACC-100216 0.2 h before the disputed transfer (history checked: 180 days)."
+   ],
+   "source_ids": [
+    "TXN-4001679",
+    "DEV-9071",
+    "AUTH-701256",
+    "AUTH-701257",
+    "AUTH-701258"
+   ],
+   "thresholds": {
+    "max_device_age_hours": 24,
+    "history_days": 180
+   },
+   "limitations": [
+    "Customers do change phones; a new device on the account is a signal, not proof of account takeover."
+   ],
+   "missing": [],
+   "suggested_step": "Ask the customer whether they registered a new device; check SIM-swap indicators with the telecom partner."
+  },
+  "FLAG-R6": {
+   "type": "risk_signal",
+   "basis": "derived (deterministic rule)",
+   "rule": "R6",
+   "name": "Unusual amount",
+   "status": "triggered",
+   "severity": "medium",
+   "facts": [
+    "Disputed amount ₹50,000 is 24.7× the payer's median debit of ₹2,025 over 14 debits in 90 days."
+   ],
+   "source_ids": [
+    "TXN-4001679"
+   ],
+   "thresholds": {
+    "lookback_days": 90,
+    "min_history": 5,
+    "multiple": 5.0
+   },
+   "limitations": [
+    "Large one-off payments (deposits, purchases) are normal; baseline is this bank's records only."
+   ],
+   "missing": [],
+   "suggested_step": "Ask the customer about any expected large payments around this date."
+  },
+  "FLAG-R7": {
+   "type": "risk_signal",
+   "basis": "derived (deterministic rule)",
+   "rule": "R7",
+   "name": "Recently opened beneficiary",
+   "status": "triggered",
+   "severity": "medium",
+   "facts": [
+    "Beneficiary ACC-100209 was opened 8 day(s) before receiving the funds."
+   ],
+   "source_ids": [
+    "ACC-100209",
+    "TXN-4001679"
+   ],
+   "thresholds": {
+    "max_age_days": 30
+   },
+   "limitations": [
+    "New accounts are mostly legitimate; this matters in combination with rapid onward movement."
+   ],
+   "missing": [],
+   "suggested_step": "Review beneficiary KYC and recent inflow pattern."
+  },
+  "FLAG-R9": {
+   "type": "risk_signal",
+   "basis": "derived (deterministic rule)",
+   "rule": "R9",
+   "name": "Evidence contradicts the ledger",
+   "status": "not_evaluable",
+   "severity": "high",
+   "facts": [],
+   "source_ids": [],
+   "thresholds": {},
+   "limitations": [
+    "Not evaluable: the data this rule needs is missing. This is not a negative finding."
+   ],
+   "missing": [
+    "analysed customer evidence (receipt/screenshot/statement)"
+   ],
+   "suggested_step": "Ask the customer for the payment receipt or statement and analyse it."
+  },
+  "HOLD-ACC-100209": {
+   "type": "hold_candidate",
+   "account": "ACC-100209",
+   "basis": "derived",
+   "range": "₹0 to ₹1,200",
+   "min_minor": 0,
+   "max_minor": 120000,
+   "note": "Visible account that may still hold disputed funds. A hold needs investigator approval."
+  },
+  "HOLD-ACC-100210": {
+   "type": "hold_candidate",
+   "account": "ACC-100210",
+   "basis": "derived",
+   "range": "₹17,956.15 to ₹19,000",
+   "min_minor": 1795615,
+   "max_minor": 1900000,
+   "note": "Visible account that may still hold disputed funds. A hold needs investigator approval."
+  },
+  "TRACE-SUMMARY": {
+   "type": "traceability",
+   "basis": "derived",
+   "coverage_by_method": {
+    "min": "100%",
+    "fifo": "100%",
+    "pro_rata": "100%",
+    "max": "100%"
+   },
+   "endpoints": {
+    "visibility_ends": 2
+   },
+   "paths": 2,
+   "truncated": false,
+   "disputed_amount": "₹50,000",
+   "caveat": "Attribution is balance arithmetic over recorded transactions. A positive lower bound means the ledger forces at least that much to be the disputed funds; the upper bound means it is possible, not established. It does not show who controlled the funds or why they moved."
+  },
+  "TXN-4001679": {
+   "type": "transaction",
+   "provenance": "confirmed (ledger record)",
+   "amount": "₹50,000",
+   "status": "posted",
+   "channel": "UPI",
+   "reference": "628900082421",
+   "from_account": "ACC-100216",
+   "to_account": "ACC-100209",
+   "time_utc": "16 Oct 2026 17:44 UTC",
+   "time_ist": "16 Oct 2026 23:14 IST",
+   "role": "disputed",
+   "source_record": "core:cbs-4001679"
+  },
+  "TXN-4001680": {
+   "type": "transaction",
+   "provenance": "confirmed (ledger record)",
+   "amount": "₹30,000",
+   "status": "posted",
+   "channel": "IMPS",
+   "reference": "628900082510",
+   "from_account": "ACC-100209",
+   "to_account": "ACC-100210",
+   "time_utc": "16 Oct 2026 17:51 UTC",
+   "time_ist": "16 Oct 2026 23:21 IST",
+   "role": "forward",
+   "source_record": "core:cbs-4001680",
+   "attributable_to_disputed_funds": {
+    "lower_bound": "₹28,800",
+    "upper_bound": "₹30,000",
+    "fifo": "₹28,800",
+    "pro_rata": "₹29,296.88",
+    "basis": "derived by balance arithmetic; does not prove these are the same funds"
+   }
+  },
+  "TXN-4001681": {
+   "type": "transaction",
+   "provenance": "confirmed (ledger record)",
+   "amount": "₹20,000",
+   "status": "posted",
+   "channel": "UPI",
+   "reference": "628900082597",
+   "from_account": "ACC-100209",
+   "to_account": "ACC-100211",
+   "time_utc": "16 Oct 2026 17:57 UTC",
+   "time_ist": "16 Oct 2026 23:27 IST",
+   "role": "forward",
+   "source_record": "core:cbs-4001681",
+   "attributable_to_disputed_funds": {
+    "lower_bound": "₹20,000",
+    "upper_bound": "₹20,000",
+    "fifo": "₹20,000",
+    "pro_rata": "₹19,531.25",
+    "basis": "derived by balance arithmetic; does not prove these are the same funds"
+   }
+  },
+  "TXN-4001682": {
+   "type": "transaction",
+   "provenance": "confirmed (ledger record)",
+   "amount": "₹12,000",
+   "status": "posted",
+   "channel": "IMPS",
+   "reference": "628900082607",
+   "from_account": "ACC-100210",
+   "to_account": "ACC-100212",
+   "time_utc": "16 Oct 2026 18:32 UTC",
+   "time_ist": "17 Oct 2026 00:02 IST",
+   "role": "forward",
+   "source_record": "core:cbs-4001682",
+   "attributable_to_disputed_funds": {
+    "lower_bound": "₹9,800",
+    "upper_bound": "₹12,000",
+    "fifo": "₹10,560",
+    "pro_rata": "₹11,340.73",
+    "basis": "derived by balance arithmetic; does not prove these are the same funds"
+   }
+  }
+ },
+ "run": {
+  "id": "RUN-9879F98650",
+  "status": "awaiting_review",
+  "steps": [
+   {
+    "node": "gather",
+    "status": "ok",
+    "ms": 20,
+    "records": 54,
+    "snapshot_hash": "135b326fe286"
+   },
+   {
+    "node": "explore",
+    "status": "skipped",
+    "ms": 0,
+    "reason": "AI unavailable — no agent exploration"
+   },
+   {
+    "node": "evidence",
+    "status": "skipped",
+    "ms": 2,
+    "not_analysed": 1
+   },
+   {
+    "node": "draft",
+    "status": "fallback",
+    "ms": 0,
+    "attempt": 1
+   },
+   {
+    "node": "validate",
+    "status": "passed",
+    "ms": 10,
+    "claims": 42,
+    "errors": 0
+   },
+   {
+    "node": "judge",
+    "status": "skipped",
+    "ms": 0,
+    "reason": "facts-only report"
+   },
+   {
+    "node": "finalize",
+    "status": "ok",
+    "ms": 74,
+    "report_id": "RPT-EEE7A1B3",
+    "report_status": "facts_only"
+   }
+  ],
+  "tool_log": [],
+  "models": [],
+  "prompt_versions": {
+   "report": "report-v3",
+   "judge": "judge-v2",
+   "explore": "explore-v2",
+   "evidence": "evidence-v2"
+  },
+  "ruleset_version": "rules-a5223623eaeb",
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "cost_usd": 0.0,
+  "latency_ms": 128,
+  "started_at": "2026-10-16T19:19:10.595141Z"
+ }
+}

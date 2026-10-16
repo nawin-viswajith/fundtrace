@@ -1,0 +1,74 @@
+{
+ "events": [
+  {
+   "id": 3,
+   "case_id": "CASE-24051",
+   "actor": "system",
+   "actor_role": "system",
+   "action": "case_created",
+   "details": {
+    "source": "synthetic seed",
+    "scenario": "S1",
+    "disputed_txn_id": "TXN-4001679"
+   },
+   "trace_id": null,
+   "created_at": "2026-10-16T19:19:09Z",
+   "hash": "6e2b0867ad84a6fb143df5a17785796224f45b9d212ba89f5cc26b48f0530357",
+   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "id": 12,
+   "case_id": "CASE-24051",
+   "actor": "system",
+   "actor_role": "system",
+   "action": "evidence_received",
+   "details": {
+    "evidence_id": "EV-CD9D4D5A",
+    "filename": "debit_alert_screenshot.png",
+    "sha256": "31dc4ff031cc8b8a7df663606ec57e4518e3bba94fb93475b3b4771d93756bf4"
+   },
+   "trace_id": null,
+   "created_at": "2026-10-16T19:19:09Z",
+   "hash": "266de3b2aa1e075277d617a0b274d3fcaf8403d1cea7a05c00aded21b64bed2a",
+   "prev_hash": "6e2b0867ad84a6fb143df5a17785796224f45b9d212ba89f5cc26b48f0530357"
+  },
+  {
+   "id": 17,
+   "case_id": "CASE-24051",
+   "actor": "sup.meera",
+   "actor_role": "supervisor",
+   "action": "case_viewed",
+   "details": {},
+   "trace_id": "4e67aa4cd20b3f12eff57ecf4eb95728",
+   "created_at": "2026-10-16T19:19:09Z",
+   "hash": "288d6d0586095441792aceb01645cebd6ebad20190e9527aaf0fae5364d1f526",
+   "prev_hash": "266de3b2aa1e075277d617a0b274d3fcaf8403d1cea7a05c00aded21b64bed2a"
+  },
+  {
+   "id": 18,
+   "case_id": "CASE-24051",
+   "actor": "sup.meera",
+   "actor_role": "investigator",
+   "action": "report_generated",
+   "details": {
+    "report_id": "RPT-EEE7A1B3",
+    "version": 1,
+    "status": "facts_only",
+    "generator": "deterministic",
+    "claims": 42,
+    "flagged": 0,
+    "snapshot_hash": "135b326fe2860a4496cac6c311372d45f81d81c1c40232c110e7ddc0fdbf9c91",
+    "cost_usd": 0
+   },
+   "trace_id": "6e32a6c6f3c41d33d8cc858ae8cd6d1d",
+   "created_at": "2026-10-16T19:19:10Z",
+   "hash": "17ac06d5e3bb4258e7a5b0f852a385d2d2b724f266ab8731c2dba3c1c44b06b0",
+   "prev_hash": "288d6d0586095441792aceb01645cebd6ebad20190e9527aaf0fae5364d1f526"
+  }
+ ],
+ "verification": {
+  "valid": true,
+  "events": 4,
+  "head": "17ac06d5e3bb4258e7a5b0f852a385d2d2b724f266ab8731c2dba3c1c44b06b0"
+ }
+}
