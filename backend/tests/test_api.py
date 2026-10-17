@@ -221,3 +221,20 @@ def test_retention_run_is_admin_only_and_dry_run_by_default(client):
     login(client, "admin")
     r = client.post("/api/admin/retention/run").json()
     assert r["dry_run"] is True and r["deleted"] == 0
+
+
+def test_overview_search_and_outcomes(client):
+    login(client, "inv.asha")
+    ov = client.get("/api/overview").json()
+    assert ov["counts"]["open"] >= 1 and "outcomes" in ov
+    m_ = ov["outcomes"]["measurements"]
+    assert m_["automated_claim_rejections"]["value"] == 0
+    for k in ("median_investigation_hours", "findings_linked_to_sources", "evidence_completeness_at_decision"):
+        assert k in m_ and m_[k]["status"] in ("ok", "not_enough_data")
+    q = client.get("/api/cases").json()["cases"]
+    assert all("age_hours" in c and "next_action" in c for c in q)
+    hit = client.get("/api/search", params={"q": "24051"}).json()["results"]
+    assert hit and hit[0]["id"] == "CASE-24051"
+    # investigators never find other investigators' cases through search
+    assert all(r["id"] != "CASE-24031" for r in client.get("/api/search", params={"q": "CASE-240"}).json()["results"])
+    assert client.get("/api/search", params={"q": "x"}).status_code == 422

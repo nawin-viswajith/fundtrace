@@ -133,12 +133,17 @@ def apply_action(db: Session, case: m.DisputeCase, user: m.User, body: dict) -> 
         latest = db.scalar(select(m.Report).where(m.Report.case_id == case.id).order_by(m.Report.version.desc()).limit(1))
         if (latest is None or latest.review_status == "pending") and len(override) < 10:
             _err(422, "Review the latest investigation report first, or give an override reason")
+        from app.services.investigation import build_context
+
+        comp = build_context(db, case)["completeness"]  # evidence state at the moment of decision (outcome measurement)
         case.decision, case.decision_rationale = decision, rationale
         case.decided_by, case.decided_at = user.id, m.utcnow()
         case.status = "escalated" if decision == "refer" else "resolved"
         audit.record(db, case.id, actor, role, "decision_recorded",
                      {"decision": decision, "rationale": rationale, "override_reason": override or None,
-                      "report_id": latest.id if latest else None, "report_review": latest.review_status if latest else None})
+                      "report_id": latest.id if latest else None, "report_review": latest.review_status if latest else None,
+                      "completeness_ratio": comp["ratio"], "completeness": f"{comp['present']}/{comp['required']}",
+                      "within_sla": bool(case.due_at and case.decided_at <= case.due_at)})
         return {"ok": True, "status": case.status}
 
     if kind == "evidence_deletion":

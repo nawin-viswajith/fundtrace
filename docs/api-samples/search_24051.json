@@ -1,0 +1,14 @@
+{
+ "query": "24051",
+ "results": [
+  {
+   "id": "CASE-24051",
+   "category_label": "Unauthorised transfer",
+   "status": "new",
+   "priority": "P1",
+   "amount_label": "₹50,000",
+   "matched_on": "case",
+   "disputed_txn_id": "TXN-4001679"
+  }
+ ]
+}

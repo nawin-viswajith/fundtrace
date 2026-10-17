@@ -1,0 +1,81 @@
+{
+ "generated_at": "2026-10-17T04:16:30.096037Z",
+ "cases": {
+  "total": 11,
+  "open": 10,
+  "decided": 1
+ },
+ "measurements": {
+  "median_investigation_hours": {
+   "value": 144.01,
+   "n": 1,
+   "unit": "hours",
+   "note": "Reported → decision recorded, decided cases only",
+   "status": "ok"
+  },
+  "median_hours_to_first_action": {
+   "value": 144.01,
+   "n": 1,
+   "unit": "hours",
+   "note": "Reported → first investigator action",
+   "status": "ok"
+  },
+  "median_hours_to_escalation": {
+   "value": null,
+   "n": 0,
+   "unit": "hours",
+   "note": "Reported → escalation, escalated cases only",
+   "status": "not_enough_data"
+  },
+  "decided_within_sla": {
+   "value": 1.0,
+   "n": 1,
+   "unit": "ratio",
+   "note": "Decisions recorded before the resolution due date",
+   "status": "ok"
+  },
+  "open_cases_past_sla": {
+   "value": 0,
+   "n": 10,
+   "unit": "count",
+   "note": "Open cases already past their resolution due date",
+   "status": "ok"
+  },
+  "evidence_completeness_at_decision": {
+   "value": 0.5,
+   "n": 1,
+   "unit": "ratio",
+   "note": "Required evidence present when the decision was recorded (median)",
+   "status": "ok"
+  },
+  "findings_linked_to_sources": {
+   "value": 0.9286,
+   "n": 14,
+   "unit": "ratio",
+   "note": "Report claims with valid source citations",
+   "status": "ok"
+  },
+  "unsupported_claims_in_accepted_reports": {
+   "value": 0,
+   "n": 1,
+   "unit": "count",
+   "note": "Flagged claims an investigator accepted (target 0)",
+   "status": "ok"
+  },
+  "automated_claim_rejections": {
+   "value": 0,
+   "n": 1,
+   "unit": "count",
+   "note": "Claims declined without a human decision (structurally impossible; target 0)",
+   "status": "ok"
+  },
+  "investigator_actions_per_decided_case": {
+   "value": 4.0,
+   "n": 1,
+   "unit": "actions",
+   "note": "Recorded investigator actions per decided case (median)",
+   "status": "ok"
+  }
+ },
+ "note": "Measured from this deployment's case activity only. There is no historical baseline in a synthetic demo, so improvement percentages are not claimed."
+}

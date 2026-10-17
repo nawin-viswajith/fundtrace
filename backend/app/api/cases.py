@@ -48,6 +48,9 @@ def list_cases(status: str | None = None, priority: str | None = None, owner: st
     order = {"P1": 0, "P2": 1, "P3": 2, "P4": 3}
     rows.sort(key=lambda c: (c.status == "resolved", order.get(c.priority, 9), c.due_at or c.reported_at))
     now = m.utcnow()
+    from app.api.overview import next_actions
+
+    nxt_actions = next_actions(db, rows)
     out = []
     for c in rows:
         s = inv.case_summary(c)
@@ -60,6 +63,8 @@ def list_cases(status: str | None = None, priority: str | None = None, owner: st
         nxt = open_ms[0] if open_ms else min(ms, key=lambda m_: m_["remaining_hours"])
         s["sla_remaining_hours"] = nxt["remaining_hours"]
         s["sla_next_label"] = nxt["label"]
+        s["age_hours"] = round((now - c.reported_at).total_seconds() / 3600, 1)
+        s["next_action"] = nxt_actions.get(c.id)
         s["amount_label"] = fmt_amount(c.disputed_txn.amount_minor, c.disputed_txn.currency)
         out.append(s)
     counts = {st: sum(1 for c in rows if c.status == st) for st in STATUSES}

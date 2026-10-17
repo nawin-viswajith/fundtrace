@@ -1,0 +1,342 @@
+{
+ "counts": {
+  "open": 10,
+  "by_priority": {
+   "P1": 4,
+   "P2": 1,
+   "P3": 3,
+   "P4": 2
+  },
+  "by_status": {
+   "awaiting_evidence": 2,
+   "triage": 2,
+   "new": 3,
+   "investigating": 2,
+   "ready_for_review": 1,
+   "resolved": 1
+  },
+  "unassigned": 4,
+  "mine": 0,
+  "golden_hour": 5,
+  "sla_at_risk_72h": 0,
+  "sla_breached": 0,
+  "disputed_open_amount_label": "₹3,07,499"
+ },
+ "focus": [
+  {
+   "id": "CASE-24031",
+   "category_label": "Account takeover",
+   "priority": "P1",
+   "status": "awaiting_evidence",
+   "amount_label": "₹15,000",
+   "due_at": "2027-01-09T09:16:00Z",
+   "sla_remaining_hours": 2021.0,
+   "priority_reasons": [
+    "High-severity signals: Rapid onward movement, Beneficiary linked to other disputes, Failed logins before the transfer",
+    "Golden hour: up to ₹1,200 may still be in visible accounts",
+    "Beneficiary appears in other disputes"
+   ],
+   "next_action": {
+    "label": "Review 2 hold recommendations",
+    "tab": "overview"
+   }
+  },
+  {
+   "id": "CASE-24038",
+   "category_label": "Authorised push-payment scam",
+   "priority": "P1",
+   "status": "triage",
+   "amount_label": "₹22,000",
+   "due_at": "2027-01-12T06:16:00Z",
+   "sla_remaining_hours": 2090.0,
+   "priority_reasons": [
+    "High-severity signals: Rapid onward movement, Beneficiary linked to other disputes",
+    "Golden hour: up to ₹1,200 may still be in visible accounts",
+    "SLA pressure: Hold request to beneficiary bank in -46.0 h",
+    "Beneficiary appears in other disputes"
+   ],
+   "next_action": {
+    "label": "Review 2 hold recommendations",
+    "tab": "overview"
+   }
+  },
+  {
+   "id": "CASE-24044",
+   "category_label": "Authorised push-payment scam",
+   "priority": "P1",
+   "status": "investigating",
+   "amount_label": "₹40,000",
+   "due_at": "2027-01-13T04:16:00Z",
+   "sla_remaining_hours": 2112.0,
+   "priority_reasons": [
+    "Material value: ₹40,000",
+    "High-severity signals: Rapid onward movement",
+    "Golden hour: up to ₹38,000 may still be in visible accounts",
+    "SLA pressure: Hold request to beneficiary bank in -24.0 h"
+   ],
+   "next_action": {
+    "label": "Review 1 hold recommendation",
+    "tab": "overview"
+   }
+  },
+  {
+   "id": "CASE-24051",
+   "category_label": "Unauthorised transfer",
+   "priority": "P1",
+   "status": "new",
+   "amount_label": "₹50,000",
+   "due_at": "2027-01-15T03:16:00Z",
+   "sla_remaining_hours": 2159.0,
+   "priority_reasons": [
+    "Material value: ₹50,000",
+    "High-severity signals: Rapid onward movement, Split into multiple transfers, Beneficiary linked to other disputes, Failed logins before the transfer",
+    "Golden hour: up to ₹19,000 may still be in visible accounts",
+    "Beneficiary appears in other disputes"
+   ],
+   "next_action": {
+    "label": "Triage: check the trail and claim the case",
+    "tab": "graph"
+   }
+  },
+  {
+   "id": "CASE-24039",
+   "category_label": "Unauthorised transfer",
+   "priority": "P2",
+   "status": "investigating",
+   "amount_label": "₹8,000",
+   "due_at": "2027-01-11T04:16:00Z",
+   "sla_remaining_hours": 2064.0,
+   "priority_reasons": [
+    "High-severity signals: Rapid onward movement",
+    "Golden hour: up to ₹2,000 may still be in visible accounts"
+   ],
+   "next_action": {
+    "label": "Review 2 hold recommendations",
+    "tab": "overview"
+   }
+  },
+  {
+   "id": "CASE-24042",
+   "category_label": "Processing error / duplicate debit",
+   "priority": "P3",
+   "status": "ready_for_review",
+   "amount_label": "₹25,000",
+   "due_at": "2026-11-14T04:16:00Z",
+   "sla_remaining_hours": 672.0,
+   "priority_reasons": [
+    "Material value: ₹25,000",
+    "Medium-severity signals: Unusual amount, Funds left this bank"
+   ],
+   "next_action": {
+    "label": "Record the decision",
+    "tab": "audit"
+   }
+  }
+ ],
+ "golden_hour": [
+  {
+   "id": "CASE-24031",
+   "category_label": "Account takeover",
+   "priority": "P1",
+   "status": "awaiting_evidence",
+   "amount_label": "₹15,000",
+   "due_at": "2027-01-09T09:16:00Z",
+   "sla_remaining_hours": 2021.0,
+   "priority_reasons": [
+    "High-severity signals: Rapid onward movement, Beneficiary linked to other disputes, Failed logins before the transfer",
+    "Golden hour: up to ₹1,200 may still be in visible accounts",
+    "Beneficiary appears in other disputes"
+   ],
+   "next_action": {
+    "label": "Review 2 hold recommendations",
+    "tab": "overview"
+   }
+  },
+  {
+   "id": "CASE-24038",
+   "category_label": "Authorised push-payment scam",
+   "priority": "P1",
+   "status": "triage",
+   "amount_label": "₹22,000",
+   "due_at": "2027-01-12T06:16:00Z",
+   "sla_remaining_hours": 2090.0,
+   "priority_reasons": [
+    "High-severity signals: Rapid onward movement, Beneficiary linked to other disputes",
+    "Golden hour: up to ₹1,200 may still be in visible accounts",
+    "SLA pressure: Hold request to beneficiary bank in -46.0 h",
+    "Beneficiary appears in other disputes"
+   ],
+   "next_action": {
+    "label": "Review 2 hold recommendations",
+    "tab": "overview"
+   }
+  },
+  {
+   "id": "CASE-24051",
+   "category_label": "Unauthorised transfer",
+   "priority": "P1",
+   "status": "new",
+   "amount_label": "₹50,000",
+   "due_at": "2027-01-15T03:16:00Z",
+   "sla_remaining_hours": 2159.0,
+   "priority_reasons": [
+    "Material value: ₹50,000",
+    "High-severity signals: Rapid onward movement, Split into multiple transfers, Beneficiary linked to other disputes, Failed logins before the transfer",
+    "Golden hour: up to ₹19,000 may still be in visible accounts",
+    "Beneficiary appears in other disputes"
+   ],
+   "next_action": {
+    "label": "Triage: check the trail and claim the case",
+    "tab": "graph"
+   }
+  },
+  {
+   "id": "CASE-24044",
+   "category_label": "Authorised push-payment scam",
+   "priority": "P1",
+   "status": "investigating",
+   "amount_label": "₹40,000",
+   "due_at": "2027-01-13T04:16:00Z",
+   "sla_remaining_hours": 2112.0,
+   "priority_reasons": [
+    "Material value: ₹40,000",
+    "High-severity signals: Rapid onward movement",
+    "Golden hour: up to ₹38,000 may still be in visible accounts",
+    "SLA pressure: Hold request to beneficiary bank in -24.0 h"
+   ],
+   "next_action": {
+    "label": "Review 1 hold recommendation",
+    "tab": "overview"
+   }
+  },
+  {
+   "id": "CASE-24039",
+   "category_label": "Unauthorised transfer",
+   "priority": "P2",
+   "status": "investigating",
+   "amount_label": "₹8,000",
+   "due_at": "2027-01-11T04:16:00Z",
+   "sla_remaining_hours": 2064.0,
+   "priority_reasons": [
+    "High-severity signals: Rapid onward movement",
+    "Golden hour: up to ₹2,000 may still be in visible accounts"
+   ],
+   "next_action": {
+    "label": "Review 2 hold recommendations",
+    "tab": "overview"
+   }
+  }
+ ],
+ "at_risk": [],
+ "recent_activity": [
+  {
+   "id": 20,
+   "case_id": "CASE-24033",
+   "actor": "sup.meera",
+   "action": "decision_recorded",
+   "created_at": "2026-10-17T04:16:30Z"
+  },
+  {
+   "id": 19,
+   "case_id": "CASE-24033",
+   "actor": "sup.meera",
+   "action": "status_changed",
+   "created_at": "2026-10-17T04:16:29Z"
+  },
+  {
+   "id": 18,
+   "case_id": "CASE-24033",
+   "actor": "sup.meera",
+   "action": "report_reviewed",
+   "created_at": "2026-10-17T04:16:29Z"
+  },
+  {
+   "id": 17,
+   "case_id": "CASE-24033",
+   "actor": "sup.meera",
+   "action": "report_generated",
+   "created_at": "2026-10-17T04:16:29Z"
+  }
+ ],
+ "outcomes": {
+  "generated_at": "2026-10-17T04:16:30.082436Z",
+  "cases": {
+   "total": 11,
+   "open": 10,
+   "decided": 1
+  },
+  "measurements": {
+   "median_investigation_hours": {
+    "value": 144.01,
+    "n": 1,
+    "unit": "hours",
+    "note": "Reported → decision recorded, decided cases only",
+    "status": "ok"
+   },
+   "median_hours_to_first_action": {
+    "value": 144.01,
+    "n": 1,
+    "unit": "hours",
+    "note": "Reported → first investigator action",
+    "status": "ok"
+   },
+   "median_hours_to_escalation": {
+    "value": null,
+    "n": 0,
+    "unit": "hours",
+    "note": "Reported → escalation, escalated cases only",
+    "status": "not_enough_data"
+   },
+   "decided_within_sla": {
+    "value": 1.0,
+    "n": 1,
+    "unit": "ratio",
+    "note": "Decisions recorded before the resolution due date",
+    "status": "ok"
+   },
+   "open_cases_past_sla": {
+    "value": 0,
+    "n": 10,
+    "unit": "count",
+    "note": "Open cases already past their resolution due date",
+    "status": "ok"
+   },
+   "evidence_completeness_at_decision": {
+    "value": 0.5,
+    "n": 1,
+    "unit": "ratio",
+    "note": "Required evidence present when the decision was recorded (median)",
+    "status": "ok"
+   },
+   "findings_linked_to_sources": {
+    "value": 0.9286,
+    "n": 14,
+    "unit": "ratio",
+    "note": "Report claims with valid source citations",
+    "status": "ok"
+   },
+   "unsupported_claims_in_accepted_reports": {
+    "value": 0,
+    "n": 1,
+    "unit": "count",
+    "note": "Flagged claims an investigator accepted (target 0)",
+    "status": "ok"
+   },
+   "automated_claim_rejections": {
+    "value": 0,
+    "n": 1,
+    "unit": "count",
+    "note": "Claims declined without a human decision (structurally impossible; target 0)",
+    "status": "ok"
+   },
+   "investigator_actions_per_decided_case": {
+    "value": 4.0,
+    "n": 1,
+    "unit": "actions",
+    "note": "Recorded investigator actions per decided case (median)",
+    "status": "ok"
+   }
+  },
+  "note": "Measured from this deployment's case activity only. There is no historical baseline in a synthetic demo, so improvement percentages are not claimed."
+ }
+}
