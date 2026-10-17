@@ -38,8 +38,9 @@ class Settings(BaseSettings):
     llm_enabled: bool = True
     # Comma-separated fallback chains: the first model that responds is used.
     gemini_fast_models: str = "gemini-3.8-flash,gemini-2.5-flash"
-    gemini_pro_models: str = "gemini-3.1-pro-preview,gemini-2.5-pro"
-    llm_timeout_seconds: float = 45.0
+    gemini_pro_models: str = "gemini-3.1-pro-preview,gemini-3.8-flash"
+    llm_timeout_seconds: float = 60.0  # fast tier (explore, evidence, judge, copilot)
+    llm_pro_timeout_seconds: float = 150.0  # report drafting; on timeout falls back to the next model in the chain
     llm_daily_budget_usd: float = 20.0
     llm_case_budget_usd: float = 1.0
     # Optional JSON override of the price table: {"model": {"input": usd_per_1m, "output": usd_per_1m}}

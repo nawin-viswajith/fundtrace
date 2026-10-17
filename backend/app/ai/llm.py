@@ -124,6 +124,7 @@ class GeminiGateway:
         from google.genai import types
 
         models = self.s.pro_models if tier == "pro" else self.s.fast_models
+        timeout_s = self.s.llm_pro_timeout_seconds if tier == "pro" else self.s.llm_timeout_seconds
         res = LLMResult(ok=False, status="error")
         for model in models:
             t0 = time.perf_counter()
@@ -131,7 +132,7 @@ class GeminiGateway:
                 try:
                     cfg = types.GenerateContentConfig(
                         system_instruction=system, temperature=temperature, response_mime_type="application/json",
-                        response_schema=schema, http_options=types.HttpOptions(timeout=int(self.s.llm_timeout_seconds * 1000)),
+                        response_schema=schema, http_options=types.HttpOptions(timeout=int(timeout_s * 1000)),
                     )
                     resp = self.client().models.generate_content(model=model, contents=contents, config=cfg)
                 except Exception as exc:
@@ -141,7 +142,9 @@ class GeminiGateway:
                                     attempts=res.attempts + [{"model": model, "status": status}])
                     sp.set_attribute("llm.status", status)
                     if "404" in msg or "not found" in msg.lower() or "NOT_FOUND" in msg:
-                        continue  # try the next model in the chain
+                        continue  # model unavailable: try the next model in the chain
+                    if status == "timeout" and tier == "pro":
+                        continue  # a slow Pro model falls back to the next (faster) model in its chain
                     break
                 res = self._parse(resp, model, schema, t0, res.attempts)
                 sp.set_attribute("llm.status", res.status)

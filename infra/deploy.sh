@@ -15,7 +15,7 @@ SQL_TIER="${SQL_TIER:-db-g1-small}"
 BUCKET="${BUCKET:-${PROJECT}-fundtrace-evidence}"
 SA_NAME="${SA_NAME:-fundtrace-run}"
 GEMINI_FAST_MODELS="${GEMINI_FAST_MODELS:-gemini-3.8-flash,gemini-2.5-flash}"
-GEMINI_PRO_MODELS="${GEMINI_PRO_MODELS:-gemini-3.1-pro-preview,gemini-2.5-pro}"
+GEMINI_PRO_MODELS="${GEMINI_PRO_MODELS:-gemini-3.1-pro-preview,gemini-3.8-flash}"
 GEMINI_LOCATION="${GEMINI_LOCATION:-global}"
 SA_EMAIL="${SA_NAME}@${PROJECT}.iam.gserviceaccount.com"
 
@@ -82,9 +82,9 @@ gcloud storage buckets add-iam-policy-binding "gs://$BUCKET" --member="serviceAc
 
 log "Building and deploying to Cloud Run ($SERVICE in $REGION)"
 gcloud run deploy "$SERVICE" --source . --region "$REGION" --service-account "$SA_EMAIL" \
-  --add-cloudsql-instances "$CONN" --allow-unauthenticated --memory 1Gi --cpu 1 --timeout 300 \
+  --add-cloudsql-instances "$CONN" --allow-unauthenticated --memory 1Gi --cpu 1 --timeout 900 \
   --concurrency 40 --min-instances 0 --max-instances 3 \
-  --set-env-vars "^@^ENVIRONMENT=cloud@GCP_PROJECT=$PROJECT@GCP_LOCATION=$REGION@GEMINI_LOCATION=$GEMINI_LOCATION@LLM_ENABLED=true@GEMINI_FAST_MODELS=$GEMINI_FAST_MODELS@GEMINI_PRO_MODELS=$GEMINI_PRO_MODELS@STORAGE_BACKEND=gcs@GCS_BUCKET=$BUCKET@OTEL_EXPORTER=gcp@COOKIE_SECURE=true@SEED_ON_START=true@SHOW_DEMO_CREDENTIALS=true@LOG_LEVEL=INFO" \
+  --set-env-vars "^@^ENVIRONMENT=cloud@GCP_PROJECT=$PROJECT@GCP_LOCATION=$REGION@GEMINI_LOCATION=$GEMINI_LOCATION@LLM_ENABLED=true@LLM_TIMEOUT_SECONDS=60@LLM_PRO_TIMEOUT_SECONDS=150@GEMINI_FAST_MODELS=$GEMINI_FAST_MODELS@GEMINI_PRO_MODELS=$GEMINI_PRO_MODELS@STORAGE_BACKEND=gcs@GCS_BUCKET=$BUCKET@OTEL_EXPORTER=gcp@COOKIE_SECURE=true@SEED_ON_START=true@SHOW_DEMO_CREDENTIALS=true@LOG_LEVEL=INFO" \
   --set-secrets "DATABASE_URL=fundtrace-db-url:latest,JWT_SECRET=fundtrace-jwt-secret:latest"
 
 URL="$(gcloud run services describe "$SERVICE" --region "$REGION" --format='value(status.url)')"

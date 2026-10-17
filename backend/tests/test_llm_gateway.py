@@ -90,3 +90,12 @@ def test_disabled_without_project(seeded, db):
     r = g.generate(node="classify", prompt_version="t", contents=["x"], schema=Classification, db=db)
     assert r.status == "disabled"
     db.rollback()
+
+
+def test_slow_pro_model_falls_back_to_next_in_chain(gw, db):
+    gw.s = gw.s.model_copy(update={"gemini_pro_models": "gemini-3.1-pro-preview,gemini-3.8-flash"})
+    fm = FakeModels({"gemini-3.1-pro-preview": TimeoutError("Deadline exceeded"), "gemini-3.8-flash": resp(GOOD)})
+    gw._client = SimpleNamespace(models=fm)
+    r = gw.generate(node="draft_report", prompt_version="t", contents=["x"], schema=Classification, tier="pro", db=db)
+    assert r.ok and r.model == "gemini-3.8-flash" and fm.seen == ["gemini-3.1-pro-preview", "gemini-3.8-flash"]
+    db.rollback()
