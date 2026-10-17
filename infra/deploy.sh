@@ -36,6 +36,12 @@ for role in roles/aiplatform.user roles/cloudsql.client roles/secretmanager.secr
   gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:$SA_EMAIL" --role="$role" --condition=None >/dev/null
 done
 
+log "Allowing Cloud Build (default compute service account) to build from source"
+PROJECT_NUMBER="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')"
+for role in roles/run.builder roles/logging.logWriter roles/artifactregistry.writer roles/storage.objectViewer; do
+  gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"     --role="$role" --condition=None >/dev/null
+done
+
 log "Cloud SQL for MySQL 8 ($INSTANCE, $SQL_TIER) — first creation takes ~10 minutes"
 if ! gcloud sql instances describe "$INSTANCE" >/dev/null 2>&1; then
   gcloud sql instances create "$INSTANCE" --database-version=MYSQL_8_0 --edition=ENTERPRISE --tier="$SQL_TIER" \
@@ -80,7 +86,7 @@ gcloud logging metrics describe fundtrace_ai_failures >/dev/null 2>&1 || gcloud 
 gcloud monitoring dashboards create --config-from-file=infra/monitoring-dashboard.json >/dev/null 2>&1 || true
 
 log "Smoke test"
-curl -fsS "$URL/api/healthz" && echo
+curl -fsS "$URL/api/healthz" 2>/dev/null || curl -fsS --ssl-no-revoke "$URL/api/healthz"; echo
 echo
 echo "FundTrace is live: $URL"
 echo "Logins (synthetic demo): inv.asha / inv.ravi / sup.meera / admin — password shown on the login page."
