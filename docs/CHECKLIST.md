@@ -55,7 +55,7 @@ Status as of 2026-10-17. Testing items are excluded.
 
 ### Deliverables
 - [x] README, PLAN, progress notes, video script (`docs/DEMO_VIDEO.md`)
-- [x] Pitch deck: 14 slides — `docs/FundTrace-deck.pdf` plus the online version
+- [x] Pitch deck: 14 slides — `docs/FundTrace-deck.pdf` (screenshots in the navy/teal theme) plus the online version
 - [x] GitHub repo created and pushed (private): https://github.com/nawin-viswajith/fundtrace
 
 ## ⬜ To do
@@ -67,7 +67,6 @@ Status as of 2026-10-17. Testing items are excluded.
 
 ### Deliverables
 - [ ] Fill deck placeholders: team name, Cloud Run URL, repo URL, live hallucination rate, cost per case, run time
-- [ ] Re-take deck screenshots in the new navy/teal theme (and the old "100%" confidence card), then re-render the PDF with `python docs/deck/render_pdf.py`
 - [ ] Record the 3-minute video
 - [ ] Make the GitHub repo **public**
 - [ ] Submit on Hack2skill: deployed link, video, repo, deck PDF, theme
