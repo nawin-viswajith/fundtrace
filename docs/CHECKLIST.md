@@ -31,7 +31,6 @@ Status as of 2026-10-17. Testing items are excluded.
 - [x] Upload checks, logs with sensitive data hidden, uniform error format
 - [x] Rule editing with versions
 - [x] Mule-ring detection
-
 - [x] Category-suggestion accuracy evaluation (accuracy, macro-F1); produces numbers once Gemini is connected
 - [x] Evidence deletion and retention flow (request → supervisor approval → file removed, hash kept; admin retention run)
 
