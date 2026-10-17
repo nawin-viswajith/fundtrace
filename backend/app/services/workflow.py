@@ -141,6 +141,11 @@ def apply_action(db: Session, case: m.DisputeCase, user: m.User, body: dict) -> 
                       "report_id": latest.id if latest else None, "report_review": latest.review_status if latest else None})
         return {"ok": True, "status": case.status}
 
+    if kind == "evidence_deletion":
+        from app.services.retention import evidence_deletion
+
+        return evidence_deletion(db, case, user, body)
+
     _err(422, "Unknown action type")
     return {}
 

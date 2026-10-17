@@ -84,6 +84,7 @@ export interface CaseSummary {
   is_synthetic: boolean;
   scenario?: string;
   sla_remaining_hours?: number | null;
+  sla_next_label?: string;
   amount_label?: string;
 }
 
@@ -392,6 +393,9 @@ export interface EvidenceItem {
   extracted: EvidenceExtracted | null;
   reconciliation: Reconciliation | null;
   is_synthetic: boolean;
+  retention_status?: "active" | "deletion_requested" | "deleted";
+  retention_note?: string | null;
+  deleted_at?: string | null;
 }
 export interface EvidenceRequest {
   id: number;
@@ -818,7 +822,8 @@ export type CaseAction =
   | { type: "request_evidence"; checklist_key: string; requested_from: string; note?: string }
   | { type: "hold"; hold_id: number; decision: "request" | "decline"; note: string; amount_minor?: number }
   | { type: "recategorise"; category: string; reason: string; from_ai?: boolean }
-  | { type: "decision"; decision: string; rationale: string; override_reason?: string };
+  | { type: "decision"; decision: string; rationale: string; override_reason?: string }
+  | { type: "evidence_deletion"; evidence_id: string; decision: "request" | "approve" | "cancel"; note: string };
 
 export interface GraphQueryParams {
   direction: "forward" | "backward" | "both";

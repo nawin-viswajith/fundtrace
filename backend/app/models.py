@@ -181,6 +181,10 @@ class EvidenceItem(Base):
     analysis_note: Mapped[str | None] = mapped_column(String(255), nullable=True)
     extracted: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     reconciliation: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    # Retention: active | deletion_requested | deleted. A deleted item keeps its metadata and hash (tombstone).
+    retention_status: Mapped[str] = mapped_column(String(24), default="active", server_default="active")
+    retention_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     is_synthetic: Mapped[bool] = mapped_column(Boolean, default=True)
 
 

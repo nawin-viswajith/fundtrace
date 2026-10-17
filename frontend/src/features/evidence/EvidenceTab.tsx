@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ExternalLink, FileSearch, FileText, Send, ShieldAlert } from "lucide-react";
+import { ExternalLink, FileSearch, FileText, Send, ShieldAlert, Trash2 } from "lucide-react";
+import { canSupervise, useAuth } from "../auth/AuthProvider";
 import { useEvidence, useInvalidateCase, useCaseAction } from "../../api/hooks";
 import { api } from "../../api/endpoints";
 import { errorMessage } from "../../api/client";
@@ -145,9 +146,32 @@ function EvidenceCard({ ev }: { ev: EvidenceItem }) {
     },
     onError: (e) => toast.show(errorMessage(e), "bad"),
   });
+  const { user } = useAuth();
+  const [deletion, setDeletion] = useState<null | "request" | "approve" | "cancel">(null);
   const rec = ev.reconciliation;
   const notAnalysed = ev.analysis_status !== "analysed";
   const injected = rec?.embedded_instructions_detected || ev.extracted?.embedded_instructions_detected;
+  const retention = ev.retention_status ?? "active";
+  if (retention === "deleted")
+    return (
+      <li className="evidence-card evidence-deleted">
+        <div className="evidence-head">
+          <div className="evidence-title">
+            <Trash2 size={16} aria-hidden="true" />
+            <strong className="break">{ev.filename}</strong>
+            <IdChip id={ev.id} />
+          </div>
+          <Chip tone="neutral" size="sm">
+            File deleted
+          </Chip>
+        </div>
+        <p className="small muted">
+          Deleted {ev.deleted_at && <Time iso={ev.deleted_at} />}
+          {ev.retention_note && <> — “{ev.retention_note}”</>}. The file and anything read from it were removed; the record and its
+          sha256 <span className="mono" title={ev.sha256}>{shortHash(ev.sha256, 12)}</span> stay in the audit trail.
+        </p>
+      </li>
+    );
   return (
     <li className="evidence-card">
       <div className="evidence-head">
@@ -163,8 +187,32 @@ function EvidenceCard({ ev }: { ev: EvidenceItem }) {
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => analyse.mutate()} disabled={analyse.isPending}>
             <FileSearch size={14} aria-hidden="true" /> {analyse.isPending ? "Analysing…" : notAnalysed ? "Analyse" : "Re-analyse"}
           </button>
+          {retention === "active" && (
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setDeletion("request")}>
+              <Trash2 size={14} aria-hidden="true" /> Request deletion
+            </button>
+          )}
         </div>
       </div>
+      {retention === "deletion_requested" && (
+        <Note tone="warn" icon={<Trash2 size={15} />}>
+          <strong>Deletion requested</strong>
+          {ev.retention_note && <> — “{ev.retention_note}”</>}.{" "}
+          {canSupervise(user) ? (
+            <span className="inline-actions">
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setDeletion("approve")}>
+                Approve deletion
+              </button>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setDeletion("cancel")}>
+                Keep file
+              </button>
+            </span>
+          ) : (
+            <span className="muted">Waiting for a supervisor.</span>
+          )}
+        </Note>
+      )}
+      {deletion && <DeletionDialog ev={ev} decision={deletion} onClose={() => setDeletion(null)} />}
       <p className="small muted">
         {humanize(ev.kind)} · {ev.mime} · {formatBytes(ev.size)} · sha256 <span className="mono" title={ev.sha256}>{shortHash(ev.sha256, 12)}</span> · uploaded by{" "}
         {ev.uploaded_by} <Time iso={ev.uploaded_at} />
@@ -280,6 +328,58 @@ function RequestDialog({ item, onClose }: { item: ChecklistItem; onClose: () => 
         <label className="field">
           <span className="field-label">Note (optional)</span>
           <textarea className="textarea" rows={3} value={note} onChange={(e) => setNote(e.target.value)} maxLength={2000} />
+        </label>
+        <InlineError error={action.error} />
+      </form>
+    </Modal>
+  );
+}
+
+const DELETION_COPY = {
+  request: { title: "Request deletion", button: "Request deletion", help: "A supervisor must approve. The record and its hash stay in the audit trail." },
+  approve: { title: "Approve deletion", button: "Delete file", help: "Deletes the file and anything read from it. This cannot be undone; the record and hash are kept." },
+  cancel: { title: "Keep this file", button: "Cancel request", help: "The deletion request is withdrawn and the file stays." },
+} as const;
+
+function DeletionDialog({ ev, decision, onClose }: { ev: EvidenceItem; decision: "request" | "approve" | "cancel"; onClose: () => void }) {
+  const { caseId } = useWorkspace();
+  const action = useCaseAction(caseId);
+  const toast = useToast();
+  const [note, setNote] = useState("");
+  const copy = DELETION_COPY[decision];
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    action.mutate(
+      { type: "evidence_deletion", evidence_id: ev.id, decision, note: note.trim() },
+      {
+        onSuccess: () => {
+          toast.show(decision === "approve" ? `${ev.filename} deleted` : decision === "request" ? "Deletion requested" : "Request cancelled");
+          onClose();
+        },
+      },
+    );
+  };
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={`${copy.title}: ${ev.filename}`}
+      description={copy.help}
+      footer={
+        <>
+          <button type="button" className="btn btn-ghost" onClick={onClose}>
+            Back
+          </button>
+          <button type="submit" form="del-form" className={decision === "approve" ? "btn btn-danger" : "btn btn-primary"} disabled={action.isPending || note.trim().length < 10}>
+            {action.isPending ? "Saving…" : copy.button}
+          </button>
+        </>
+      }
+    >
+      <form id="del-form" onSubmit={submit}>
+        <label className="field">
+          <span className="field-label">Reason (at least 10 characters)</span>
+          <textarea className="textarea" rows={3} value={note} onChange={(e) => setNote(e.target.value)} maxLength={1000} required />
         </label>
         <InlineError error={action.error} />
       </form>

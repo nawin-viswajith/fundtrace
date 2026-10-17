@@ -98,11 +98,51 @@ def evaluate_ai(db: Session) -> dict:
     }
 
 
-def run_and_store(db: Session) -> m.EvalRun:
+def evaluate_classification(db: Session, gateway=None) -> dict:
+    """Gemini category suggestions vs. the labelled category of each synthetic case: accuracy and macro-F1.
+
+    Labels are the categories the synthetic scenarios were written for. Calls that fail are counted as
+    not analysed, never as a wrong or right answer.
+    """
+    from app.ai.copilot import classify_statement
+
+    cases = db.scalars(select(m.DisputeCase).where(m.DisputeCase.is_synthetic.is_(True))).unique().all()
+    rows, not_analysed = [], 0
+    for c in cases:
+        res = classify_statement(db, c, gateway=gateway, node="eval_classify")
+        if not res.ok:
+            not_analysed += 1
+            continue
+        rows.append({"case_id": c.id, "label": c.category, "predicted": res.data.category.value})
+    if not rows:
+        return {"status": "not_analysed", "cases": len(cases), "not_analysed": not_analysed,
+                "note": "No classification could be run (AI unavailable)."}
+    labels = sorted({r["label"] for r in rows} | {r["predicted"] for r in rows})
+    per_class = {}
+    for lab in labels:
+        tp = sum(1 for r in rows if r["label"] == lab and r["predicted"] == lab)
+        fp = sum(1 for r in rows if r["label"] != lab and r["predicted"] == lab)
+        fn = sum(1 for r in rows if r["label"] == lab and r["predicted"] != lab)
+        p = tp / (tp + fp) if tp + fp else 0.0
+        rcl = tp / (tp + fn) if tp + fn else 0.0
+        per_class[lab] = {"precision": round(p, 4), "recall": round(rcl, 4), "f1": round(2 * p * rcl / (p + rcl), 4) if p + rcl else 0.0,
+                          "support": sum(1 for r in rows if r["label"] == lab)}
+    present = [lab for lab in labels if per_class[lab]["support"] > 0]
+    return {"status": "ok", "cases": len(cases), "classified": len(rows), "not_analysed": not_analysed,
+            "accuracy": round(sum(1 for r in rows if r["label"] == r["predicted"]) / len(rows), 4),
+            "macro_f1": round(sum(per_class[lab]["f1"] for lab in present) / len(present), 4) if present else None,
+            "per_class": per_class, "rows": rows,
+            "note": "Labels are the categories the synthetic scenarios were written for; a small set, so treat as a smoke check."}
+
+
+def run_and_store(db: Session, include_classification: bool = False, gateway=None) -> m.EvalRun:
     det = evaluate_deterministic(db)
     ai = evaluate_ai(db)
-    run = m.EvalRun(kind="full", metrics={"deterministic": {k: v for k, v in det.items() if k != "details"}, "ai": ai},
-                    details=det["details"])
+    metrics = {"deterministic": {k: v for k, v in det.items() if k != "details"}, "ai": ai}
+    if include_classification:
+        cls = evaluate_classification(db, gateway)
+        metrics["classification"] = {k: v for k, v in cls.items() if k != "rows"}
+    run = m.EvalRun(kind="full", metrics=metrics, details=det["details"])
     db.add(run)
     db.flush()
     return run

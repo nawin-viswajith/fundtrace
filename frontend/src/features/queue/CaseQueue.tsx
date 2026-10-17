@@ -189,7 +189,14 @@ export function QueueBody({ loading, error, retry, cases, labels, filtersActive 
               </td>
               <td data-label="Owner">{c.owner ? c.owner.full_name.replace(" (synthetic)", "") : <span className="muted">Unassigned</span>}</td>
               <td data-label="SLA">
-                {c.status === "resolved" ? <span className="muted">Closed</span> : <SlaRemaining hours={c.sla_remaining_hours} />}
+                {c.status === "resolved" ? (
+                  <span className="muted">Closed</span>
+                ) : (
+                  <span className="sla-cell">
+                    <SlaRemaining hours={c.sla_remaining_hours} />
+                    {c.sla_next_label && <span className="muted small sla-next">{c.sla_next_label}</span>}
+                  </span>
+                )}
               </td>
               <td data-label="Reported">
                 <Time iso={c.reported_at} />

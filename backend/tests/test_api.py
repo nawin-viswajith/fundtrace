@@ -192,3 +192,32 @@ def test_investigator_can_claim_unassigned_but_not_steal(client):
     assert client.post("/api/cases/CASE-24047/actions", json={"type": "assign", "user_id": me}).status_code == 200
     login(client, "inv.ravi")
     assert client.get("/api/cases/CASE-24047").status_code == 404  # now owned by inv.asha
+
+
+def test_evidence_deletion_request_approve_and_tombstone(client):
+    login(client, "inv.asha")
+    up = client.post("/api/cases/CASE-24051/evidence", files={"file": ("old.txt", io.BytesIO(b"old letter"), "text/plain")}).json()
+    ev = up["id"]
+    url = "/api/cases/CASE-24051/actions"
+    assert client.post(url, json={"type": "evidence_deletion", "evidence_id": ev, "decision": "request", "note": "x"}).status_code == 422
+    assert client.post(url, json={"type": "evidence_deletion", "evidence_id": ev, "decision": "request",
+                                  "note": "Customer withdrew this document"}).status_code == 200
+    assert client.post(url, json={"type": "evidence_deletion", "evidence_id": ev, "decision": "approve",
+                                  "note": "Investigator cannot approve"}).status_code == 403
+    login(client, "sup.meera")
+    r = client.post(url, json={"type": "evidence_deletion", "evidence_id": ev, "decision": "approve", "note": "Approved: customer request"})
+    assert r.status_code == 200 and r.json()["retention_status"] == "deleted"
+    f = client.get(f"/api/cases/CASE-24051/evidence/{ev}/file")
+    assert f.status_code == 410 and f.json()["error"]["code"] == "gone"
+    item = next(e for e in client.get("/api/cases/CASE-24051/evidence").json()["evidence"] if e["id"] == ev)
+    assert item["retention_status"] == "deleted" and item["sha256"] and item["extracted"] is None
+    actions = [e["action"] for e in client.get("/api/cases/CASE-24051/audit").json()["events"]]
+    assert "evidence_deletion_requested" in actions and "evidence_deleted" in actions
+
+
+def test_retention_run_is_admin_only_and_dry_run_by_default(client):
+    login(client, "sup.meera")
+    assert client.post("/api/admin/retention/run").status_code == 403
+    login(client, "admin")
+    r = client.post("/api/admin/retention/run").json()
+    assert r["dry_run"] is True and r["deleted"] == 0

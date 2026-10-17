@@ -1922,3 +1922,10 @@
 .case-facts-compact .fact-value { display: inline-flex; align-items: center; gap: var(--s-2); }
 .fact-amount-sm { font-size: 17px; font-weight: 650; font-variant-numeric: tabular-nums; }
 .case-facts-toggle { margin-left: auto; }
+
+.sla-cell { display: inline-flex; flex-direction: column; gap: 2px; }
+.sla-next { font-size: 12px; }
+
+/* Evidence retention */
+.inline-actions { display: inline-flex; gap: var(--s-2); margin-left: var(--s-2); vertical-align: middle; }
+.evidence-deleted { opacity: 0.85; border-style: dashed; }

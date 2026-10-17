@@ -93,6 +93,7 @@ export default function OpsPage() {
 
       <EvalSection runs={evals.data?.runs} loading={evals.isLoading} error={evals.error} retry={() => evals.refetch()} canRun={canSupervise(user)} />
       {user?.role === "admin" && <AdminCard />}
+      {user?.role === "admin" && <RetentionCard />}
     </div>
   );
 }
@@ -308,6 +309,42 @@ function AdminCard() {
       >
         <InlineError error={reset.error} />
       </Modal>
+    </Card>
+  );
+}
+
+function RetentionCard() {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const run = useMutation({
+    mutationFn: (dryRun: boolean) => api.runRetention(dryRun),
+    onSuccess: async (r) => {
+      if (!r.dry_run) {
+        await qc.invalidateQueries();
+        toast.show(`${r.deleted} evidence file(s) deleted under the retention policy`);
+      }
+    },
+  });
+  const r = run.data;
+  return (
+    <Card title="Evidence retention" subtitle="Deletes evidence files of resolved cases decided longer ago than the retention period. Records and hashes stay in the audit trail.">
+      <div className="inline-actions">
+        <button type="button" className="btn btn-secondary" onClick={() => run.mutate(true)} disabled={run.isPending}>
+          Check what is due (dry run)
+        </button>
+        {r && r.dry_run && r.eligible.length > 0 && (
+          <button type="button" className="btn btn-danger" onClick={() => run.mutate(false)} disabled={run.isPending}>
+            Delete {r.eligible.length} file(s)
+          </button>
+        )}
+      </div>
+      {r && (
+        <p className="small muted" style={{ marginTop: 12 }}>
+          Retention period {r.retention_days} days · cut-off <Time iso={r.cutoff} /> ·{" "}
+          {r.dry_run ? `${r.eligible.length} file(s) due for deletion` : `${r.deleted} file(s) deleted`}
+        </p>
+      )}
+      <InlineError error={run.error} />
     </Card>
   );
 }

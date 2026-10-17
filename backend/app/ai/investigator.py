@@ -98,7 +98,8 @@ def build_graph(db: Session, case: m.DisputeCase, gw: Gateway, actor: str):
     def evidence(state: State) -> dict:
         t0 = time.perf_counter()
         items = db.scalars(select(m.EvidenceItem).where(m.EvidenceItem.case_id == case.id,
-                                                        m.EvidenceItem.analysis_status != "analysed")).all()
+                                                        m.EvidenceItem.analysis_status != "analysed",
+                                                        m.EvidenceItem.retention_status != "deleted")).all()
         if not items:
             return {"steps": _step("evidence", "ok", t0, analysed=0)}
         if not gw.available():

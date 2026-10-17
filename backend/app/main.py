@@ -20,7 +20,7 @@ from app.db import create_all, init_engine, session_scope
 log = logging.getLogger("fundtrace")
 FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 CODES = {400: "bad_request", 401: "unauthenticated", 403: "forbidden", 404: "not_found", 409: "conflict", 413: "too_large",
-         415: "unsupported_media", 422: "invalid_input", 429: "rate_limited", 500: "internal_error"}
+         410: "gone", 415: "unsupported_media", 422: "invalid_input", 429: "rate_limited", 500: "internal_error"}
 
 
 def bootstrap() -> None:

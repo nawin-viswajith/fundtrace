@@ -32,10 +32,15 @@ Status as of 2026-10-17. Testing items are excluded.
 - [x] Rule editing with versions
 - [x] Mule-ring detection
 
+- [x] Category-suggestion accuracy evaluation (accuracy, macro-F1); produces numbers once Gemini is connected
+- [x] Evidence deletion and retention flow (request → supervisor approval → file removed, hash kept; admin retention run)
+
 ### API and UI
 - [x] Full REST API
 - [x] React UI: login, case queue, case workspace (7 tabs), trail graph, Network, Rules, AI Ops
 - [x] Light and dark themes, mobile layout, loading, empty and error states
+- [x] Queue SLA column shows the next open milestone
+- [x] Frontend linting (ESLint, zero warnings)
 
 ### Telemetry and infrastructure
 - [x] OpenTelemetry → Cloud Trace, structured logs, AI-call logs ready for Cloud Monitoring
@@ -65,8 +70,4 @@ Status as of 2026-10-17. Testing items are excluded.
 
 ### In the plan but not built (optional)
 - [ ] Firebase sign-in button in the UI (the backend endpoint exists)
-- [ ] Measure and calibrate category-suggestion accuracy against labelled cases (macro-F1)
-- [ ] Evidence deletion and retention flow (only the retention setting exists)
-- [ ] Queue SLA column showing the next milestone instead of the final resolution date
-- [ ] Frontend linting setup
 - [ ] Pub/Sub ingest (only the adapter interface exists; otherwise deck-only)

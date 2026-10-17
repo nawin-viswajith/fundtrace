@@ -37,7 +37,9 @@ def evidence_to_dict(e: m.EvidenceItem) -> dict:
     return {"id": e.id, "case_id": e.case_id, "kind": e.kind, "checklist_key": e.checklist_key, "filename": e.filename,
             "mime": e.mime, "sha256": e.sha256, "size": e.size, "uploaded_by": e.uploaded_by,
             "uploaded_at": e.uploaded_at.isoformat() + "Z", "analysis_status": e.analysis_status, "analysis_note": e.analysis_note,
-            "extracted": e.extracted, "reconciliation": e.reconciliation, "is_synthetic": e.is_synthetic}
+            "extracted": e.extracted, "reconciliation": e.reconciliation, "is_synthetic": e.is_synthetic,
+            "retention_status": e.retention_status or "active", "retention_note": e.retention_note,
+            "deleted_at": e.deleted_at.isoformat() + "Z" if e.deleted_at else None}
 
 
 def request_dicts(db: Session, case_id: str) -> list[dict]:

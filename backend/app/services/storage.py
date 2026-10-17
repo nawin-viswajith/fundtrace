@@ -45,13 +45,19 @@ class LocalStorage:
             f.write(data)
         return f"local://{name}"
 
-    def get(self, uri: str) -> bytes:
+    def _path(self, uri: str) -> Path:
         if not uri.startswith("local://"):
             raise StorageError("not a local uri")
         path = (self.root / uri[len("local://"):]).resolve()
         if self.root.resolve() not in path.parents:
             raise StorageError("invalid path")
-        return path.read_bytes()
+        return path
+
+    def get(self, uri: str) -> bytes:
+        return self._path(uri).read_bytes()
+
+    def delete(self, uri: str) -> None:
+        self._path(uri).unlink(missing_ok=True)
 
 
 class GCSStorage:
@@ -72,6 +78,14 @@ class GCSStorage:
         if not uri.startswith(prefix):
             raise StorageError("uri not in configured bucket")
         return self.bucket.blob(uri[len(prefix):]).download_as_bytes()
+
+    def delete(self, uri: str) -> None:
+        prefix = f"gs://{self.bucket_name}/"
+        if not uri.startswith(prefix):
+            raise StorageError("uri not in configured bucket")
+        blob = self.bucket.blob(uri[len(prefix):])
+        if blob.exists():
+            blob.delete()
 
 
 _storage = None

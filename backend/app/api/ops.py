@@ -112,10 +112,11 @@ def ops_evals(user: m.User = Depends(current_user), db: Session = Depends(get_db
 
 
 @router.post("/ops/evals/run")
-def ops_eval_run(user: m.User = Depends(require_role("supervisor", "admin")), db: Session = Depends(get_db)):
+def ops_eval_run(include_classification: bool = False, user: m.User = Depends(require_role("supervisor", "admin")),
+                 db: Session = Depends(get_db)):
     from app.eval.harness import run_and_store
 
-    run = run_and_store(db)
+    run = run_and_store(db, include_classification=include_classification)
     audit.record(db, None, user.username, user.role, "evaluation_run", {"eval_run_id": run.id})
     db.commit()
     return {"id": run.id, "metrics": run.metrics, "details": run.details}
@@ -194,6 +195,15 @@ def reset_demo(user: m.User = Depends(require_role("admin")), db: Session = Depe
     audit.record(db, None, user.username, user.role, "demo_reset", {k: v for k, v in info.items() if k != "truth"})
     db.commit()
     return {k: v for k, v in info.items() if k != "truth"}
+
+
+@router.post("/admin/retention/run")
+def retention_run(dry_run: bool = True, user: m.User = Depends(require_role("admin")), db: Session = Depends(get_db)):
+    from app.services.retention import run_retention
+
+    out = run_retention(db, user, dry_run=dry_run)
+    db.commit()
+    return out
 
 
 @router.get("/healthz")

@@ -51,7 +51,15 @@ def list_cases(status: str | None = None, priority: str | None = None, owner: st
     out = []
     for c in rows:
         s = inv.case_summary(c)
-        s["sla_remaining_hours"] = round((c.due_at - now).total_seconds() / 3600, 1) if c.due_at else None
+        # Show the next SLA milestone that is still open (e.g. shadow credit before final resolution);
+        # if every milestone is already breached, show the earliest breach.
+        from app.services.scoring import sla as sla_clock
+
+        ms = sla_clock(c.category, c.disputed_txn.currency, c.reported_at, now)["milestones"]
+        open_ms = sorted((m_ for m_ in ms if not m_["breached"]), key=lambda m_: m_["remaining_hours"])
+        nxt = open_ms[0] if open_ms else min(ms, key=lambda m_: m_["remaining_hours"])
+        s["sla_remaining_hours"] = nxt["remaining_hours"]
+        s["sla_next_label"] = nxt["label"]
         s["amount_label"] = fmt_amount(c.disputed_txn.amount_minor, c.disputed_txn.currency)
         out.append(s)
     counts = {st: sum(1 for c in rows if c.status == st) for st in STATUSES}
@@ -227,6 +235,8 @@ def analyse_evidence(case_id: str, evidence_id: str, user: m.User = Depends(curr
     item = db.get(m.EvidenceItem, evidence_id)
     if item is None or item.case_id != case.id:
         raise HTTPException(404, "Evidence not found")
+    if item.retention_status == "deleted":
+        raise HTTPException(409, "This evidence file was deleted under the retention policy")
     result = analyse_item(db, item, get_gateway(), actor=user.username)
     db.commit()
     return {**result, "evidence": inv.evidence_to_dict(item)}
@@ -238,6 +248,8 @@ def evidence_file(case_id: str, evidence_id: str, user: m.User = Depends(current
     item = db.get(m.EvidenceItem, evidence_id)
     if item is None or item.case_id != case.id:
         raise HTTPException(404, "Evidence not found")
+    if item.retention_status == "deleted":
+        raise HTTPException(410, "This evidence file was deleted under the retention policy; its hash is kept in the audit trail")
     data = get_storage().get(item.storage_uri)
     audit.record(db, case.id, user.username, user.role, "evidence_viewed", {"evidence_id": item.id})
     db.commit()

@@ -76,7 +76,7 @@ def test_llm_down_produces_facts_only_report_and_not_analysed_evidence(db, seede
     assert rep.status == "facts_only" and rep.generator == "deterministic"
     assert rep.metrics["validation_passed"] and rep.claims_flagged == 0
     assert rep.confidence is None and rep.hallucination_rate is None  # no AI, so no AI confidence
-    ev = db.scalars(select(m.EvidenceItem).where(m.EvidenceItem.case_id == case.id)).all()
+    ev = db.scalars(select(m.EvidenceItem).where(m.EvidenceItem.case_id == case.id, m.EvidenceItem.retention_status != "deleted")).all()
     assert ev and all(e.analysis_status == "not_analysed" for e in ev)
     assert all("Not analysed" in (e.analysis_note or "") for e in ev)
     # case status is never changed by the AI
@@ -99,7 +99,7 @@ def test_hallucinated_draft_is_caught_retried_and_judged(db, seeded):
     assert run.status == "awaiting_review" and run.snapshot_hash == rep.snapshot_hash
     tools = {t["tool"]: t["status"] for t in run.tool_log}
     assert tools["linked_cases"] == "ok" and tools["expand_account"] == "rejected"  # unknown id refused
-    ev = db.scalars(select(m.EvidenceItem).where(m.EvidenceItem.case_id == case.id)).all()
+    ev = db.scalars(select(m.EvidenceItem).where(m.EvidenceItem.case_id == case.id, m.EvidenceItem.retention_status != "deleted")).all()
     assert ev[0].analysis_status == "analysed"
     checks = {c["field"]: c["result"] for c in ev[0].reconciliation["checks"]}
     assert checks["amount"] == "matches" and checks["reference"] == "matches"
@@ -159,4 +159,25 @@ def test_untrusted_text_is_fenced_in_prompts(db, seeded):
     prompt = str([c for c in gw.calls if c["node"] == "draft_report"][0]["contents"])
     assert "<untrusted>I did not make this payment" in prompt
     assert all("Text inside <untrusted>" in (c["system"] or "") for c in gw.calls)
+    db.rollback()
+
+
+def test_classification_eval_macro_f1_with_fake_gemini(db, seeded):
+    from app.eval.harness import evaluate_classification
+
+    cases = {c.id: c.category for c in db.query(m.DisputeCase).all()}
+    wrong = sorted(cases)[0]
+
+    def resp(node, contents):
+        text = str(contents)
+        cid = next(c for c in cases if db.get(m.DisputeCase, c).allegation[:30] in text)
+        cat = "merchant_dispute" if cid == wrong and cases[cid] != "merchant_dispute" else cases[cid]
+        return {"category": cat, "rationale": "x", "english_translation": None, "detected_language": "en"}
+
+    r = evaluate_classification(db, FakeGateway(resp))
+    assert r["status"] == "ok" and r["classified"] == len(cases)
+    assert r["accuracy"] == round((len(cases) - 1) / len(cases), 4)
+    assert 0 < r["macro_f1"] < 1
+    down = evaluate_classification(db, FakeGateway(lambda n, c: {}, status="disabled"))
+    assert down["status"] == "not_analysed" and down["not_analysed"] == len(cases)
     db.rollback()

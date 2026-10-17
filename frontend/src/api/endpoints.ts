@@ -107,4 +107,14 @@ export const api = {
   opsEvals: () => request<{ runs: EvalRun[] }>("/api/ops/evals"),
   runEval: () => request<EvalRun>("/api/ops/evals/run", { method: "POST" }),
   resetDemo: () => request<Record<string, unknown>>("/api/admin/reset-demo", { method: "POST" }),
+  runRetention: (dryRun: boolean) =>
+    request<RetentionResult>(`/api/admin/retention/run?dry_run=${dryRun}`, { method: "POST" }),
 };
+
+export interface RetentionResult {
+  dry_run: boolean;
+  retention_days: number;
+  cutoff: string;
+  eligible: { evidence_id: string; case_id: string; filename: string }[];
+  deleted: number;
+}

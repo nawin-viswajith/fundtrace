@@ -39,11 +39,16 @@ def ask(db: Session, case: m.DisputeCase, question: str, user: m.User) -> dict:
             "flagged": v["claims_with_errors"], "snapshot_hash": snap["hash"]}
 
 
-def classify(db: Session, case: m.DisputeCase, user: m.User) -> dict:
-    gw = get_gateway()
+def classify_statement(db: Session, case: m.DisputeCase, gateway=None, node: str = "classify"):
+    """One Gemini classification call on the (untrusted) customer statement. Returns the LLMResult."""
+    gw = gateway or get_gateway()
     contents = [f"{prompts.CLASSIFY_INSTRUCTIONS}\n\nCUSTOMER STATEMENT: {prompts.fence(case.allegation)}"]
-    res = gw.generate(node="classify", prompt_version=prompts.CLASSIFY_V, contents=contents, schema=Classification, tier="fast",
-                      system=prompts.GROUND_RULES, case_id=case.id, run_id=None, temperature=0.0, db=db)
+    return gw.generate(node=node, prompt_version=prompts.CLASSIFY_V, contents=contents, schema=Classification, tier="fast",
+                       system=prompts.GROUND_RULES, case_id=case.id, run_id=None, temperature=0.0, db=db)
+
+
+def classify(db: Session, case: m.DisputeCase, user: m.User) -> dict:
+    res = classify_statement(db, case)
     run = m.AIRun(id="RUN-" + uuid.uuid4().hex[:10].upper(), case_id=case.id, kind="classification",
                   status="ok" if res.ok else res.status, prompt_versions={"classify": prompts.CLASSIFY_V}, models=[res.model] if res.model else [],
                   input_tokens=res.input_tokens, output_tokens=res.output_tokens, cost_usd=res.cost_usd, latency_ms=res.latency_ms,
