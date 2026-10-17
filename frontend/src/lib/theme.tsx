@@ -4,13 +4,8 @@ import { Moon, Sun } from "lucide-react";
 export type Theme = "light" | "dark";
 const KEY = "ft-theme";
 
-function systemTheme(): Theme {
-  try {
-    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  } catch {
-    return "light";
-  }
-}
+/** Dark navy is the product default; an explicit choice (stored) always wins. */
+export const DEFAULT_THEME: Theme = "dark";
 
 export function readStoredTheme(): Theme | null {
   try {
@@ -25,29 +20,17 @@ interface ThemeApi {
   theme: Theme;
   toggle: () => void;
 }
-const Ctx = createContext<ThemeApi>({ theme: "light", toggle: () => undefined });
+const Ctx = createContext<ThemeApi>({ theme: DEFAULT_THEME, toggle: () => undefined });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => readStoredTheme() ?? systemTheme());
+  const [theme, setTheme] = useState<Theme>(() => readStoredTheme() ?? DEFAULT_THEME);
   const [explicit, setExplicit] = useState<boolean>(() => readStoredTheme() !== null);
 
+  // Tokens default to dark on :root; data-theme is only written once the user has chosen.
   useEffect(() => {
     if (explicit) document.documentElement.setAttribute("data-theme", theme);
     else document.documentElement.removeAttribute("data-theme");
   }, [theme, explicit]);
-
-  useEffect(() => {
-    if (explicit) return;
-    let mq: MediaQueryList | null = null;
-    try {
-      mq = window.matchMedia("(prefers-color-scheme: dark)");
-    } catch {
-      return;
-    }
-    const h = (e: MediaQueryListEvent) => setTheme(e.matches ? "dark" : "light");
-    mq.addEventListener?.("change", h);
-    return () => mq?.removeEventListener?.("change", h);
-  }, [explicit]);
 
   const toggle = useCallback(() => {
     setTheme((t) => {

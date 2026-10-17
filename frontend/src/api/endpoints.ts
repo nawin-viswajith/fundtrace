@@ -16,12 +16,15 @@ import type {
   Meta,
   OpsCall,
   OpsMetrics,
+  OutcomesResponse,
+  OverviewResponse,
   Report,
   ReportsList,
   RingsResponse,
   RiskResponse,
   RuleCatalogueEntry,
   RuleVersion,
+  SearchResponse,
   TimelineResponse,
 } from "../types/api";
 
@@ -61,6 +64,10 @@ export const api = {
     request<MeResponse>("/api/auth/login", { method: "POST", body: { username, password }, quiet401: true }),
   logout: () => request<{ ok: boolean }>("/api/auth/logout", { method: "POST", quiet401: true }),
   meta: () => request<Meta>("/api/meta"),
+
+  overview: () => request<OverviewResponse>("/api/overview"),
+  outcomes: () => request<OutcomesResponse>("/api/outcomes"),
+  search: (q: string, signal?: AbortSignal) => request<SearchResponse>("/api/search" + qs({ q }), { signal }),
 
   cases: (f: CaseFilters) => request<CaseListResponse>("/api/cases" + qs({ ...f })),
   case: (id: string) => request<CaseContext>(`/api/cases/${enc(id)}`),

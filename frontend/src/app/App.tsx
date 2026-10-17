@@ -9,6 +9,7 @@ import { LoadingBlock, EmptyState } from "../components/Primitives";
 import LoginPage from "../features/auth/LoginPage";
 import AppShell from "../features/shell/AppShell";
 import CaseQueue from "../features/queue/CaseQueue";
+import OverviewPage from "../features/overview/OverviewPage";
 
 const CaseWorkspace = lazy(() => import("../features/case/CaseWorkspace"));
 const NetworkPage = lazy(() => import("../features/network/NetworkPage"));
@@ -58,7 +59,8 @@ export default function App() {
                       </RequireAuth>
                     }
                   >
-                    <Route index element={<Navigate to="/cases" replace />} />
+                    <Route index element={<Navigate to="/overview" replace />} />
+                    <Route path="/overview" element={<OverviewPage />} />
                     <Route path="/cases" element={<CaseQueue />} />
                     <Route
                       path="/cases/:caseId"

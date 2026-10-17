@@ -68,9 +68,20 @@ def overview(user: m.User = Depends(current_user), db: Session = Depends(get_db)
     case_ids = [c.id for c in cases]
     holds = db.scalars(select(m.Hold).where(m.Hold.case_id.in_(case_ids), m.Hold.status == "recommended")).all() if case_ids else []
     golden = sorted({h.case_id for h in holds})
-    at_risk = sorted([c for c in open_cases if c.due_at and 0 <= (c.due_at - now).total_seconds() / 3600 < 72],
-                     key=lambda c: c.due_at)
-    breached = [c for c in open_cases if c.due_at and c.due_at < now]
+    from app.services.scoring import sla as sla_clock
+
+    # Every SLA milestone counts (e.g. shadow credit, hold request), not only final resolution.
+    next_ms: dict[str, float] = {}
+    any_breach: set[str] = set()
+    for c in open_cases:
+        ms = sla_clock(c.category, c.disputed_txn.currency, c.reported_at, now)["milestones"]
+        if any(x["breached"] for x in ms):
+            any_breach.add(c.id)
+        open_ms = [x["remaining_hours"] for x in ms if not x["breached"]]
+        if open_ms:
+            next_ms[c.id] = min(open_ms)
+    at_risk = sorted([c for c in open_cases if c.id in next_ms and next_ms[c.id] < 72], key=lambda c: next_ms[c.id])
+    breached = [c for c in open_cases if c.id in any_breach]
     order = {"P1": 0, "P2": 1, "P3": 2, "P4": 3}
     focus = sorted(open_cases, key=lambda c: (order.get(c.priority, 9), c.due_at or c.reported_at))[:6]
     recent = db.scalars(select(m.AuditEvent).where(m.AuditEvent.case_id.in_(case_ids), m.AuditEvent.action != "case_viewed",

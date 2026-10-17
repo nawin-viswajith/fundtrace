@@ -1,12 +1,15 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Search, X } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useCases } from "../../api/hooks";
 import type { CaseFilters } from "../../api/endpoints";
 import type { CaseStatus, CaseSummary } from "../../types/api";
 import { EmptyState, ErrorState, LoadingBlock, Money, Time } from "../../components/Primitives";
 import { PriorityChip, SectionTitle, SlaRemaining, StatusBadge } from "../../components/Domain";
 import { STATUS_LABELS_FALLBACK } from "../../lib/labels";
+import { caseActionHref, formatAge } from "../../lib/outcomes";
+
+export const PAGE_SIZE = 15;
 
 const STATUS_ORDER: CaseStatus[] = ["new", "triage", "investigating", "awaiting_evidence", "ready_for_review", "escalated", "resolved"];
 const PRIORITIES = ["P1", "P2", "P3", "P4"];
@@ -44,7 +47,7 @@ export default function CaseQueue() {
   const filtersActive = !!(status || priority || owner !== "all" || q);
 
   return (
-    <div className="page">
+    <div className="page page-wide">
       <SectionTitle>Case queue</SectionTitle>
       <p className="page-lede">Sorted by priority and due time. Priority orders the work; it is not a judgement on the claim.</p>
 
@@ -118,6 +121,7 @@ export default function CaseQueue() {
       </div>
 
       <QueueBody
+        key={`${status}|${priority}|${owner}|${q}`}
         loading={list.isLoading}
         error={list.error}
         retry={() => list.refetch()}
@@ -140,6 +144,10 @@ interface BodyProps {
 
 export function QueueBody({ loading, error, retry, cases, labels, filtersActive }: BodyProps) {
   const nav = useNavigate();
+  const [page, setPage] = useState(0);
+  const total = cases?.length ?? 0;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const current = Math.min(page, pages - 1);
   if (loading) return <LoadingBlock label="Loading cases" lines={8} />;
   if (error) return <ErrorState error={error} onRetry={retry} title="Couldn't load the case queue" />;
   if (!cases || cases.length === 0)
@@ -150,61 +158,97 @@ export function QueueBody({ loading, error, retry, cases, labels, filtersActive 
           : "New disputes you can access will appear here."}
       </EmptyState>
     );
+  const start = current * PAGE_SIZE;
+  const rows = cases.slice(start, start + PAGE_SIZE);
   return (
-    <div className="table-wrap">
-      <table className="table queue-table">
-        <caption className="sr-only">Dispute cases</caption>
-        <thead>
-          <tr>
-            <th scope="col">Case</th>
-            <th scope="col">Category</th>
-            <th scope="col" className="ta-r">
-              Amount
-            </th>
-            <th scope="col">Priority</th>
-            <th scope="col">Status</th>
-            <th scope="col">Owner</th>
-            <th scope="col">SLA</th>
-            <th scope="col">Reported</th>
-          </tr>
-        </thead>
-        <tbody>
-          {cases.map((c) => (
-            <tr key={c.id} className="row-link" onClick={() => nav(`/cases/${c.id}`)}>
-              <td data-label="Case">
-                <Link to={`/cases/${c.id}`} className="case-link" onClick={(e) => e.stopPropagation()}>
-                  {c.id}
-                </Link>
-                <div className="cell-sub mono">{c.disputed_txn_id}</div>
-              </td>
-              <td data-label="Category">{c.category_label}</td>
-              <td data-label="Amount" className="ta-r">
-                <Money minor={c.amount_minor} currency={c.currency} className="strong" />
-              </td>
-              <td data-label="Priority" onClick={(e) => e.stopPropagation()}>
-                <PriorityChip priority={c.priority} reasons={c.priority_reasons} />
-              </td>
-              <td data-label="Status">
-                <StatusBadge status={c.status} label={labels[c.status]} />
-              </td>
-              <td data-label="Owner">{c.owner ? c.owner.full_name.replace(" (synthetic)", "") : <span className="muted">Unassigned</span>}</td>
-              <td data-label="SLA">
-                {c.status === "resolved" ? (
-                  <span className="muted">Closed</span>
-                ) : (
-                  <span className="sla-cell">
-                    <SlaRemaining hours={c.sla_remaining_hours} />
-                    {c.sla_next_label && <span className="muted small sla-next">{c.sla_next_label}</span>}
-                  </span>
-                )}
-              </td>
-              <td data-label="Reported">
-                <Time iso={c.reported_at} />
-              </td>
+    <div className="queue-wrap">
+      <div className="table-wrap queue-table-wrap">
+        <table className="table queue-table">
+          <caption className="sr-only">Dispute cases</caption>
+          <thead>
+            <tr>
+              <th scope="col">Case</th>
+              <th scope="col">Category</th>
+              <th scope="col" className="ta-r">
+                Amount
+              </th>
+              <th scope="col">Priority</th>
+              <th scope="col">Status</th>
+              <th scope="col">Owner</th>
+              <th scope="col">SLA</th>
+              <th scope="col">Age</th>
+              <th scope="col">Next action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((c) => (
+              <tr key={c.id} className="row-link" onClick={() => nav(`/cases/${c.id}`)}>
+                <td data-label="Case">
+                  <Link to={`/cases/${c.id}`} className="case-link" onClick={(e) => e.stopPropagation()}>
+                    {c.id}
+                  </Link>
+                  <div className="cell-sub mono">{c.disputed_txn_id}</div>
+                </td>
+                <td data-label="Category">{c.category_label}</td>
+                <td data-label="Amount" className="ta-r">
+                  <Money minor={c.amount_minor} currency={c.currency} className="strong" />
+                </td>
+                <td data-label="Priority" onClick={(e) => e.stopPropagation()}>
+                  <PriorityChip priority={c.priority} reasons={c.priority_reasons} />
+                </td>
+                <td data-label="Status">
+                  <StatusBadge status={c.status} label={labels[c.status]} />
+                </td>
+                <td data-label="Owner">{c.owner ? c.owner.full_name.replace(" (synthetic)", "") : <span className="muted">Unassigned</span>}</td>
+                <td data-label="SLA">
+                  {c.status === "resolved" ? (
+                    <span className="muted">Closed</span>
+                  ) : (
+                    <span className="sla-cell">
+                      <SlaRemaining hours={c.sla_remaining_hours} />
+                      {c.sla_next_label && <span className="muted small sla-next">{c.sla_next_label}</span>}
+                    </span>
+                  )}
+                </td>
+                <td data-label="Age">
+                  <span className="age-cell">
+                    <span className="num">{formatAge(c.age_hours)}</span>
+                    <span className="cell-sub">
+                      <Time iso={c.reported_at} dateOnly />
+                    </span>
+                  </span>
+                </td>
+                <td data-label="Next action">
+                  {c.next_action && c.status !== "resolved" ? (
+                    <Link to={caseActionHref(c)} className="next-action-link" onClick={(e) => e.stopPropagation()}>
+                      {c.next_action.label}
+                      <ArrowRight size={13} aria-hidden="true" />
+                    </Link>
+                  ) : (
+                    <span className="muted">—</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <nav className="pager" aria-label="Case queue pages">
+        <span className="pager-range num" aria-live="polite">
+          {start + 1}–{start + rows.length} of {total}
+        </span>
+        <div className="pager-buttons">
+          <button type="button" className="btn btn-secondary btn-sm" disabled={current === 0} onClick={() => setPage(current - 1)}>
+            <ChevronLeft size={14} aria-hidden="true" /> Prev
+          </button>
+          <span className="pager-page small muted num">
+            Page {current + 1} of {pages}
+          </span>
+          <button type="button" className="btn btn-secondary btn-sm" disabled={current >= pages - 1} onClick={() => setPage(current + 1)}>
+            Next <ChevronRight size={14} aria-hidden="true" />
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }

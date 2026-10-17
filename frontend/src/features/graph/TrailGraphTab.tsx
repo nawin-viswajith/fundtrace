@@ -56,12 +56,12 @@ function TrailGraph() {
   const rf = useReactFlow();
   const frameRef = useRef<HTMLDivElement>(null);
   const colors = useCssVars({
-    dot: ["--canvas-dot", "#d8dce3"],
-    disputed: ["--disputed", "#3a3fb3"],
-    txn: ["--prov-derived", "#2c68cf"],
-    ev: ["--prov-inferred", "#b8740f"],
-    acc: ["--border-strong", "#c9ced7"],
-    mask: ["--overlay", "rgba(15,18,26,0.38)"],
+    dot: ["--canvas-dot", "#2a3850"],
+    disputed: ["--disputed", "#2dd4bf"],
+    txn: ["--prov-derived", "#60a5fa"],
+    ev: ["--prov-inferred", "#fbbf24"],
+    acc: ["--border-strong", "#3b4b67"],
+    mask: ["--minimap-mask", "rgba(5,9,18,0.55)"],
   });
   const minimapColor = (n: { type?: string; data?: Record<string, unknown> }): string => {
     if (n.type === "transaction") {

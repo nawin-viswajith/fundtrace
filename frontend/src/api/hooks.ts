@@ -20,6 +20,16 @@ export const keys = {
 export const useAuthConfig = () => useQuery({ queryKey: ["auth-config"], queryFn: api.authConfig, staleTime: Infinity });
 export const useMeta = () => useQuery({ queryKey: ["meta"], queryFn: api.meta, staleTime: 5 * 60_000 });
 
+export const useOverview = () => useQuery({ queryKey: ["overview"], queryFn: api.overview });
+/** Global case search; callers pass an already-debounced term. Disabled under 2 characters. */
+export const useCaseSearch = (q: string) =>
+  useQuery({
+    queryKey: ["search", q],
+    queryFn: ({ signal }) => api.search(q, signal),
+    enabled: q.length >= 2,
+    staleTime: 30_000,
+  });
+
 export const useCases = (f: CaseFilters) => useQuery({ queryKey: keys.cases(f), queryFn: () => api.cases(f) });
 export const useCase = (id: string) => useQuery({ queryKey: keys.caseCtx(id), queryFn: () => api.case(id) });
 export const useGraph = (id: string, p: GraphQueryParams) =>
@@ -48,6 +58,7 @@ export function useInvalidateCase(id: string) {
       qc.invalidateQueries({ queryKey: keys.case(id) }),
       qc.invalidateQueries({ queryKey: ["cases"] }),
       qc.invalidateQueries({ queryKey: ["report"] }),
+      qc.invalidateQueries({ queryKey: ["overview"] }),
     ]);
 }
 

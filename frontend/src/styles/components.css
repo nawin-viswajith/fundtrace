@@ -20,8 +20,8 @@
   transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 .btn:disabled {
-  opacity: 0.5;
   cursor: not-allowed;
+  color: var(--text-3);
 }
 .btn-sm {
   height: 30px;
@@ -37,6 +37,12 @@
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--accent-hover);
+}
+/* Disabled buttons stay readable (text-3 on surface-3 meets AA) instead of fading out. */
+.btn-primary:disabled,
+.btn-danger:disabled {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
 }
 .btn-secondary {
   background: var(--surface);
@@ -56,7 +62,7 @@
 }
 .btn-danger {
   background: var(--bad);
-  color: #fff;
+  color: var(--on-bad);
 }
 .btn-danger:hover:not(:disabled) {
   filter: brightness(0.92);
@@ -1152,7 +1158,7 @@
 }
 .toast-bad {
   background: var(--bad);
-  color: #fff;
+  color: var(--on-bad);
 }
 .chip:has(.chip-meaning) {
   white-space: normal;

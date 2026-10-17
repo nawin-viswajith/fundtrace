@@ -13,13 +13,13 @@ export default function ReportPrint() {
   const q = useQuery({ queryKey: ["report-export", reportId], queryFn: () => api.exportReport(reportId), staleTime: Infinity });
   if (q.isLoading)
     return (
-      <div className="print-page">
+      <div className="print-page theme-light">
         <LoadingBlock label="Preparing report" lines={10} />
       </div>
     );
   if (q.error || !q.data)
     return (
-      <div className="print-page">
+      <div className="print-page theme-light">
         <ErrorState error={q.error} onRetry={() => q.refetch()} title="Couldn't export the report" />
       </div>
     );
@@ -27,7 +27,7 @@ export default function ReportPrint() {
   const s = REPORT_STATUS[r.status]?.label ?? humanize(r.status);
   const cited = Object.keys(r.records).sort();
   return (
-    <div className="print-page">
+    <div className="print-page theme-light">
       <div className="print-toolbar no-print">
         <button type="button" className="btn btn-primary" onClick={() => window.print()}>
           <Printer size={16} aria-hidden="true" /> Print or save as PDF

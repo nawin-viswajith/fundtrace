@@ -36,7 +36,12 @@ Status as of 2026-10-17. Testing items are excluded.
 
 ### API and UI
 - [x] Full REST API
-- [x] React UI: login, case queue, case workspace (7 tabs), trail graph, Network, Rules, AI Ops
+- [x] React UI: login, Overview, case queue, case workspace (7 tabs), trail graph, Network, Rules, AI Ops
+- [x] Overview page: needs-attention list with next actions, golden-hour panel, SLA risk, recent activity
+- [x] Outcome measurements from real activity (investigation time, first action, SLA, evidence completeness at decision, findings linked to sources, safeguards at 0)
+- [x] Global case search in the top bar (case, transaction, UTR, account, customer)
+- [x] Queue: age, next action, pagination
+- [x] "Financial Intelligence" design: dark navy + teal by default, light theme available
 - [x] Light and dark themes, mobile layout, loading, empty and error states
 - [x] Queue SLA column shows the next open milestone
 - [x] Frontend linting (ESLint, zero warnings)
@@ -62,7 +67,7 @@ Status as of 2026-10-17. Testing items are excluded.
 
 ### Deliverables
 - [ ] Fill deck placeholders: team name, Cloud Run URL, repo URL, live hallucination rate, cost per case, run time
-- [ ] Re-take the "No black-box trust score" screenshot (still shows the old "100%"), then re-render the PDF with `python docs/deck/render_pdf.py`
+- [ ] Re-take deck screenshots in the new navy/teal theme (and the old "100%" confidence card), then re-render the PDF with `python docs/deck/render_pdf.py`
 - [ ] Record the 3-minute video
 - [ ] Make the GitHub repo **public**
 - [ ] Submit on Hack2skill: deployed link, video, repo, deck PDF, theme

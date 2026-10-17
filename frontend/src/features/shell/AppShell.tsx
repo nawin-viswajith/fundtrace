@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Briefcase, Network, ListChecks, Activity, LogOut, Menu, X } from "lucide-react";
+import { Activity, Briefcase, LayoutDashboard, ListChecks, LogOut, Menu, Network, X } from "lucide-react";
 import { useAuth } from "../auth/AuthProvider";
 import { ThemeToggle } from "../../lib/theme";
 import { SyntheticBanner } from "../../components/Domain";
 import { Logo } from "./Logo";
+import GlobalSearch from "./GlobalSearch";
 
 const NAV = [
+  { to: "/overview", label: "Overview", icon: LayoutDashboard },
   { to: "/cases", label: "Cases", icon: Briefcase },
   { to: "/network", label: "Network", icon: Network },
   { to: "/rules", label: "Rules", icon: ListChecks },
@@ -42,10 +44,11 @@ export default function AppShell() {
         >
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <NavLink to="/cases" className="brand" aria-label="FundTrace home">
+        <NavLink to="/overview" className="brand" aria-label="FundTrace home">
           <Logo size={26} />
           <span className="brand-name">FundTrace</span>
         </NavLink>
+        <GlobalSearch />
         <div className="topbar-spacer" />
         {user && (
           <div className="user-chip" title={user.full_name}>

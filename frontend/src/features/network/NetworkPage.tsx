@@ -68,7 +68,7 @@ export function ringLayout(r: Ring): { nodes: Node[]; edges: Edge[] } {
 
 function RingGraph({ ring }: { ring: Ring }) {
   const { nodes, edges } = useMemo(() => ringLayout(ring), [ring]);
-  const c = useCssVars({ dot: ["--canvas-dot", "#d8dce3"] });
+  const c = useCssVars({ dot: ["--canvas-dot", "#2a3850"] });
   return (
     <div className="ring-graph" aria-label={`Graph of ring around ${ring.hub_account ?? ring.accounts[0]}`}>
       <ReactFlowProvider>

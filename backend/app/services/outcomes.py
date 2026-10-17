@@ -17,7 +17,10 @@ from app import models as m
 
 MIN_POINTS = 1  # show a value as soon as one real data point exists, always with its n
 SYSTEM_ACTORS = {"system"}
-PASSIVE_ACTIONS = {"case_created", "case_viewed", "evidence_received", "login", "rules_evaluated", "graph_expanded"}
+# Read-only or automatic events are not investigator work.
+PASSIVE_ACTIONS = {"case_created", "case_viewed", "evidence_received", "login", "rules_evaluated", "graph_expanded",
+                   "report_exported", "evidence_viewed", "copilot_question", "ai_classification", "report_generated",
+                   "evidence_analysed"}
 
 
 def _hours(a: datetime, b: datetime) -> float:

@@ -13,7 +13,7 @@ export default function LoginPage() {
   const { user, login, sessionExpired } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
-  const from = (loc.state as { from?: string } | null)?.from ?? "/cases";
+  const from = (loc.state as { from?: string } | null)?.from ?? "/overview";
   const cfg = useAuthConfig();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

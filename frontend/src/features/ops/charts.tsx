@@ -15,13 +15,13 @@ interface ChartColors {
 
 function useChartColors(): ChartColors {
   return useCssVars({
-    c1: ["--chart-1", "#3a3fb3"],
-    c2: ["--chart-2", "#b8740f"],
-    grid: ["--chart-grid", "#e8eaee"],
-    axis: ["--chart-axis", "#626a7b"],
-    surface: ["--surface", "#ffffff"],
-    text: ["--text", "#141922"],
-    border: ["--border", "#e2e5ea"],
+    c1: ["--chart-1", "#2dd4bf"],
+    c2: ["--chart-2", "#fbbf24"],
+    grid: ["--chart-grid", "#26334a"],
+    axis: ["--chart-axis", "#a9b3c6"],
+    surface: ["--surface", "#162133"],
+    text: ["--text", "#e6eaf2"],
+    border: ["--border", "#26334a"],
   });
 }
 

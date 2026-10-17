@@ -86,6 +86,10 @@ export interface CaseSummary {
   sla_remaining_hours?: number | null;
   sla_next_label?: string;
   amount_label?: string;
+  /** Hours since the dispute was reported (GET /api/cases). */
+  age_hours?: number;
+  /** Deterministic next step from recorded state; null once resolved. */
+  next_action?: NextAction | null;
 }
 
 export interface CaseListResponse {
@@ -812,6 +816,94 @@ export interface EvalRun {
   started_at?: string;
   metrics: EvalMetrics;
   details: EvalScenario[];
+}
+
+// ------------------------------------------------------------------ overview / outcomes / search
+export interface NextAction {
+  label: string;
+  /** Case workspace tab the action happens in. */
+  tab: "overview" | "graph" | "timeline" | "risk" | "evidence" | "report" | "audit";
+}
+
+/** Compact case row used by the overview lists. */
+export interface CaseBrief {
+  id: string;
+  category_label: string;
+  priority: Priority;
+  status: CaseStatus;
+  amount_label: string;
+  due_at: string | null;
+  sla_remaining_hours: number | null;
+  priority_reasons: string[];
+  next_action: NextAction | null;
+}
+
+export interface RecentActivity {
+  id: number;
+  case_id: string | null;
+  actor: string;
+  action: string;
+  created_at: string;
+}
+
+export type MeasurementUnit = "hours" | "ratio" | "count" | "actions";
+export type MeasurementKey =
+  | "median_investigation_hours"
+  | "median_hours_to_first_action"
+  | "median_hours_to_escalation"
+  | "decided_within_sla"
+  | "open_cases_past_sla"
+  | "evidence_completeness_at_decision"
+  | "findings_linked_to_sources"
+  | "unsupported_claims_in_accepted_reports"
+  | "automated_claim_rejections"
+  | "investigator_actions_per_decided_case";
+
+/** A measurement either has a value (status "ok") or explicitly has too few data points. */
+export type Measurement =
+  | { value: number; n: number; unit: MeasurementUnit; note: string; status: "ok" }
+  | { value: null; n: number; unit: MeasurementUnit; note: string; status: "not_enough_data" };
+
+export interface OutcomesResponse {
+  generated_at: string;
+  cases: { total: number; open: number; decided: number };
+  measurements: Record<MeasurementKey, Measurement>;
+  note: string;
+}
+
+export interface OverviewResponse {
+  counts: {
+    open: number;
+    by_priority: Record<Priority, number>;
+    by_status: Partial<Record<CaseStatus, number>>;
+    unassigned: number;
+    mine: number;
+    /** Cases with hold recommendations awaiting an investigator decision. */
+    golden_hour: number;
+    sla_at_risk_72h: number;
+    sla_breached: number;
+    disputed_open_amount_label: string;
+  };
+  focus: CaseBrief[];
+  golden_hour: CaseBrief[];
+  at_risk: CaseBrief[];
+  recent_activity: RecentActivity[];
+  outcomes: OutcomesResponse;
+}
+
+export type SearchMatch = "case" | "transaction" | "reference" | "customer" | "account";
+export interface SearchResult {
+  id: string;
+  category_label: string;
+  status: CaseStatus;
+  priority: Priority;
+  amount_label: string;
+  matched_on: SearchMatch | string;
+  disputed_txn_id: string;
+}
+export interface SearchResponse {
+  query: string;
+  results: SearchResult[];
 }
 
 // ------------------------------------------------------------------ actions
