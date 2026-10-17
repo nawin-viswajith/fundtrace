@@ -53,20 +53,24 @@ Status as of 2026-10-17. Testing items are excluded.
 - [x] Spanner Graph adapter (production path)
 - [x] gcloud CLI installed on the build laptop (`C:\tools\google-cloud-sdk`)
 
+### Google Cloud (live)
+- [x] Deployed: https://fundtrace-541805214490.asia-south1.run.app (Cloud Run, Cloud SQL MySQL, Cloud Storage, Secret Manager, Vertex AI)
+- [x] Gemini models chosen by probe: 3.1 Pro (preview) for reports, 3.8 Flash for agent, evidence, judge; fallback chains
+- [x] First live AI report: verified, 35 claims, 0 flagged, 0% hallucination, $0.20, ~3 min
+- [x] Log-based metrics for AI calls and failures; Monitoring dashboard
+
 ### Deliverables
 - [x] README, PLAN, progress notes, video script (`docs/DEMO_VIDEO.md`)
-- [x] Pitch deck: 14 slides — `docs/FundTrace-deck.pdf` (screenshots in the navy/teal theme) plus the online version
+- [x] Pitch deck: 14 slides — `docs/FundTrace-deck.pdf` with live numbers and links (screenshots in the navy/teal theme)
 - [x] GitHub repo created and pushed (private): https://github.com/nawin-viswajith/fundtrace
 
 ## ⬜ To do
 
-### Needs GCP credentials
-- [ ] Run `backend/scripts/probe_gemini.py` to choose the Gemini model IDs; add prices for any model not in the price table
-- [ ] Run `infra/deploy.sh`: Cloud SQL, storage bucket, secrets, Cloud Run, log metrics, dashboard
-- [ ] Tune prompts after the first live Gemini reports, if needed
+### Google Cloud
+- [ ] Tune prompts or speed up the fact-check step if needed (first live run: ~3 min end to end)
 
 ### Deliverables
-- [ ] Fill deck placeholders: team name, Cloud Run URL, repo URL, live hallucination rate, cost per case, run time
+- [ ] Fill the last deck placeholder: team name (cover and closing slides)
 - [ ] Record the 3-minute video
 - [ ] Make the GitHub repo **public**
 - [ ] Submit on Hack2skill: deployed link, video, repo, deck PDF, theme
