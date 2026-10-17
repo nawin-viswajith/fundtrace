@@ -16,6 +16,8 @@ before the money is gone. FundTrace does four things:
 
 The investigator stays in charge. The AI never decides liability.
 
+**Pitch deck:** [docs/FundTrace-deck.pdf](docs/FundTrace-deck.pdf) (sources in `docs/deck/`; re-render with `python docs/deck/render_pdf.py`).
+
 > All data in this repository and in the deployed demo is **synthetic**. No real customer or bank data is used.
 
 ---

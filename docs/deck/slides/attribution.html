@@ -1,0 +1,19 @@
+<section id="attribution" style="background:#ECEDF6;color:#14183A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:grid;grid-template-columns:1fr 1fr;gap:96px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:32px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:600;line-height:1.1;color:#14183A">“The amounts add up” is not evidence</h2>
+<p style="font-size:32px;line-height:1.45;color:#4A5068">Rahul’s account already held ₹1,200 when the disputed ₹50,000 arrived. When ₹30,000 left for Sunil, how much of it was the disputed money?</p>
+<p style="font-size:32px;line-height:1.45;color:#4A5068">FundTrace answers with balance arithmetic under four standard tracing methods. A positive lower bound is <b style="color:#2C68CF">derived</b>: the ledger forces it. An upper bound alone is only <b style="color:#A8650B">inferred</b>.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:24px;background:#FFFFFE;padding:56px;border:1px solid #DDDFEA;border-radius:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:600;color:#3A3FB3;text-transform:uppercase;letter-spacing:2px">₹30,000 to Sunil · disputed share</p>
+<table style="font-size:32px;color:#14183A">
+<tr><th style="width:62%;text-align:left">Method</th><th style="width:38%;text-align:right">Amount</th></tr>
+<tr><td>Lower bound (clean funds first)</td><td style="text-align:right">₹28,800</td></tr>
+<tr><td>First in, first out</td><td style="text-align:right">₹28,800</td></tr>
+<tr><td>Pro-rata</td><td style="text-align:right">₹29,297</td></tr>
+<tr><td>Upper bound (disputed first)</td><td style="text-align:right">₹30,000</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.45;color:#6A6F86">Money is conserved under every method, and our tests check it. Attribution never shows who controlled the funds or why.</p>
+</div>
+<aside>This is the innovation judges should remember. Most tools stop at “these amounts match”. We compute what the ledger actually forces, show the range, and label it honestly.</aside>
+</section>

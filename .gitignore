@@ -9,3 +9,4 @@ frontend/dist/
 .pytest_cache/
 .venv/
 *.log
+docs/deck/deck.html

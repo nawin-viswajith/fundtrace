@@ -1,0 +1,48 @@
+<section id="pipeline" data-section="How the Gemini investigator works and how we keep it honest" style="background:#14183A;color:#F4F4FA;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:56px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:600;line-height:1.1;color:#F4F4FA">A LangGraph agent with Gemini, on a short leash</h2>
+<div style="display:flex;gap:24px;align-items:stretch">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#222850;padding:32px;border-radius:16px;border-top:6px solid #8C93A8">
+<p style="font-size:24px;font-weight:600;color:#9AA0C8">CODE</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;color:#F4F4FA">Gather</h3>
+<p style="font-size:26px;line-height:1.4;color:#C9CCE6">Trail, attribution, rules, checks → one hashed evidence snapshot</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#222850;padding:32px;border-radius:16px;border-top:6px solid #9FA6F5">
+<p style="font-size:24px;font-weight:600;color:#9FA6F5">GEMINI + TOOLS</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;color:#F4F4FA">Explore</h3>
+<p style="font-size:26px;line-height:1.4;color:#C9CCE6">Chooses which branches to follow with 5 fixed, limited tools</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#222850;padding:32px;border-radius:16px;border-top:6px solid #9FA6F5">
+<p style="font-size:24px;font-weight:600;color:#9FA6F5">GEMINI → CODE</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;color:#F4F4FA">Read evidence</h3>
+<p style="font-size:26px;line-height:1.4;color:#C9CCE6">Transcribes receipts; code compares them with the ledger</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#222850;padding:32px;border-radius:16px;border-top:6px solid #9FA6F5">
+<p style="font-size:24px;font-weight:600;color:#9FA6F5">GEMINI PRO</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;color:#F4F4FA">Draft</h3>
+<p style="font-size:26px;line-height:1.4;color:#C9CCE6">9-section report; every claim cites snapshot records</p>
+</div>
+</div>
+<div style="display:flex;gap:24px;align-items:stretch">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#222850;padding:32px;border-radius:16px;border-top:6px solid #8C93A8">
+<p style="font-size:24px;font-weight:600;color:#9AA0C8">CODE</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;color:#F4F4FA">Validate</h3>
+<p style="font-size:26px;line-height:1.4;color:#C9CCE6">IDs, amounts, times, banned claims; one redraft with feedback</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#222850;padding:32px;border-radius:16px;border-top:6px solid #9FA6F5">
+<p style="font-size:24px;font-weight:600;color:#9FA6F5">GEMINI FLASH</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;color:#F4F4FA">Judge</h3>
+<p style="font-size:26px;line-height:1.4;color:#C9CCE6">Fact-checks each claim against its cited records</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#222850;padding:32px;border-radius:16px;border-top:6px solid #8C93A8">
+<p style="font-size:24px;font-weight:600;color:#9AA0C8">CODE</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;color:#F4F4FA">Finalize</h3>
+<p style="font-size:26px;line-height:1.4;color:#C9CCE6">Metrics, cost, trace, audit; hold recommendations</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#F2B44C;padding:32px;border-radius:16px">
+<p style="font-size:24px;font-weight:600;color:#3A2A08">PERSON</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;color:#14183A">Investigator decides</h3>
+<p style="font-size:26px;line-height:1.4;color:#2B2410">Reviews claims, approves holds, records the decision</p>
+</div>
+</div>
+<aside>Gemini never calculates: money, balances, rules and validation are deterministic code. The agent cannot run free-form queries; tool targets must already exist in the snapshot. If Gemini is down, every AI step shows “Not analysed” and a facts-only report is built by code.</aside>
+</section>

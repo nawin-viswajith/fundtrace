@@ -1,0 +1,32 @@
+<section id="ops" style="background:#F6F6FA;color:#14183A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:56px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:600;line-height:1.1;color:#14183A">Measured, not claimed</h2>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFE;padding:40px;border:1px solid #DDDFEA;border-radius:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:96px;font-weight:700;line-height:1;color:#3A3FB3">94/94</p>
+<p style="font-size:28px;line-height:1.4;color:#4A5068">ground-truth checks pass across 10 synthetic scenarios</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFE;padding:40px;border:1px solid #DDDFEA;border-radius:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:96px;font-weight:700;line-height:1;color:#3A3FB3">1.0</p>
+<p style="font-size:28px;line-height:1.4;color:#4A5068">rule precision and recall on the labelled scenarios</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFE;padding:40px;border:1px solid #DDDFEA;border-radius:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:96px;font-weight:700;line-height:1;color:#3A3FB3">104</p>
+<p style="font-size:28px;line-height:1.4;color:#4A5068">automated tests: 73 backend, 31 frontend</p>
+</div>
+</div>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFE;padding:40px;border:1px solid #DDDFEA;border-radius:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#A8650B">[__]%</p>
+<p style="font-size:28px;line-height:1.4;color:#4A5068">hallucination rate on live Gemini reports</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFE;padding:40px;border:1px solid #DDDFEA;border-radius:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#A8650B">$[__]</p>
+<p style="font-size:28px;line-height:1.4;color:#4A5068">Gemini cost per investigated case</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFE;padding:40px;border:1px solid #DDDFEA;border-radius:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#A8650B">[__] s</p>
+<p style="font-size:28px;line-height:1.4;color:#4A5068">end-to-end investigation time</p>
+</div>
+</div>
+<aside>Top row: measured today. Bottom row: filled from the AI Ops page after the live Gemini run on Cloud Run. Every Gemini call records tokens, cost, latency, status and a Cloud Trace ID.</aside>
+</section>
