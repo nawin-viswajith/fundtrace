@@ -27,11 +27,23 @@ def main() -> None:
     ap.add_argument("--project", required=True)
     ap.add_argument("--location", default="global")
     ap.add_argument("--models", default=",".join(CANDIDATES))
+    ap.add_argument("--use-gcloud-token", action="store_true",
+                    help="authenticate with `gcloud auth print-access-token` instead of Application Default Credentials")
     a = ap.parse_args()
     from google import genai
     from google.genai import types
 
-    client = genai.Client(vertexai=True, project=a.project, location=a.location)
+    creds = None
+    if a.use_gcloud_token:
+        import shutil
+        import subprocess
+
+        from google.oauth2.credentials import Credentials
+
+        gcloud = shutil.which("gcloud") or shutil.which("gcloud.cmd")
+        token = subprocess.run([gcloud, "auth", "print-access-token"], capture_output=True, text=True, check=True).stdout.strip()
+        creds = Credentials(token=token)
+    client = genai.Client(vertexai=True, project=a.project, location=a.location, credentials=creds)
     try:
         listed = [m.name for m in client.models.list() if "gemini" in (m.name or "")]
         print(f"Models listed by the API ({len(listed)}):", ", ".join(sorted(n.split("/")[-1] for n in listed)[:40]))

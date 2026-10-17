@@ -19,6 +19,10 @@ _BASE = {
     "gemini-2.5-pro": {"input": 1.25, "output": 10.00},
     "gemini-3.1-pro": {"input": 2.00, "output": 12.00},
     "gemini-3.1-flash-lite": {"input": 0.25, "output": 1.50},
+    # Introductory list price for the 3.6–3.8 Flash family through 2026-12-31 (standard from 2027: 1.5 / 7.5).
+    "gemini-3.8-flash": {"input": 0.75, "output": 3.75},
+    "gemini-3.7-flash": {"input": 0.75, "output": 3.75},
+    "gemini-3.6-flash": {"input": 0.75, "output": 3.75},
 }
 
 

@@ -37,8 +37,8 @@ class Settings(BaseSettings):
     gemini_location: str = "global"  # Vertex AI endpoint for Gemini ("global" or a region)
     llm_enabled: bool = True
     # Comma-separated fallback chains: the first model that responds is used.
-    gemini_fast_models: str = "gemini-2.5-flash"
-    gemini_pro_models: str = "gemini-2.5-pro,gemini-2.5-flash"
+    gemini_fast_models: str = "gemini-3.8-flash,gemini-2.5-flash"
+    gemini_pro_models: str = "gemini-3.1-pro-preview,gemini-2.5-pro"
     llm_timeout_seconds: float = 45.0
     llm_daily_budget_usd: float = 20.0
     llm_case_budget_usd: float = 1.0

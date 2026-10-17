@@ -14,8 +14,8 @@ DB_USER="${DB_USER:-fundtrace}"
 SQL_TIER="${SQL_TIER:-db-g1-small}"
 BUCKET="${BUCKET:-${PROJECT}-fundtrace-evidence}"
 SA_NAME="${SA_NAME:-fundtrace-run}"
-GEMINI_FAST_MODELS="${GEMINI_FAST_MODELS:-gemini-2.5-flash}"
-GEMINI_PRO_MODELS="${GEMINI_PRO_MODELS:-gemini-2.5-pro,gemini-2.5-flash}"
+GEMINI_FAST_MODELS="${GEMINI_FAST_MODELS:-gemini-3.8-flash,gemini-2.5-flash}"
+GEMINI_PRO_MODELS="${GEMINI_PRO_MODELS:-gemini-3.1-pro-preview,gemini-2.5-pro}"
 GEMINI_LOCATION="${GEMINI_LOCATION:-global}"
 SA_EMAIL="${SA_NAME}@${PROJECT}.iam.gserviceaccount.com"
 
@@ -33,13 +33,13 @@ gcloud iam service-accounts describe "$SA_EMAIL" >/dev/null 2>&1 || \
   gcloud iam service-accounts create "$SA_NAME" --display-name="FundTrace Cloud Run"
 for role in roles/aiplatform.user roles/cloudsql.client roles/secretmanager.secretAccessor roles/cloudtrace.agent \
             roles/logging.logWriter roles/monitoring.metricWriter; do
-  gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:$SA_EMAIL" --role="$role" --condition=None >/dev/null
+  bind "serviceAccount:$SA_EMAIL" "$role"
 done
 
 log "Allowing Cloud Build (default compute service account) to build from source"
 PROJECT_NUMBER="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')"
 for role in roles/run.builder roles/logging.logWriter roles/artifactregistry.writer roles/storage.objectViewer; do
-  gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"     --role="$role" --condition=None >/dev/null
+  bind "serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" "$role"
 done
 
 log "Cloud SQL for MySQL 8 ($INSTANCE, $SQL_TIER) — first creation takes ~10 minutes"
