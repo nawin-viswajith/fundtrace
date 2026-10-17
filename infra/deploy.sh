@@ -21,6 +21,18 @@ SA_EMAIL="${SA_NAME}@${PROJECT}.iam.gserviceaccount.com"
 
 log() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 
+# IAM policy edits can collide ("concurrent policy changes"): retry with backoff; fail loudly at the end.
+bind() {
+  local n
+  for n in 1 2 3 4 5; do
+    if gcloud projects add-iam-policy-binding "$PROJECT" --member="$1" --role="$2" --condition=None >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep $((n * 4))
+  done
+  gcloud projects add-iam-policy-binding "$PROJECT" --member="$1" --role="$2" --condition=None >/dev/null
+}
+
 gcloud config set project "$PROJECT" >/dev/null
 
 log "Enabling APIs"
