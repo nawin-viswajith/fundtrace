@@ -13,9 +13,11 @@ class FakeModels:
     def __init__(self, behaviours):
         self.behaviours = behaviours
         self.seen = []
+        self.configs = []
 
     def generate_content(self, model, contents, config):
         self.seen.append(model)
+        self.configs.append(config)
         b = self.behaviours[model]
         if isinstance(b, list):  # a sequence of behaviours, one per call
             b = b.pop(0) if len(b) > 1 else b[0]
@@ -171,4 +173,34 @@ def test_bad_request_is_not_retried(gw, db):
     gw._client = SimpleNamespace(models=fm)
     r = gw.generate(node="classify", prompt_version="t", contents=["x"], schema=Classification, db=db)
     assert not r.ok and fm.seen == ["gemini-3-flash"]
+    db.rollback()
+
+
+def test_thinking_is_kept_short_and_matches_the_model_family(gw, db):
+    """Gemini 3 thinks at length by default (80-95 s drafts); the gateway asks for a short think instead."""
+    fm = FakeModels({"gemini-3-flash": resp(GOOD)})
+    gw._client = SimpleNamespace(models=fm)
+    gw.generate(node="judge", prompt_version="t", contents=["x"], schema=Classification, db=db)
+    assert fm.configs[-1].thinking_config.thinking_level.value == "LOW"
+    fm.behaviours["gemini-2.5-flash"] = resp(GOOD)
+    gw.s = gw.s.model_copy(update={"gemini_fast_models": "gemini-2.5-flash"})
+    gw.generate(node="judge", prompt_version="t", contents=["x"], schema=Classification, db=db, thinking="minimal")
+    assert fm.configs[-1].thinking_config.thinking_budget == 0
+    db.rollback()
+
+
+def test_unsupported_thinking_setting_is_dropped_not_fatal(gw, db):
+    fm = FakeModels({"gemini-3-flash": [RuntimeError("ClientError: 400 INVALID_ARGUMENT. thinking_level is not supported"), resp(GOOD)]})
+    gw._client = SimpleNamespace(models=fm)
+    r = gw.generate(node="judge", prompt_version="t", contents=["x"], schema=Classification, db=db)
+    assert r.ok and fm.configs[0].thinking_config is not None and fm.configs[1].thinking_config is None
+    db.rollback()
+
+
+def test_server_deadline_moves_to_the_next_model(gw, db):
+    fm = FakeModels({"gemini-3-flash": RuntimeError("ServerError: 504 DEADLINE_EXCEEDED. Deadline expired before operation could complete."),
+                     "gemini-2.5-flash": resp(GOOD)})
+    gw._client = SimpleNamespace(models=fm)
+    r = gw.generate(node="judge", prompt_version="t", contents=["x"], schema=Classification, db=db)
+    assert r.ok and r.model == "gemini-2.5-flash" and fm.seen == ["gemini-3-flash", "gemini-2.5-flash"]
     db.rollback()

@@ -43,6 +43,7 @@ import type {
   MfaSetup,
   SecurityStatus,
   User,
+  InvestigationRun,
 } from "../types/api";
 
 const enc = encodeURIComponent;
@@ -141,6 +142,9 @@ export const api = {
   audit: (id: string) => request<AuditResponse>(`/api/cases/${enc(id)}/audit`),
 
   investigate: (id: string) => request<Report>(`/api/cases/${enc(id)}/investigate`, { method: "POST" }),
+  investigateStart: (id: string) => request<InvestigationRun>(`/api/cases/${enc(id)}/investigate?background=true`, { method: "POST" }),
+  investigationRun: (id: string, runId: string) => request<InvestigationRun>(`/api/cases/${enc(id)}/runs/${enc(runId)}`),
+  investigationActive: (id: string) => request<{ run: InvestigationRun | null }>(`/api/cases/${enc(id)}/runs/active`),
   reports: (id: string) => request<ReportsList>(`/api/cases/${enc(id)}/reports`),
   report: (rid: string) => request<Report>(`/api/reports/${enc(rid)}`),
   exportReport: (rid: string) => request<Report>(`/api/reports/${enc(rid)}/export`),

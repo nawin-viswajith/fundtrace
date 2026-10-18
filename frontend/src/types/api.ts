@@ -709,6 +709,17 @@ export interface ReportRun {
   started_at: string;
 }
 export type SnapshotRecord = Record<string, unknown>;
+/** An investigation running in the background: its real steps so far, then the report it produced. */
+export interface InvestigationRun {
+  id: string;
+  case_id: string;
+  status: "running" | "awaiting_review" | "failed" | string;
+  steps: RunStep[];
+  report_id: string | null;
+  error: string | null;
+  started_at: string;
+  elapsed_ms: number;
+}
 export interface Report extends ReportBrief {
   sections: ReportSection[];
   recommended_actions: RecommendedAction[];

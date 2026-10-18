@@ -15,7 +15,7 @@ import operator
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from typing import Annotated, Any, TypedDict
+from typing import Annotated, Any, Callable, TypedDict
 
 from langgraph.graph import END, StateGraph
 from sqlalchemy import func, select
@@ -330,20 +330,28 @@ def persist_report(db: Session, case: m.DisputeCase, state: State, actor: str) -
     return rep
 
 
-def run_investigation(db: Session, case: m.DisputeCase, actor: str = "system", gateway: Gateway | None = None) -> m.Report:
+def run_investigation(db: Session, case: m.DisputeCase, actor: str = "system", gateway: Gateway | None = None,
+                      run_id: str | None = None, progress: Callable[[m.AIRun], None] | None = None) -> m.Report:
+    """Run the whole pipeline. `run_id` reuses a run row created by `start_background`; `progress` is called after
+    every step with the run (its `steps` filled in so far), so a background run can publish real progress."""
     gw = gateway or get_gateway()
-    run_id = "RUN-" + uuid.uuid4().hex[:10].upper()
+    run = db.get(m.AIRun, run_id) if run_id else None
+    run_id = run.id if run else "RUN-" + uuid.uuid4().hex[:10].upper()
     with span("investigation.run", case_id=case.id, run_id=run_id) as sp:
-        run = m.AIRun(id=run_id, case_id=case.id, kind="investigation", status="running", trace_id=current_trace_id(), requested_by=actor,
-                      prompt_versions={"report": prompts.REPORT_V, "judge": prompts.JUDGE_V, "explore": prompts.EXPLORE_V,
-                                       "evidence": prompts.EVIDENCE_V})
-        db.add(run)
+        if run is None:
+            run = m.AIRun(id=run_id, case_id=case.id, kind="investigation", status="running", trace_id=current_trace_id(), requested_by=actor)
+            db.add(run)
+        run.prompt_versions = {"report": prompts.REPORT_V, "judge": prompts.JUDGE_V, "explore": prompts.EXPLORE_V, "evidence": prompts.EVIDENCE_V}
         db.flush()
         t0 = time.perf_counter()
         graph = build_graph(db, case, gw, actor)
+        final: dict[str, Any] = {}
         try:
-            final: dict[str, Any] = graph.invoke({"case_id": case.id, "run_id": run_id, "attempts": 0, "extra_records": {},
-                                                  "steps": [], "tool_log": [], "notes": []})
+            for final in graph.stream({"case_id": case.id, "run_id": run_id, "attempts": 0, "extra_records": {},
+                                       "steps": [], "tool_log": [], "notes": []}, stream_mode="values"):
+                if progress and final.get("steps") != run.steps:
+                    run.steps = list(final.get("steps", []))
+                    progress(run)
         except Exception as exc:
             run.status, run.error, run.finished_at = "failed", f"{type(exc).__name__}: {exc}"[:1000], m.utcnow()
             db.flush()

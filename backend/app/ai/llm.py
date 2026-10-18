@@ -33,6 +33,23 @@ log = logging.getLogger("fundtrace.llm")
 _BUSY = ("429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE", "overloaded")
 
 
+_LEVELS = {"minimal": "MINIMAL", "low": "LOW", "medium": "MEDIUM", "high": "HIGH"}
+_BUDGETS_25 = {"minimal": 0, "low": 1024, "medium": 4096, "high": -1}  # Gemini 2.5 uses a token budget instead of a level
+
+
+def _thinking_config(types, model: str, level: str | None):
+    """How long the model may think. None leaves the model's own default."""
+    level = (level or "").lower()
+    if level not in _LEVELS:
+        return None
+    if model.startswith("gemini-2.5"):
+        budget = _BUDGETS_25[level]
+        if "pro" in model:
+            budget = max(budget, 128) if budget >= 0 else budget  # 2.5 Pro cannot switch thinking off
+        return types.ThinkingConfig(thinking_budget=budget)
+    return types.ThinkingConfig(thinking_level=_LEVELS[level])
+
+
 def _busy(msg: str) -> bool:
     """Vertex AI is out of capacity for this model right now (rate limit or overload), not a problem with the request."""
     return any(k in msg for k in _BUSY)
@@ -67,7 +84,7 @@ class LLMResult:
 class Gateway(Protocol):
     def generate(self, *, node: str, prompt_version: str, contents: list, schema: type[BaseModel], tier: str = "fast",
                  system: str | None = None, temperature: float = 0.2, case_id: str | None = None,
-                 run_id: str | None = None, db=None, timeout_s: float | None = None) -> LLMResult: ...
+                 run_id: str | None = None, db=None, timeout_s: float | None = None, thinking: str | None = None) -> LLMResult: ...
 
 
 class CallBuffer:
@@ -143,7 +160,7 @@ class GeminiGateway:
         return self._client
 
     def generate(self, *, node, prompt_version, contents, schema, tier="fast", system=None, temperature=0.2,
-                 case_id=None, run_id=None, db=None, timeout_s=None) -> LLMResult:
+                 case_id=None, run_id=None, db=None, timeout_s=None, thinking=None) -> LLMResult:
         if not self.available():
             res = LLMResult(ok=False, status="disabled", error="LLM disabled or GCP project not set")
             _record(res, node, prompt_version, case_id, run_id, db)
@@ -158,16 +175,19 @@ class GeminiGateway:
 
         models = self.s.pro_models if tier == "pro" else self.s.fast_models
         timeout_s = timeout_s or (self.s.llm_pro_timeout_seconds if tier == "pro" else self.s.llm_timeout_seconds)
+        level = thinking or (self.s.llm_thinking_pro if tier == "pro" else self.s.llm_thinking_fast)
         res = LLMResult(ok=False, status="error")
         done = False
         for model in models:
-            for attempt in range(1 + self.BUSY_RETRIES):
+            think = _thinking_config(types, model, level)
+            for attempt in range(2 + self.BUSY_RETRIES):  # one extra pass is reserved for dropping an unsupported thinking setting
                 t0 = time.perf_counter()
                 with span("gemini.generate", node=node, model=model, prompt_version=prompt_version, case_id=case_id) as sp:
                     try:
                         cfg = types.GenerateContentConfig(
                             system_instruction=system, temperature=temperature, response_mime_type="application/json",
                             response_schema=schema, http_options=types.HttpOptions(timeout=int(timeout_s * 1000)),
+                            **({"thinking_config": think} if think is not None else {}),
                         )
                         resp = self.client().models.generate_content(model=model, contents=contents, config=cfg)
                     except Exception as exc:
@@ -176,11 +196,16 @@ class GeminiGateway:
                         res = LLMResult(ok=False, status=status, model=model, error=msg, latency_ms=int((time.perf_counter() - t0) * 1000),
                                         attempts=res.attempts + [{"model": model, "status": status}])
                         sp.set_attribute("llm.status", status)
+                        if think is not None and "thinking" in msg.lower() and ("400" in msg or "INVALID_ARGUMENT" in msg):
+                            think = None
+                            continue  # this model does not accept the thinking setting: ask again with its default
+                        if "DEADLINE_EXCEEDED" in msg or "504" in msg:
+                            break  # Vertex gave up on its side: the next model in the chain is the quickest way to an answer
+                        if _busy(msg) and attempt >= self.BUSY_RETRIES:
+                            break  # still busy after a retry: try the next model in the chain
                         if _busy(msg):
-                            if attempt < self.BUSY_RETRIES:
-                                time.sleep(self.BUSY_BACKOFF_S * (attempt + 1) + random.uniform(0, 0.5))
-                                continue  # out of capacity for a moment: try the same model once more
-                            break  # still busy: try the next model in the chain
+                            time.sleep(self.BUSY_BACKOFF_S * (attempt + 1) + random.uniform(0, 0.5))
+                            continue  # out of capacity for a moment: try the same model once more
                         if "404" in msg or "not found" in msg.lower() or "NOT_FOUND" in msg:
                             break  # model unavailable: try the next model in the chain
                         if status == "timeout" and tier == "pro":
@@ -233,7 +258,7 @@ class FakeGateway:
         return self.status == "ok"
 
     def generate(self, *, node, prompt_version, contents, schema, tier="fast", system=None, temperature=0.2,
-                 case_id=None, run_id=None, db=None, timeout_s=None) -> LLMResult:
+                 case_id=None, run_id=None, db=None, timeout_s=None, thinking=None) -> LLMResult:
         self.calls.append({"node": node, "contents": contents, "system": system})
         if self.status != "ok":
             res = LLMResult(ok=False, status=self.status, model="fake", error="fake failure")

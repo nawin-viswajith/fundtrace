@@ -336,13 +336,39 @@ def audit_verify(case_id: str, user: m.User = Depends(current_user), db: Session
 # ---------------------------------------------------------------------------- AI
 
 @router.post("/cases/{case_id}/investigate")
-def investigate(case_id: str, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+def investigate(case_id: str, background: bool = False, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    """Run the AI investigation. With `background=true` it returns the run at once and the page polls
+    `/cases/{id}/runs/{run_id}` for real step-by-step progress; without it, the finished report is returned."""
+    from app.ai import runs
     from app.ai.investigator import run_investigation
 
     case = load_case_for(user, db, case_id)
+    if background:
+        run, _ = runs.start_background(db, case, user.username)
+        return runs.run_view(db, run)
     rep = run_investigation(db, case, actor=user.username)
     db.commit()
     return report_full(db, rep)
+
+
+@router.get("/cases/{case_id}/runs/active")
+def investigation_active(case_id: str, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    from app.ai import runs
+
+    case = load_case_for(user, db, case_id)
+    run = runs.active_run(db, case.id)
+    return {"run": runs.run_view(db, run) if run else None}
+
+
+@router.get("/cases/{case_id}/runs/{run_id}")
+def investigation_run(case_id: str, run_id: str, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    from app.ai import runs
+
+    case = load_case_for(user, db, case_id)
+    run = db.get(m.AIRun, run_id)
+    if run is None or run.case_id != case.id or run.kind != "investigation":
+        raise HTTPException(404, "Run not found")
+    return runs.run_view(db, run)
 
 
 @router.get("/cases/{case_id}/reports")

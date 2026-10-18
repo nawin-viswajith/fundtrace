@@ -201,3 +201,71 @@ class AssistantTurn(BaseModel):
     insufficient_data: bool
     action: AssistantAction
     follow_up_questions: list[str] = Field(description="Up to 3 short questions the user may want to ask next")
+
+
+# ---------------------------------------------------------------------------- customer portal: "Ask Demo Bank" and story intake
+
+class HelpIntent(str, Enum):
+    faq = "faq"  # how banking, payments or disputes work
+    safety = "safety"  # fraud awareness, scams, keeping money safe
+    my_dispute_status = "my_dispute_status"  # the signed-in customer's own disputes
+    raise_dispute = "raise_dispute"  # wants to raise a dispute now
+    urgent_fraud_now = "urgent_fraud_now"  # just lost money / being scammed right now
+    out_of_scope = "out_of_scope"  # anything else
+
+
+class HelpActionKind(str, Enum):
+    start_dispute_chat = "start_dispute_chat"
+    start_dispute_form = "start_dispute_form"
+    open_dispute = "open_dispute"
+    call_1930 = "call_1930"
+    report_cybercrime = "report_cybercrime"
+
+
+class CustomerHelpAnswer(BaseModel):
+    intent: HelpIntent = Field(description="What the customer is asking about. out_of_scope for anything not about banking, "
+                                           "payments, fraud safety or disputes")
+    answer: str = Field(description="At most 120 words, plain language, only from the HELP ARTICLES and YOUR DISPUTES given")
+    cited_article_ids: list[str] = Field(description="Ids of the help articles the answer is based on (e.g. SAFE-FIRST-HOUR)")
+    cited_case_ids: list[str] = Field(default_factory=list, description="Ids from YOUR DISPUTES the answer talks about")
+    actions: list[HelpActionKind] = Field(default_factory=list, description="Up to 3 next steps the customer can take")
+    open_case_id: str | None = Field(default=None, description="For open_dispute: a case id from YOUR DISPUTES")
+    follow_up_questions: list[str] = Field(default_factory=list, description="Up to 3 short questions the customer may ask next")
+
+
+class StoryReason(str, Enum):
+    unauthorised = "unauthorised"
+    account_access = "account_access"
+    scam = "scam"
+    card_online = "card_online"
+    not_received = "not_received"
+    charged_wrong = "charged_wrong"
+
+
+class StoryOtp(str, Enum):
+    yes = "yes"
+    no = "no"
+    not_sure = "not_sure"
+
+
+class StoryNoticed(str, Enum):
+    today = "today"
+    yesterday = "yesterday"
+    days_2_7 = "2_7_days"
+    over_week = "over_week"
+
+
+class StoryContact(str, Enum):
+    sms = "sms"
+    email = "email"
+    phone = "phone"
+
+
+class StoryExtraction(BaseModel):
+    reason: StoryReason | None = Field(default=None, description="Only if the story makes it clear; otherwise null")
+    otp_shared: StoryOtp | None = Field(default=None, description="Only if the story says whether an OTP, PIN or password was shared")
+    noticed: StoryNoticed | None = Field(default=None, description="When the customer noticed the payment, relative to TODAY, if stated")
+    contact_preference: StoryContact | None = Field(default=None, description="Only if the customer says how they want to be contacted")
+    amount: float | None = Field(default=None, description="Payment amount in rupees, if stated")
+    payee_name: str | None = Field(default=None, description="Who the money went to, if stated (a name, not an account number)")
+    payment_date: str | None = Field(default=None, description="Date of the payment as YYYY-MM-DD, if it can be worked out from the story and TODAY")

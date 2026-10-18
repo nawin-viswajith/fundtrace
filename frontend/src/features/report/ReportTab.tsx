@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../api/endpoints";
 import { keys, useInvalidateCase, useReport, useReportDraft, useReports } from "../../api/hooks";
 import { errorMessage } from "../../api/client";
@@ -9,7 +9,7 @@ import { Chip } from "../../components/Chip";
 import { useToast } from "../../components/Toast";
 import { REPORT_STATUS } from "../../lib/labels";
 import { formatPct, humanize } from "../../lib/format";
-import type { ReportDraft } from "../../types/api";
+import type { InvestigationRun, ReportDraft } from "../../types/api";
 import { ReportView } from "./ReportView";
 import { RunProgress } from "./RunProgress";
 
@@ -28,21 +28,55 @@ export function ReportTab() {
   const rep = useReport(current);
   const draftQ = useReportDraft(isLatest ? current : null);
   const draft = isLatest ? (draftQ.data?.draft ?? null) : null;
+  const [runId, setRunId] = useState<string | null>(null);
 
   useEffect(() => {
     if (selected && list.data && !list.data.reports.some((r) => r.id === selected)) setSelected(null);
   }, [list.data, selected]);
 
-  const run = useMutation({
-    mutationFn: () => api.investigate(caseId),
-    onSuccess: async (r) => {
-      qc.setQueryData(keys.report(r.id), r);
-      setSelected(r.id);
-      await invalidate();
-      toast.show(r.status === "facts_only" ? "Facts-only report generated (AI unavailable)" : `Report v${r.version} generated: ${REPORT_STATUS[r.status]?.label ?? r.status}`);
-    },
+  // Rejoin a run that is still going if this tab is reopened, so the page never hides real progress.
+  const activeQ = useQuery({
+    queryKey: ["case", caseId, "run-active"],
+    queryFn: () => api.investigationActive(caseId),
+    enabled: !runId,
+    staleTime: 0,
+  });
+  useEffect(() => {
+    if (!runId && activeQ.data?.run?.status === "running") setRunId(activeQ.data.run.id);
+  }, [activeQ.data, runId]);
+
+  const start = useMutation({
+    mutationFn: () => api.investigateStart(caseId),
+    onSuccess: (r) => setRunId(r.id),
     onError: (e) => toast.show(errorMessage(e), "bad"),
   });
+  const runQ = useQuery({
+    queryKey: ["case", caseId, "run", runId],
+    queryFn: () => api.investigationRun(caseId, runId as string),
+    enabled: !!runId,
+    refetchInterval: (query) => (query.state.data?.status === "running" ? 1200 : false),
+  });
+  const run: InvestigationRun | null = runQ.data ?? (runId ? ({ id: runId, case_id: caseId, status: "running", steps: [], report_id: null, error: null, started_at: "", elapsed_ms: 0 } as InvestigationRun) : null);
+  const running = run?.status === "running";
+
+  useEffect(() => {
+    if (!run || run.status === "running") return;
+    setRunId(null);
+    if (run.status === "failed") {
+      toast.show(run.error ?? "The investigation could not finish. Please run it again.", "bad");
+      return;
+    }
+    if (run.report_id) {
+      (async () => {
+        const r = await api.report(run.report_id as string);
+        qc.setQueryData(keys.report(r.id), r);
+        setSelected(r.id);
+        await invalidate();
+        toast.show(r.status === "facts_only" ? "Facts-only report generated (AI unavailable)" : `Report v${r.version} generated: ${REPORT_STATUS[r.status]?.label ?? r.status}`);
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [run?.status, run?.id]);
 
   const op = useMutation({
     mutationFn: (v: { op: "clear_section" | "restore_section"; key: string }) => api.draftOp(current as string, v.op, v.key),
@@ -93,13 +127,13 @@ export function ReportTab() {
         title="AI investigation"
         subtitle="The AI gathers the records, follows the money, reads the evidence and writes a report. Every sentence links to the records it comes from, and each one is checked by code and fact-checked."
         actions={
-          <button type="button" className="btn btn-primary" onClick={() => run.mutate()} disabled={run.isPending || !ctx.can_edit}>
-            {run.isPending ? "Investigating…" : latestId ? "Run again" : "Run AI investigation"}
+          <button type="button" className="btn btn-primary" onClick={() => start.mutate()} disabled={running || start.isPending || !ctx.can_edit}>
+            {running || start.isPending ? "Investigating…" : latestId ? "Run again" : "Run AI investigation"}
           </button>
         }
       >
-        <RunProgress running={run.isPending} />
-        <InlineError error={run.error} />
+        <RunProgress run={run} />
+        <InlineError error={start.error} />
         {list.data && list.data.reports.length > 0 && (
           <div className="version-picker">
             <span className="field-label">Versions</span>

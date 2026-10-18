@@ -61,6 +61,11 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 60.0  # fast tier (explore, evidence, judge, copilot)
     llm_pro_timeout_seconds: float = 150.0  # report drafting; on timeout falls back to the next model in the chain
     llm_judge_timeout_seconds: float = 90.0  # one fact-check batch; the model may reason at length on hard claims
+    # How long Gemini may "think" before answering (minimal | low | medium | high | off = model default).
+    # Gemini 3 models think at length by default, which made drafting take 80-95 s; our tasks are grounded in a
+    # snapshot, so a low level keeps quality and cuts the time.
+    llm_thinking_pro: str = "low"
+    llm_thinking_fast: str = "low"
     llm_daily_budget_usd: float = 20.0
     llm_case_budget_usd: float = 1.0
     # Optional JSON override of the price table: {"model": {"input": usd_per_1m, "output": usd_per_1m}}
