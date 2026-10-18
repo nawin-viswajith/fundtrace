@@ -14,6 +14,7 @@ from app.config import get_settings
 from app.db import get_db
 from app.security import current_user, require_role
 from app.services.investigation import rule_catalogue
+from app.services.generator import GenerateIn
 from app.services.rules import CATALOGUE_BY_ID
 
 router = APIRouter(prefix="/api", tags=["ops"])
@@ -252,6 +253,16 @@ def security_status(user: m.User = Depends(require_role("supervisor", "admin")),
         "firebase_sign_in": bool(s.firebase_project_id and s.firebase_api_key),
         "pubsub_ingest": bool(s.pubsub_push_audience),
     }
+
+
+@router.post("/admin/generate-data")
+def generate_data(body: GenerateIn, user: m.User = Depends(require_role("supervisor", "admin")), db: Session = Depends(get_db)):
+    """Create more synthetic disputes (complete with money trails, evidence and statuses) for demos and testing."""
+    from app.services.generator import generate
+
+    out = generate(db, user, body)
+    db.commit()
+    return out
 
 
 @router.get("/healthz")

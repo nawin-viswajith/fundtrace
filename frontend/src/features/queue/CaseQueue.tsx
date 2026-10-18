@@ -8,6 +8,8 @@ import { EmptyState, ErrorState, LoadingBlock, Money, Time } from "../../compone
 import { PriorityChip, SectionTitle, SlaRemaining, StatusBadge } from "../../components/Domain";
 import { STATUS_LABELS_FALLBACK } from "../../lib/labels";
 import { caseActionHref, formatAge } from "../../lib/outcomes";
+import { canSupervise, useAuth } from "../auth/AuthProvider";
+import { GenerateDataDialog } from "./GenerateDataDialog";
 
 export const PAGE_SIZE = 15;
 
@@ -45,10 +47,23 @@ export default function CaseQueue() {
   const labels = counts.data?.status_labels ?? STATUS_LABELS_FALLBACK;
   const total = useMemo(() => Object.values(counts.data?.counts ?? {}).reduce((a, b) => a + b, 0), [counts.data]);
   const filtersActive = !!(status || priority || owner !== "all" || q);
+  const { user } = useAuth();
+  const [genOpen, setGenOpen] = useState(false);
 
   return (
     <div className="page page-wide">
-      <SectionTitle>Case queue</SectionTitle>
+      <SectionTitle
+        actions={
+          canSupervise(user) ? (
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setGenOpen(true)}>
+              Generate demo disputes
+            </button>
+          ) : undefined
+        }
+      >
+        Case queue
+      </SectionTitle>
+      {genOpen && <GenerateDataDialog onClose={() => setGenOpen(false)} />}
       <p className="page-lede">
         Most urgent cases first, then the nearest deadline. Priority (P1 is the most urgent) only sets the order of work; it does not say whether
         the customer is right.

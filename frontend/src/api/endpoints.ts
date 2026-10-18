@@ -74,6 +74,24 @@ export function graphQuery(p: GraphQueryParams): string {
   });
 }
 
+export interface GenerateDataRequest {
+  count: number;
+  categories: string[];
+  amount_min: number;
+  amount_max: number;
+  status_mode: string;
+  assign: string;
+  days_back: number;
+  with_trail: boolean;
+  with_evidence: boolean;
+  statements: "template" | "ai";
+  ai_budget_usd: number;
+}
+export interface GenerateDataResult {
+  created: { case_id: string; category: string; status: string; priority: string; amount: string }[];
+  statements: { ai: number; ai_rejected: number; template: number; ai_cost_usd: number; ai_available: boolean };
+}
+
 export const api = {
   authConfig: () => request<AuthConfig>("/api/auth/config", { quiet401: true }),
   me: () => request<MeResponse>("/api/auth/me", { quiet401: true }),
@@ -164,6 +182,7 @@ export const api = {
   },
   portalChat: (state: ChatState | null, choice?: string, text?: string) =>
     request<ChatTurn>("/api/portal/chat", { method: "POST", body: { state, choice: choice ?? null, text: text ?? null } }),
+  generateData: (body: GenerateDataRequest) => request<GenerateDataResult>("/api/admin/generate-data", { method: "POST", body }),
   adminUsers: () => request<{ users: AdminUser[] }>("/api/admin/users"),
   adminResetMfa: (userId: number, reason: string) =>
     request<{ ok: boolean }>(`/api/admin/users/${userId}/mfa/reset`, { method: "POST", body: { reason } }),

@@ -418,3 +418,32 @@
     transition: none;
   }
 }
+
+/* generate demo disputes dialog */
+.gen-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.gen-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--s-3);
+}
+.gen-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+.gen-checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--s-1) var(--s-3);
+}
+.gen-budget {
+  margin-left: var(--s-5);
+  max-width: 420px;
+}
