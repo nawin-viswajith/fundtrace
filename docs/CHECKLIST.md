@@ -70,8 +70,8 @@ Status as of 2026-10-17. Testing items are excluded.
 - [ ] Tune prompts or speed up the fact-check step if needed (first live run: ~3 min end to end)
 
 ### Deliverables
-- [ ] Fill the last deck placeholder: team name (cover and closing slides)
-- [ ] Record the 3-minute video
+- [x] Fill the last deck placeholder: team name (cover and closing slides) — **Aura Bros**
+- [ ] Record the 3-minute video (helper: `python docs/record_demo.py`, narration cue sheet in `docs/demo_narration.txt` / `.srt`)
 - [ ] Make the GitHub repo **public**
 - [ ] Submit on Hack2skill: deployed link, video, repo, deck PDF, theme
 

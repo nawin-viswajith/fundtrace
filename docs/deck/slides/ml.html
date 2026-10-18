@@ -1,0 +1,21 @@
+<section id="ml" style="background:#F6F6FA;color:#14183A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px;display:flex;flex-direction:column;gap:32px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#14183A">One real ML model, honestly measured</h2>
+<p style="font-size:30px;line-height:1.45;color:#4A5068;max-width:1500px">A judge who hears "precision and recall 1.0" should ask whether that was measured on scenarios the team wrote itself — ours was. So alongside the rules there is one trained model, scored a different way.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+<div style="background:#FFFFFE;padding:36px;border:1px solid #DDDFEA;border-top:6px solid #3A3FB3;display:flex;flex-direction:column;gap:12px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:600;color:#3A3FB3">An unsupervised behaviour model</h3>
+<p style="font-size:26px;line-height:1.5;color:#4A5068">Scikit-learn Isolation Forest, scored 0–100: how unlike the bank's other accounts an account behaves (age, in/out counts, how fast money passes through, fan-out, devices shared). <b style="color:#14183A">No labels anywhere</b> — it has never been told which accounts are mules.</p>
+<p style="font-size:24px;line-height:1.4;color:#A8650B">A separate signal, not a 16th rule: it never changes a warning sign, priority or decision.</p>
+</div>
+<div style="background:#FFFFFE;padding:36px;border:1px solid #DDDFEA;border-top:6px solid #2E7D4F;display:flex;flex-direction:column;gap:12px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:600;color:#2E7D4F">A genuine hold-out</h3>
+<p style="font-size:26px;line-height:1.5;color:#4A5068">Fresh synthetic banks at random seeds, built through the demo-data generator — a different code path from the hand-written scenarios, never scored again. Measured without labels touching the fit.</p>
+<div style="display:flex;gap:24px;padding-top:4px">
+<div><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:56px;font-weight:700;color:#2E7D4F">0.78</p><p style="font-size:22px;color:#4A5068">mean ROC-AUC, 5 seeds</p></div>
+<div><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:56px;font-weight:700;color:#2E7D4F">0.41</p><p style="font-size:22px;color:#4A5068">mean precision@k</p></div>
+</div>
+</div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#4A5068">On the case: the model shows up to 3 plain-language reasons per account — its value against the bank's typical value — on the Warning signs tab. On the <b>AI & system health</b> page: the model card, and a "Run hold-out evaluation" button a supervisor can press on demand.</p>
+<aside>Honest about limits: well above chance, far from the scenario-only 1.0. Labelled everywhere as a synthetic hold-out, not real-world performance.</aside>
+</section>

@@ -1,0 +1,34 @@
+FundTrace demo narration — cue sheet (matches docs/DEMO_VIDEO.md)
+
+[  0.0s -  10.0s]  Portal home
+  "Priya sees ₹50,000 leave her account that she never sent. With real-time payments, that money can be three accounts away in minutes."
+
+[ 10.0s -  35.0s]  Chat with our assistant → submit
+  "She raises it in the bank's app. The assistant asks one question at a time and she taps answers, so every dispute lands mapped to the right account and payment. It asks for proof — she adds the bank's screenshot — checks the summary card and submits."
+
+[ 35.0s -  45.0s]  Case queue — the new case at the top
+  "On the bank side it's already a case: customer, payment, category, SLA clocks and priority set. No re-keying."
+
+[ 45.0s -  60.0s]  CASE-24051 Overview — at a glance, six separate checks
+  "This is the investigation for that kind of dispute. P1, and it says why. Six separate checks — warning signs, evidence, records, tracing, policy, AI — and deliberately no single trust score."
+
+[ 60.0s -  85.0s]  Money trail
+  "The trail is rebuilt from ledger records in time order: fifty thousand to a nine-day-old account, then split — thirty thousand to Sunil, twenty thousand to another bank, where our visibility ends, and we say so. Rahul already held ₹1,200, so balance arithmetic proves at least ₹28,800 of the transfer to Sunil is the disputed money. That's derived. Where the ledger can't force it, we say inferred."
+
+[ 85.0s - 100.0s]  Warning signs → open "Failed logins"
+  "Fifteen explainable warning signs. Each shows the records behind it: four failed logins, then an OTP from a device first seen fourteen minutes earlier — the same device as another victim's account. Signs prompt review; they are not proof."
+
+[100.0s - 115.0s]  Evidence (CASE-24049)
+  "Gemini reads the customer's screenshot, but code compares it with the ledger. Here the screenshot says ₹45,000 against a ₹50,000 record — a contradiction. And the hidden note telling the AI to approve the refund? Detected and ignored."
+
+[115.0s - 140.0s]  AI report (CASE-24051)
+  "A LangGraph agent explores the trail with fixed tools and Gemini writes the report. Every sentence cites a record. Code checks every ID, amount and time; a Gemini judge fact-checks each claim. Thirty-five claims, all confirmed, zero not backed by records — measured on every report, with its cost."
+
+[140.0s - 155.0s]  Linked cases → "Money recovered from shared accounts"
+  "Three disputes traced money into Rahul's account, and together their holds ask for ₹3,600 — but only ₹1,200 is there. FundTrace shows the money once and splits it fairly. Every figure has a calculation record anyone can recompute."
+
+[155.0s - 170.0s]  AI & system health
+  "And we run the AI responsibly: cost, latency and errors per call, 104 of 104 ground-truth checks, investigator agreement with the AI, and field encryption with Cloud KMS. All on Gemini, LangGraph and Cloud Run."
+
+[170.0s - 180.0s]  Title slide
+  "FundTrace: follow the money, show the proof, mark the guesses. The investigator decides."

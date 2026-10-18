@@ -1,0 +1,43 @@
+1
+00:00:00,000 --> 00:00:10,000
+Priya sees ₹50,000 leave her account that she never sent. With real-time payments, that money can be three accounts away in minutes.
+
+2
+00:00:10,000 --> 00:00:35,000
+She raises it in the bank's app. The assistant asks one question at a time and she taps answers, so every dispute lands mapped to the right account and payment. It asks for proof — she adds the bank's screenshot — checks the summary card and submits.
+
+3
+00:00:35,000 --> 00:00:45,000
+On the bank side it's already a case: customer, payment, category, SLA clocks and priority set. No re-keying.
+
+4
+00:00:45,000 --> 00:01:00,000
+This is the investigation for that kind of dispute. P1, and it says why. Six separate checks — warning signs, evidence, records, tracing, policy, AI — and deliberately no single trust score.
+
+5
+00:01:00,000 --> 00:01:25,000
+The trail is rebuilt from ledger records in time order: fifty thousand to a nine-day-old account, then split — thirty thousand to Sunil, twenty thousand to another bank, where our visibility ends, and we say so. Rahul already held ₹1,200, so balance arithmetic proves at least ₹28,800 of the transfer to Sunil is the disputed money. That's derived. Where the ledger can't force it, we say inferred.
+
+6
+00:01:25,000 --> 00:01:40,000
+Fifteen explainable warning signs. Each shows the records behind it: four failed logins, then an OTP from a device first seen fourteen minutes earlier — the same device as another victim's account. Signs prompt review; they are not proof.
+
+7
+00:01:40,000 --> 00:01:55,000
+Gemini reads the customer's screenshot, but code compares it with the ledger. Here the screenshot says ₹45,000 against a ₹50,000 record — a contradiction. And the hidden note telling the AI to approve the refund? Detected and ignored.
+
+8
+00:01:55,000 --> 00:02:20,000
+A LangGraph agent explores the trail with fixed tools and Gemini writes the report. Every sentence cites a record. Code checks every ID, amount and time; a Gemini judge fact-checks each claim. Thirty-five claims, all confirmed, zero not backed by records — measured on every report, with its cost.
+
+9
+00:02:20,000 --> 00:02:35,000
+Three disputes traced money into Rahul's account, and together their holds ask for ₹3,600 — but only ₹1,200 is there. FundTrace shows the money once and splits it fairly. Every figure has a calculation record anyone can recompute.
+
+10
+00:02:35,000 --> 00:02:50,000
+And we run the AI responsibly: cost, latency and errors per call, 104 of 104 ground-truth checks, investigator agreement with the AI, and field encryption with Cloud KMS. All on Gemini, LangGraph and Cloud Run.
+
+11
+00:02:50,000 --> 00:03:00,000
+FundTrace: follow the money, show the proof, mark the guesses. The investigator decides.
