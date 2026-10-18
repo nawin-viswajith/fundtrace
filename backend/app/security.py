@@ -14,6 +14,9 @@ from app.db import get_db
 
 COOKIE = "ft_session"
 ROLES = ("investigator", "supervisor", "admin")
+STAFF_ROLES = ROLES
+# A bank customer's login reaches only the customer portal and its own sign-in endpoints.
+CUSTOMER_PATHS = ("/api/portal/", "/api/auth/")
 
 
 def hash_password(pw: str) -> str:
@@ -87,6 +90,8 @@ def current_user(request: Request, db: Session = Depends(get_db)) -> m.User:
     if (user.mfa_enabled or required_for(user)) and not payload.get("mfa"):
         # MFA was turned on (or made mandatory) after this session started.
         raise HTTPException(status_code=401, detail="Sign in again with your authenticator code")
+    if user.role == "customer" and not request.url.path.startswith(CUSTOMER_PATHS):
+        raise HTTPException(status_code=403, detail="This page is for bank staff")
     return user
 
 

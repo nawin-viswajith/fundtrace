@@ -111,7 +111,8 @@ npm run dev                           # http://localhost:5173 (proxies /api to :
 ```
 
 Logins (synthetic demo; the password is also shown on the login page): `inv.asha`, `inv.ravi`
-(investigators), `sup.meera` (supervisor), `admin`. Password: `Investigate@2026`.
+(investigators), `sup.meera` (supervisor), `admin`. Bank customers (customer portal): `cust.priya`,
+`cust.kiran`, `cust.kabir`. Password for all: `Investigate@2026`.
 
 Without Google Cloud credentials the app still works fully. AI features show **"Not analysed"**, and
 investigations produce a clearly labelled **facts-only report** built from records by code.
@@ -192,6 +193,37 @@ The script is idempotent. It does the following:
 | CASE-24045 | Two source systems disagree on amount | multi-source provenance, contradiction |
 
 ---
+
+## Customer portal (raising a dispute)
+
+Bank customers sign in with their own login (`cust.priya`, `cust.kiran`, `cust.kabir`) and land in a separate,
+simpler portal at `/portal`. They can only see their own accounts, payments and disputes, and a customer login
+gets 403 on every staff API.
+
+They raise a dispute in one of two ways, and both use the same fixed options so every dispute maps cleanly into
+the bank's case file:
+- **Form:** a four-step wizard. 1) Pick the payment from your own recent payments. 2) What happened (six fixed
+  reasons). 3) Details. 4) Check and submit.
+- **Guided chat:** one question at a time, answered with buttons. Nothing is filed until the customer confirms
+  the summary.
+
+The questions:
+- what happened (six fixed reasons)
+- whether an OTP, PIN or password was shared (fraud reasons only)
+- when the customer noticed
+- whether a cyber-crime complaint was filed, with its number (fraud reasons only)
+- how to contact them
+
+The only free text is the customer's description. OTPs, PINs and card numbers typed into it are hidden
+automatically.
+
+The dispute becomes a normal **New** case in the bank's queue, linked to the customer, account and payment. The
+reason maps to a category, and SLA deadlines and priority are computed straight away. Investigators see the
+customer's answers under their statement, and the AI receives them as untrusted customer statements.
+
+Customers follow their dispute in plain words (Received → Being investigated → Final review → Decided). They see
+the bank's deadlines and anything the bank asked them for, and can upload files. They never see risk signals,
+other accounts, staff notes, AI reports or decision rationales.
 
 ## Ledger ingest
 

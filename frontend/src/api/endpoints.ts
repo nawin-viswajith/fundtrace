@@ -27,6 +27,13 @@ import type {
   SearchResponse,
   TimelineResponse,
   AdminUser,
+  ChatState,
+  ChatTurn,
+  NewDispute,
+  PortalDispute,
+  PortalDisputeBrief,
+  PortalPayment,
+  PortalProfile,
   AssistantReply,
   DraftOpResult,
   ReportDraft,
@@ -144,6 +151,19 @@ export const api = {
   rings: () => request<RingsResponse>("/api/network/rings"),
 
   opsMetrics: () => request<OpsMetrics>("/api/ops/metrics"),
+  portalMe: () => request<PortalProfile>("/api/portal/me"),
+  portalPayments: (q?: string) => request<{ transactions: PortalPayment[] }>(`/api/portal/transactions${qs({ q })}`),
+  portalDisputes: () => request<{ disputes: PortalDisputeBrief[] }>("/api/portal/disputes"),
+  portalDispute: (id: string) => request<PortalDispute>(`/api/portal/disputes/${enc(id)}`),
+  portalRaise: (body: NewDispute) => request<PortalDispute>("/api/portal/disputes", { method: "POST", body }),
+  portalUpload: (id: string, file: File, checklistKey?: string) => {
+    const form = new FormData();
+    form.append("file", file);
+    if (checklistKey) form.append("checklist_key", checklistKey);
+    return request<PortalDispute>(`/api/portal/disputes/${enc(id)}/evidence`, { method: "POST", form });
+  },
+  portalChat: (state: ChatState | null, choice?: string, text?: string) =>
+    request<ChatTurn>("/api/portal/chat", { method: "POST", body: { state, choice: choice ?? null, text: text ?? null } }),
   adminUsers: () => request<{ users: AdminUser[] }>("/api/admin/users"),
   adminResetMfa: (userId: number, reason: string) =>
     request<{ ok: boolean }>(`/api/admin/users/${userId}/mfa/reset`, { method: "POST", body: { reason } }),

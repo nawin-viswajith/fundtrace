@@ -3,6 +3,7 @@ import { DimensionCards } from "./DimensionCards";
 import { HoldsPanel } from "./HoldsPanel";
 import { PlainPanel } from "./PlainPanel";
 import { nextDeadline, nextSteps, whatHappened, whatIsMissing, whatWeFound, whereMoneyIs, type NextStep } from "./plainSummary";
+import type { CaseSummary } from "../../types/api";
 
 export function OverviewTab() {
   return (
@@ -51,8 +52,9 @@ function CustomerStatement() {
         </figure>
       )}
       {!c.allegation_translation && foreign && (
-        <p className="muted small">No translation yet. You can ask the AI for one on the AI report tab.</p>
+        <p className="muted small">No translation yet. Use “Suggest a category” at the top of the case to get one.</p>
       )}
+      {c.intake && <CustomerAnswers channel={c.channel} intake={c.intake} />}
     </PlainPanel>
   );
 }
@@ -136,5 +138,43 @@ function AtAGlance() {
         </div>
       </dl>
     </PlainPanel>
+  );
+}
+
+const OTP_TEXT: Record<string, string> = { yes: "Yes, shared one", no: "No", not_sure: "Not sure" };
+const NOTICED_TEXT: Record<string, string> = { today: "The same day", yesterday: "The next day", "2_7_days": "2–7 days later", over_week: "More than a week later" };
+const CONTACT_TEXT: Record<string, string> = { sms: "SMS", email: "Email", phone: "Phone call" };
+
+/** What the customer answered when raising the dispute online — their own statements, not checked facts. */
+function CustomerAnswers({ channel, intake }: { channel?: string; intake: NonNullable<CaseSummary["intake"]> }) {
+  const via = channel === "portal_chat" ? "the guided chat" : channel === "portal_form" ? "the online form" : "the customer portal";
+  return (
+    <div className="customer-answers">
+      <p className="small muted">Raised by the customer through {via}. Their answers:</p>
+      <dl className="kv kv-tight">
+        {intake.otp_shared && (
+          <div className="kv-row">
+            <dt>Shared an OTP, PIN or password</dt>
+            <dd>{OTP_TEXT[intake.otp_shared] ?? intake.otp_shared}</dd>
+          </div>
+        )}
+        {intake.noticed && (
+          <div className="kv-row">
+            <dt>Noticed</dt>
+            <dd>{NOTICED_TEXT[intake.noticed] ?? intake.noticed}</dd>
+          </div>
+        )}
+        <div className="kv-row">
+          <dt>Cyber-crime complaint number</dt>
+          <dd>{intake.cyber_complaint_ref || "Not given"}</dd>
+        </div>
+        {intake.contact_preference && (
+          <div className="kv-row">
+            <dt>Contact by</dt>
+            <dd>{CONTACT_TEXT[intake.contact_preference] ?? intake.contact_preference}</dd>
+          </div>
+        )}
+      </dl>
+    </div>
   );
 }

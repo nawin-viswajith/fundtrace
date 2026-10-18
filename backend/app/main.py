@@ -14,7 +14,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app import telemetry
 from app import crypto
-from app.api import auth, cases, ingest, ops, overview
+from app.api import auth, cases, ingest, ops, overview, portal
 from app.config import get_settings
 from app.db import create_all, init_engine, session_scope
 
@@ -29,7 +29,7 @@ def bootstrap() -> None:
     crypto.keyring()  # fail fast if field-encryption keys are missing or wrong
     init_engine(s.database_url)
     create_all()
-    from app.seed.loader import ensure_users, is_seeded, seed
+    from app.seed.loader import ensure_customer_users, ensure_users, is_seeded, seed
 
     from sqlalchemy import text
 
@@ -42,6 +42,7 @@ def bootstrap() -> None:
             if s.seed_on_start and not is_seeded(db):
                 info = seed(db)
                 log.info("synthetic demo data seeded: %s cases", info["cases"])
+            ensure_customer_users(db)  # existing deployments get the portal logins too
             crypto.backfill(db)  # rows written before field encryption was enabled
             db.commit()
         finally:
@@ -97,6 +98,7 @@ def create_app() -> FastAPI:
     app.include_router(ops.router)
     app.include_router(overview.router)
     app.include_router(ingest.router)
+    app.include_router(portal.router)
 
     try:
         from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor

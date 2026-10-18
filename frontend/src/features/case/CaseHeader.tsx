@@ -51,7 +51,7 @@ export function CaseHeader({ compact = false }: { compact?: boolean }) {
             {c.category_label}
             <span className="muted">
               {" "}
-              · {c.category_source === "investigator" ? "category set by an investigator" : c.category_source === "ai" ? "category suggested by AI" : "category set when the dispute was raised"}
+              · {c.category_source === "investigator" ? "category set by an investigator" : c.category_source === "ai" ? "category suggested by AI" : c.category_source === "customer" ? "category chosen by the customer online" : "category set when the dispute was raised"}
               {c.is_synthetic && <span title="Generated for the demo"> · synthetic</span>}
             </span>{" "}
             <button type="button" className="link-btn small" onClick={() => setDialog("category")}>

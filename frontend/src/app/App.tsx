@@ -8,6 +8,7 @@ import { ToastProvider } from "../components/Toast";
 import { LoadingBlock, EmptyState } from "../components/Primitives";
 import LoginPage from "../features/auth/LoginPage";
 import AppShell from "../features/shell/AppShell";
+import { RequireCustomer } from "../features/portal/parts";
 import CaseQueue from "../features/queue/CaseQueue";
 import OverviewPage from "../features/overview/OverviewPage";
 
@@ -16,6 +17,12 @@ const NetworkPage = lazy(() => import("../features/network/NetworkPage"));
 const RulesPage = lazy(() => import("../features/rules/RulesPage"));
 const OpsPage = lazy(() => import("../features/ops/OpsPage"));
 const ReportPrint = lazy(() => import("../features/report/ReportPrint"));
+const PortalShell = lazy(() => import("../features/portal/PortalShell"));
+const PortalHome = lazy(() => import("../features/portal/PortalHome"));
+const NewDisputePage = lazy(() => import("../features/portal/PortalHome").then((mod) => ({ default: mod.NewDisputePage })));
+const DisputeForm = lazy(() => import("../features/portal/DisputeForm"));
+const DisputeChat = lazy(() => import("../features/portal/DisputeChat"));
+const DisputeDetail = lazy(() => import("../features/portal/DisputeDetail"));
 
 function PageFallback() {
   return (
@@ -44,6 +51,20 @@ export default function App() {
               <Suspense fallback={<PageFallback />}>
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
+                  <Route
+                    path="/portal"
+                    element={
+                      <RequireCustomer>
+                        <PortalShell />
+                      </RequireCustomer>
+                    }
+                  >
+                    <Route index element={<PortalHome />} />
+                    <Route path="new" element={<NewDisputePage />} />
+                    <Route path="new/form" element={<DisputeForm />} />
+                    <Route path="new/chat" element={<DisputeChat />} />
+                    <Route path="disputes/:caseId" element={<DisputeDetail />} />
+                  </Route>
                   <Route
                     path="/cases/:caseId/reports/:reportId/print"
                     element={

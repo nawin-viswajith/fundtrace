@@ -11,6 +11,7 @@ from app import models as m
 from app.config import get_settings
 from app.db import get_db
 from app.security import COOKIE, create_pending_token, create_token, current_user, read_pending_token, verify_password
+from app.seed.loader import CUSTOMER_USERS
 from app.services import mfa
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -91,6 +92,7 @@ def auth_config():
         "demo_users": [{"username": "inv.asha", "role": "investigator"}, {"username": "inv.ravi", "role": "investigator"},
                        {"username": "sup.meera", "role": "supervisor"}, {"username": "admin", "role": "admin"}],
         "demo_password": s.demo_password if s.show_demo_credentials else None,
+        "demo_customers": [{"username": u, "customer_id": c} for u, c in CUSTOMER_USERS],
         "firebase_enabled": firebase is not None,
         "firebase": firebase,
         "mfa_required_roles": sorted(s.mfa_roles),

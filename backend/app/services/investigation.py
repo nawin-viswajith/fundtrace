@@ -164,6 +164,7 @@ def case_summary(c: m.DisputeCase) -> dict:
         "amount_minor": t.amount_minor if t else None, "currency": t.currency if t else None,
         "txn_status": t.status if t else None, "txn_reference": t.reference if t else None,
         "is_synthetic": c.is_synthetic, "scenario": c.scenario,
+        "channel": c.channel or "seed", "intake": c.intake,
     }
 
 

@@ -52,6 +52,10 @@ export const useRings = () => useQuery({ queryKey: ["rings"], queryFn: api.rings
 export const useOpsMetrics = () => useQuery({ queryKey: ["ops", "metrics"], queryFn: api.opsMetrics });
 export const useOpsCalls = () => useQuery({ queryKey: ["ops", "calls"], queryFn: api.opsCalls });
 export const useOpsEvals = () => useQuery({ queryKey: ["ops", "evals"], queryFn: api.opsEvals });
+export const usePortalMe = () => useQuery({ queryKey: ["portal", "me"], queryFn: api.portalMe });
+export const usePortalDisputes = () => useQuery({ queryKey: ["portal", "disputes"], queryFn: api.portalDisputes });
+export const usePortalDispute = (id: string) => useQuery({ queryKey: ["portal", "dispute", id], queryFn: () => api.portalDispute(id) });
+export const usePortalPayments = (q: string) => useQuery({ queryKey: ["portal", "payments", q], queryFn: () => api.portalPayments(q || undefined) });
 export const useAdminUsers = (enabled = true) => useQuery({ queryKey: ["admin", "users"], queryFn: api.adminUsers, enabled });
 export const useSecurityStatus = (enabled = true) => useQuery({ queryKey: ["admin", "security"], queryFn: api.securityStatus, enabled });
 export const useIngestEvents = (enabled = true) => useQuery({ queryKey: ["ingest", "events"], queryFn: api.ingestEvents, enabled });

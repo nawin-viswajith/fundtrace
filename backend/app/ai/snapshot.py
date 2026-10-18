@@ -36,6 +36,9 @@ def build_snapshot(ctx: dict, extra: dict | None = None) -> dict:
         "priority_reasons": ctx["computed_priority"]["reasons"], "reported": _t(case["reported_at"]).get("time_utc"),
         "customer_statement": fence(redact_for_llm(case["allegation"])),
         "statement_translation_ai": fence(redact_for_llm(case["allegation_translation"])) if case.get("allegation_translation") else None,
+        "customer_answers": fence(json.dumps({k: v for k, v in (case.get("intake") or {}).items()
+                                              if k in ("reason", "otp_shared", "noticed", "cyber_complaint_ref")}))
+        if case.get("intake") else None,
     }
     att = ctx["attribution"]
     for n in ctx["graph"]["nodes"]:

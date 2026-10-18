@@ -23,7 +23,10 @@ export default function LoginPage() {
   const { user, login, loginWithFirebase, setSessionUser, sessionExpired } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
-  const from = (loc.state as { from?: string } | null)?.from ?? "/overview";
+  const requested = (loc.state as { from?: string } | null)?.from;
+  const homeFor = (u: User | null) =>
+    u?.role === "customer" ? (requested?.startsWith("/portal") ? requested : "/portal") : requested && !requested.startsWith("/portal") ? requested : "/overview";
+  const from = homeFor(user);
   const cfg = useAuthConfig();
   const [step, setStep] = useState<Step>({ kind: "password" });
   const [notice, setNotice] = useState<string | null>(null);
@@ -32,7 +35,7 @@ export default function LoginPage() {
   if (user && step.kind !== "codes") return <Navigate to={from} replace />;
 
   const next = (r: LoginResult) => {
-    if ("user" in r) nav(from, { replace: true });
+    if ("user" in r) nav(homeFor(r.user), { replace: true });
     else if ("mfa_required" in r) setStep({ kind: "mfa", token: r.mfa_token });
     else setStep({ kind: "enrol", token: r.mfa_token });
   };
@@ -116,7 +119,7 @@ export default function LoginPage() {
                 codes={step.codes}
                 onDone={() => {
                   setSessionUser(step.user);
-                  nav(from, { replace: true });
+                  nav(homeFor(step.user), { replace: true });
                 }}
                 doneLabel="I've saved them — continue"
               />
@@ -207,6 +210,21 @@ function PasswordStep({
                 </li>
               ))}
             </ul>
+            {cfg.data.demo_customers && cfg.data.demo_customers.length > 0 && (
+              <>
+                <p className="demo-title demo-title-sub">Bank customers (raise and follow a dispute)</p>
+                <ul className="demo-list">
+                  {cfg.data.demo_customers.map((u) => (
+                    <li key={u.username}>
+                      <button type="button" className="demo-user" onClick={() => fill(u.username)} aria-label={`Fill in ${u.username}`}>
+                        <code>{u.username}</code>
+                        <span className="role-tag role-customer">customer</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
             {cfg.data.demo_password ? (
               <p className="demo-pw">
                 Password for all: <code>{cfg.data.demo_password}</code>

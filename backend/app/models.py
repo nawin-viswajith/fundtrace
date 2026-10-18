@@ -35,7 +35,9 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(64), unique=True)
     full_name: Mapped[str] = mapped_column(String(128))
-    role: Mapped[str] = mapped_column(String(32))  # investigator | supervisor | admin
+    role: Mapped[str] = mapped_column(String(32))  # investigator | supervisor | admin | customer
+    # set only for role "customer": the bank customer this login belongs to (customer portal)
+    customer_id: Mapped[str | None] = mapped_column(ForeignKey("customers.id"), nullable=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(128))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
@@ -156,6 +158,10 @@ class DisputeCase(Base):
     decided_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     is_synthetic: Mapped[bool] = mapped_column(Boolean, default=True)
     scenario: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # How the dispute was raised (seed | portal_form | portal_chat) and the customer's own answers
+    # (OTP shared, when noticed, cyber complaint number, contact preference). Customer-provided, untrusted.
+    channel: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    intake: Mapped[dict | None] = mapped_column(EncryptedJSON("dispute_cases.intake"), nullable=True)
 
     owner: Mapped[User | None] = relationship(foreign_keys=[owner_id], lazy="joined")
     disputed_txn: Mapped[Transaction] = relationship(lazy="joined")

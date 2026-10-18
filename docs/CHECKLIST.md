@@ -83,5 +83,9 @@ Status as of 2026-10-17. Testing items are excluded.
 - [x] Ledger ingest: Pub/Sub push (OIDC-verified, dead-letter topic) + admin statement upload; ISO 20022 camt.053, CSV, JSON adapters
 - [x] Evidence strength score per evidence item, with a sub-score per category and reasons
 - [x] UI: light theme by default, square/flat design, decluttered screens
+- [x] Customer portal: customer logins (cust.priya / cust.kiran / cust.kabir), dispute by form or guided chat with fixed
+      options, plain status tracking, uploads; disputes land in the bank queue mapped to customer, account and payment
+- [x] AI report sections and warning signs as collapsed accordions; plain-language UI across the bank view
+- [x] Fact-check (judge) re-runnable on its own, in parallel batches; case assistant with report drafts
 - [ ] Redeploy with the new infra/deploy.sh (creates the KMS key, Pub/Sub topic/subscription, DLP role); run it once and check the AI Ops security panel
 - [ ] Re-run live evidence analysis with Gemini (prompt evidence-v3 adds relevance/origin labels) and check the scores

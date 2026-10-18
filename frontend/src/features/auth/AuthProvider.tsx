@@ -119,5 +119,6 @@ export function RequireAuth({ children }: { children: ReactNode }) {
       </div>
     );
   if (!user) return <Navigate to="/login" replace state={{ from: loc.pathname + loc.search }} />;
+  if (user.role === "customer") return <Navigate to="/portal" replace />; // bank customers only see the portal
   return <>{children}</>;
 }

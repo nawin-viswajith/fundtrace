@@ -1,4 +1,3 @@
-import uuid
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
@@ -12,9 +11,8 @@ from app import models as m
 from app.config import get_settings
 from app.db import get_db
 from app.security import can_access_case, current_user, load_case_for
-from app.services import dlp
 from app.services import investigation as inv
-from app.services.storage import StorageError, get_storage, sha256, sniff_mime
+from app.services.storage import get_storage
 from app.services.trace import fmt_amount
 from app.services.workflow import DECISIONS, STATUS_LABELS, STATUSES, TRANSITIONS, apply_action, review_report
 
@@ -207,33 +205,14 @@ def evidence(case_id: str, user: m.User = Depends(current_user), db: Session = D
 @router.post("/cases/{case_id}/evidence")
 async def upload_evidence(case_id: str, file: UploadFile = File(...), checklist_key: str | None = Form(None),
                           kind: str = Form("customer_upload"), user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    from app.services.evidence_store import read_upload, store_evidence
+
     case = load_case_for(user, db, case_id)
-    if kind not in ("customer_upload", "bank_record", "merchant_response", "complaint_ack"):
-        raise HTTPException(422, "Unknown evidence kind")
-    s = get_settings()
-    data = await file.read(s.max_upload_bytes + 1)
-    if len(data) > s.max_upload_bytes:
-        raise HTTPException(413, f"File too large (max {s.max_upload_bytes // (1024 * 1024)} MB)")
-    if not data:
-        raise HTTPException(422, "Empty file")
-    try:
-        mime = sniff_mime(data, file.content_type, file.filename or "")
-    except StorageError as exc:
-        raise HTTPException(415, str(exc))
-    uri = get_storage().put(data, case.id, mime)
-    eid = "EV-" + uuid.uuid4().hex[:8].upper()
-    name = (file.filename or "upload").replace("/", "_").replace("\\", "_")[:200]
-    scan = dlp.scan_file(data, mime)
-    db.add(m.EvidenceItem(id=eid, case_id=case.id, kind=kind, checklist_key=checklist_key, filename=name, mime=mime, sha256=sha256(data),
-                          storage_uri=uri, size=len(data), uploaded_by=user.username, analysis_status="not_analysed", is_synthetic=False,
-                          dlp=scan))
-    db.flush()
-    audit.record(db, case.id, user.username, user.role, "evidence_uploaded", {"evidence_id": eid, "filename": name, "sha256": sha256(data),
-                                                                               "size": len(data), "mime": mime, "dlp_status": scan["status"],
-                                                                               "dlp_findings": [{"type": f["type"], "count": f["count"]}
-                                                                                                for f in scan["findings"]]})
+    data = await read_upload(file)
+    item = store_evidence(db, case, data, file.filename, file.content_type, kind=kind, checklist_key=checklist_key,
+                          actor=user.username, actor_role=user.role)
     db.commit()
-    return {"id": eid, "analysis_status": "not_analysed", "dlp": scan}
+    return {"id": item.id, "analysis_status": "not_analysed", "dlp": item.dlp}
 
 
 @router.post("/cases/{case_id}/evidence/{evidence_id}/analyse")

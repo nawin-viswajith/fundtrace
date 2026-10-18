@@ -3,7 +3,7 @@
 export type Provenance = "confirmed" | "derived" | "inferred" | "unknown" | "contradictory";
 export type Severity = "high" | "medium" | "low";
 export type RuleStatus = "triggered" | "not_triggered" | "not_evaluable";
-export type Role = "investigator" | "supervisor" | "admin";
+export type Role = "investigator" | "supervisor" | "admin" | "customer";
 export type CaseStatus =
   | "new"
   | "triage"
@@ -50,6 +50,7 @@ export interface FirebaseWebConfig {
 export interface AuthConfig {
   demo: boolean;
   demo_users: { username: string; role: Role }[];
+  demo_customers?: { username: string; customer_id: string }[];
   demo_password: string | null;
   firebase_enabled: boolean;
   firebase?: FirebaseWebConfig | null;
@@ -74,7 +75,18 @@ export interface OwnerRef {
   full_name: string;
 }
 
+/** The customer's own answers when they raised the dispute online (customer-provided, not yet checked). */
+export interface CaseIntake {
+  reason?: string;
+  otp_shared?: "yes" | "no" | "not_sure" | null;
+  noticed?: string | null;
+  cyber_complaint_ref?: string | null;
+  contact_preference?: string | null;
+  submitted_at?: string;
+}
 export interface CaseSummary {
+  channel?: string;
+  intake?: CaseIntake | null;
   id: string;
   category: string;
   category_label: string;
@@ -1061,4 +1073,117 @@ export interface IngestEventsResponse {
   events: IngestEvent[];
   formats: Record<string, string>;
   pubsub_enabled: boolean;
+}
+
+// ------------------------------------------------------------------ customer portal (bank customers raising disputes)
+export interface PortalReason {
+  key: string;
+  label: string;
+  help: string;
+  asks_otp: boolean;
+}
+export interface PortalProfile {
+  customer_id: string;
+  name: string;
+  is_synthetic: boolean;
+  accounts: { id: string; label: string; masked_number: string; kind: string }[];
+  reasons: PortalReason[];
+  options: { otp_shared: Record<string, string>; noticed: Record<string, string>; contact_preference: Record<string, string> };
+}
+export interface PortalPayment {
+  id: string;
+  amount_minor: number;
+  currency: string;
+  amount: string;
+  paid_to: string;
+  paid_to_bank: string | null;
+  channel: string;
+  reference: string | null;
+  status: string;
+  occurred_at: string;
+  from_account: string;
+  dispute_case_id: string | null;
+}
+export interface DisputeAnswers {
+  otp_shared: string | null;
+  noticed: string | null;
+  cyber_complaint_ref: string | null;
+  contact_preference: string | null;
+}
+export interface PortalDispute {
+  case_id: string;
+  status: string;
+  status_key: string;
+  step: number;
+  steps: string[];
+  explain: string;
+  reason: string;
+  description: string;
+  payment: PortalPayment;
+  raised_at: string;
+  channel: string;
+  answers: DisputeAnswers;
+  requests: { id: number; checklist_key: string; label: string; requested_at: string }[];
+  files: { id: string; filename: string; uploaded_at: string }[];
+  deadlines: { label: string; due_at: string }[];
+  timeline: { at: string; text: string }[];
+  decision: string | null;
+  masked?: DlpFinding[];
+}
+export interface PortalDisputeBrief {
+  case_id: string;
+  status: string;
+  step: number;
+  raised_at: string;
+  reason: string;
+  payment: PortalPayment;
+  needs_action: number;
+}
+export interface NewDispute {
+  txn_id: string;
+  reason: string;
+  description: string;
+  otp_shared: string | null;
+  noticed: string;
+  cyber_complaint_ref: string | null;
+  contact_preference: string;
+  declaration: boolean;
+  channel: "portal_form" | "portal_chat";
+}
+export interface ChatState {
+  step?: string;
+  txn_id?: string;
+  reason?: string;
+  otp_shared?: string;
+  noticed?: string;
+  cyber_complaint_ref?: string;
+  cyber_pending?: boolean;
+  description?: string;
+  contact_preference?: string;
+  page?: number;
+}
+export interface ChatOption {
+  value: string;
+  label: string;
+  help?: string;
+}
+export interface ChatSummary {
+  payment: PortalPayment;
+  reason: string;
+  otp_shared: string | null;
+  noticed: string;
+  cyber_complaint: string | null;
+  description: string;
+  contact_preference: string;
+}
+export interface ChatTurn {
+  state: ChatState;
+  step: string;
+  messages: string[];
+  options: ChatOption[];
+  payments: PortalPayment[] | null;
+  input: { kind: "description" | "complaint_ref"; placeholder: string; min: number; max: number } | null;
+  summary: ChatSummary | null;
+  ready: boolean;
+  masked: DlpFinding[];
 }

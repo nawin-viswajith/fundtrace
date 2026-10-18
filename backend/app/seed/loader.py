@@ -27,6 +27,9 @@ USERS = [
     ("sup.meera", "Meera Iyer (synthetic)", "supervisor"),
     ("admin", "Platform Admin (synthetic)", "admin"),
 ]
+# Bank customers who can raise and follow disputes in the customer portal (username, customer id).
+# CUST-1075 is the customer of CASE-24051, so "My disputes" has something to show.
+CUSTOMER_USERS = [("cust.priya", "CUST-1075"), ("cust.kiran", "CUST-1002"), ("cust.kabir", "CUST-1010")]
 
 _TABLES_IN_DELETE_ORDER = [m.IngestEvent, m.AuditEvent, m.ReportDraft, m.Report, m.AICall, m.AIRun, m.RiskFlag, m.Hold, m.EvidenceRequest, m.EvidenceItem,
                            m.CaseNote, m.DisputeCase, m.AuthEvent, m.Transaction, m.Device, m.Account, m.Customer,
@@ -45,7 +48,19 @@ def ensure_users(db: Session) -> None:
     db.flush()
 
 
+def ensure_customer_users(db: Session) -> None:
+    """Customer portal logins for the demo customers (only once those customers exist)."""
+    pw = hash_password(get_settings().demo_password)
+    for username, customer_id in CUSTOMER_USERS:
+        cust = db.get(m.Customer, customer_id)
+        if cust is None or db.scalar(select(m.User).where(m.User.username == username)):
+            continue
+        db.add(m.User(username=username, full_name=cust.display_name, role="customer", customer_id=customer_id, password_hash=pw))
+    db.flush()
+
+
 def wipe(db: Session) -> None:
+    db.execute(delete(m.User).where(m.User.role == "customer"))  # they point at customers; recreated after seeding
     for t in _TABLES_IN_DELETE_ORDER:
         db.execute(delete(t))
     db.flush()
@@ -104,6 +119,7 @@ def seed(db: Session, anchor: datetime | None = None) -> dict:
 
     db.add(m.EvalRun(kind="ground_truth", metrics={"anchor": ds.anchor.isoformat() + "Z"}, details=[ds.truth]))
     refresh_case_assessments(db)
+    ensure_customer_users(db)
     log.info("Seeded synthetic data: %s transactions (%s merged, %s rejected), %s cases", report.transactions,
              len(report.merged), len(report.rejected), len(ds.cases))
     return {"anchor": ds.anchor.isoformat() + "Z", "transactions": report.transactions, "merged": len(report.merged),
