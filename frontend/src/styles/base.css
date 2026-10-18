@@ -177,36 +177,6 @@ legend {
 }
 
 /* ---------------------------------------------------------------- shell */
-.synthetic-banner {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: var(--banner-h);
-  padding: 3px var(--s-4);
-  font-size: var(--fs-xs);
-  color: var(--text-2);
-  background: var(--surface-2);
-  border-bottom: 1px solid var(--border);
-  text-align: center;
-}
-.synthetic-banner::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  flex-shrink: 0;
-  background: var(--warn);
-}
-.synthetic-banner svg {
-  display: none;
-}
-.synthetic-banner strong {
-  font-weight: 600;
-  color: var(--text);
-}
 .shell {
   min-height: 100vh;
   display: flex;
@@ -465,7 +435,7 @@ legend {
     gap: 2px;
   }
   :root {
-    --banner-h: 34px;
+    --banner-h: 0px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

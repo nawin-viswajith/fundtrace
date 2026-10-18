@@ -3,16 +3,6 @@ import { PROVENANCE, PROVENANCE_ORDER, STATUS_LABELS_FALLBACK } from "../lib/lab
 import { formatHours, slaTone } from "../lib/format";
 import { Popover } from "./Overlay";
 
-export function SyntheticBanner() {
-  return (
-    <div className="synthetic-banner" role="note">
-      <span>
-        <strong>Synthetic demo data</strong> — not real customers or bank records
-      </span>
-    </div>
-  );
-}
-
 /** Plain-language legend for the five provenance labels, shared by graph, report and chips. */
 export function ProvenanceLegend({ compact = false, showLines = true }: { compact?: boolean; showLines?: boolean }) {
   return (

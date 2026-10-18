@@ -5,7 +5,7 @@ import { api } from "../../api/endpoints";
 import { usePortalMe, usePortalPayments } from "../../api/hooks";
 import { ErrorState, InlineError, LoadingBlock, Note } from "../../components/Primitives";
 import type { PortalPayment, PortalProfile } from "../../types/api";
-import { PaymentCard } from "./parts";
+import { DisputeSummaryCard, PaymentCard, ProofPicker, sendProof, type PendingProof } from "./parts";
 
 const STEPS = ["Payment", "What happened", "Details", "Check and submit"];
 
@@ -90,10 +90,11 @@ export default function DisputeForm() {
   const [f, setF] = useState<FormState>(EMPTY);
   const [q, setQ] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  const [proof, setProof] = useState<PendingProof[]>([]);
   const payments = usePortalPayments(q.trim());
   const submit = useMutation({
-    mutationFn: () =>
-      api.portalRaise({
+    mutationFn: async () => {
+      const d = await api.portalRaise({
         txn_id: f.payment!.id,
         reason: f.reason,
         description: f.description.trim(),
@@ -103,10 +104,13 @@ export default function DisputeForm() {
         contact_preference: f.contact,
         declaration: f.declaration,
         channel: "portal_form",
-      }),
-    onSuccess: async (d) => {
+      });
+      const failed = await sendProof(d.case_id, proof, api.portalUpload);
+      return { d, failed };
+    },
+    onSuccess: async ({ d, failed }) => {
       await qc.invalidateQueries({ queryKey: ["portal"] });
-      nav(`/portal/disputes/${d.case_id}`, { state: { justRaised: true, masked: d.masked ?? [] } });
+      nav(`/portal/disputes/${d.case_id}`, { state: { justRaised: true, masked: d.masked ?? [], filesSent: proof.length - failed, filesFailed: failed } });
     },
   });
 
@@ -129,7 +133,10 @@ export default function DisputeForm() {
 
   return (
     <div className="portal-page">
-      <h1 className="portal-h1">Raise a dispute</h1>
+      <header className="portal-hello">
+        <p className="portal-kicker">Raise a dispute</p>
+        <h1 className="portal-h1">Fill in a form</h1>
+      </header>
       <ol className="wizard-steps" aria-label="Steps">
         {STEPS.map((s, i) => (
           <li key={s} className={i === step ? "is-current" : i < step ? "is-done" : ""} aria-current={i === step ? "step" : undefined}>
@@ -230,42 +237,24 @@ export default function DisputeForm() {
 
         {step === 3 && f.payment && (
           <div className="stack-lg">
-            <dl className="review-list">
-              <div>
-                <dt>Payment</dt>
-                <dd>
-                  <PaymentCard p={f.payment} />
-                </dd>
+            <DisputeSummaryCard
+              payment={f.payment}
+              onChangePayment={() => setStep(0)}
+              description={f.description}
+              onChangeDescription={() => setStep(2)}
+              items={[
+                { label: "What happened", value: reason?.label, onChange: () => setStep(1) },
+                ...(fraud ? [{ label: "Shared an OTP, PIN or password", value: profile.options.otp_shared[f.otp_shared], onChange: () => setStep(2) }] : []),
+                { label: "Noticed", value: profile.options.noticed[f.noticed], onChange: () => setStep(2) },
+                ...(fraud ? [{ label: "Cyber-crime complaint", value: f.cyber === "yes" ? f.cyber_ref : "Not reported yet", onChange: () => setStep(2) }] : []),
+                { label: "Contact me by", value: profile.options.contact_preference[f.contact], onChange: () => setStep(2) },
+              ]}
+            >
+              <div className="sum-proof">
+                <span className="sum-label">Proof (optional, but it helps us check faster)</span>
+                <ProofPicker files={proof} onChange={setProof} />
               </div>
-              <div>
-                <dt>What happened</dt>
-                <dd>{reason?.label}</dd>
-              </div>
-              {fraud && (
-                <div>
-                  <dt>Shared an OTP, PIN or password</dt>
-                  <dd>{profile.options.otp_shared[f.otp_shared]}</dd>
-                </div>
-              )}
-              <div>
-                <dt>Noticed</dt>
-                <dd>{profile.options.noticed[f.noticed]}</dd>
-              </div>
-              {fraud && (
-                <div>
-                  <dt>Cyber-crime complaint</dt>
-                  <dd>{f.cyber === "yes" ? f.cyber_ref : "Not reported yet"}</dd>
-                </div>
-              )}
-              <div>
-                <dt>Your description</dt>
-                <dd className="review-text">{f.description}</dd>
-              </div>
-              <div>
-                <dt>Contact me by</dt>
-                <dd>{profile.options.contact_preference[f.contact]}</dd>
-              </div>
-            </dl>
+            </DisputeSummaryCard>
             <label className="declaration">
               <input type="checkbox" checked={f.declaration} onChange={(e) => set({ declaration: e.target.checked })} />
               <span>The information I have given is true to the best of my knowledge. I understand the bank will look at its records of this payment.</span>

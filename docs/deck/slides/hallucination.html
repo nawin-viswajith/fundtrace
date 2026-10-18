@@ -1,15 +1,12 @@
-<section id="hallucination" style="background:#F6F6FA;color:#14183A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:grid;grid-template-columns:5fr 6fr;gap:80px;align-items:center">
-<div style="display:flex;flex-direction:column;gap:28px">
+<section id="hallucination" style="background:#F6F6FA;color:#14183A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px;display:flex;flex-direction:column;gap:32px">
 <h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:600;line-height:1.1;color:#14183A">Hallucinations are caught, flagged and measured</h2>
-<ul style="font-size:30px;line-height:1.45;color:#4A5068">
-<li>Every cited record ID must exist in the snapshot</li>
-<li>Every ₹ amount and time must match a cited record</li>
-<li>No “proves fraud”, “customer is liable” or “reject the claim”</li>
-<li>Flow of the disputed funds is never marked verified</li>
-<li>Gemini judge checks each claim against its records</li>
-</ul>
-<p style="font-size:30px;line-height:1.4;color:#14183A"><b>Every report records</b> its hallucination rate, confidence, cost, tokens, snapshot hash and trace ID.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 64px;font-size:28px;line-height:1.4;color:#4A5068">
+<p style="font-size:28px">• Every cited record ID must exist in the snapshot</p>
+<p style="font-size:28px">• Every ₹ amount and time must match a cited record</p>
+<p style="font-size:28px">• No “proves fraud”, “customer is liable” or “reject the claim”</p>
+<p style="font-size:28px">• A Gemini judge fact-checks each claim against its records</p>
 </div>
-<img src="/_blob/d6357953294c53d8c27f470c8e4f7644" alt="AI report tab: claims with Verified and Derived chips, citation chips for record IDs, and a review panel" style="width:880px;height:824px;object-fit:contain;background:#101827;border:1px solid #26334A;border-radius:16px">
-<aside>Flagged claims are kept and shown in red, never silently dropped, so the investigator sees exactly what the model got wrong. Click any citation chip to open the record it points to.</aside>
+<img src="/_shot/report.png" alt="AI report: Verified, 35 statements, 35 confirmed by fact-check, 0 need attention, 0.0% not backed by records, confidence 100%; sections listed with review progress" style="width:1664px;height:500px;object-fit:contain;object-position:top;background:#FFFFFF;border:1px solid #DDDFEA">
+<p style="font-size:26px;line-height:1.4;color:#14183A"><b>Every report records</b> its hallucination rate, confidence, cost, tokens, snapshot hash and trace ID. The fact-check can be re-run on its own.</p>
+<aside>Flagged claims are kept and shown, never silently dropped. The investigator reviews each section and can accept or reject every sentence before recording a decision.</aside>
 </section>

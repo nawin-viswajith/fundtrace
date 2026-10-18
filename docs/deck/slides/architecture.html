@@ -3,7 +3,7 @@
 <div style="display:flex;gap:24px;align-items:center">
 <div style="width:300px;display:flex;flex-direction:column;gap:8px;background:#222850;padding:32px;border-radius:16px">
 <h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:600;color:#F4F4FA">Investigator UI</h3>
-<p style="font-size:24px;line-height:1.4;color:#C9CCE6">React, TypeScript, React Flow</p>
+<p style="font-size:24px;line-height:1.4;color:#C9CCE6">Bank staff and customer portal · React, TypeScript, React Flow</p>
 </div>
 <p style="font-size:44px;color:#9FA6F5">→</p>
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#3A3FB3;padding:32px;border-radius:16px">
@@ -11,11 +11,12 @@
 <p style="font-size:26px;line-height:1.4;color:#E4E5FB">FastAPI · LangGraph agent · NetworkX trail engine · rules · validator</p>
 </div>
 <p style="font-size:44px;color:#9FA6F5">→</p>
-<div style="width:520px;display:flex;flex-direction:column;gap:12px">
+<div style="width:560px;display:flex;flex-direction:column;gap:10px">
 <div style="background:#222850;padding:20px 28px;border-radius:12px;border-left:6px solid #F2B44C"><p style="font-size:26px;color:#F4F4FA"><b>Vertex AI</b> · Gemini Pro and Flash</p></div>
 <div style="background:#222850;padding:20px 28px;border-radius:12px"><p style="font-size:26px;color:#F4F4FA"><b>Cloud SQL</b> for MySQL 8 · source of truth</p></div>
 <div style="background:#222850;padding:20px 28px;border-radius:12px"><p style="font-size:26px;color:#F4F4FA"><b>Cloud Storage</b> · write-once evidence</p></div>
-<div style="background:#222850;padding:20px 28px;border-radius:12px"><p style="font-size:26px;color:#F4F4FA"><b>Secret Manager</b> · no keys in code</p></div>
+<div style="background:#222850;padding:20px 28px;border-radius:12px"><p style="font-size:26px;color:#F4F4FA"><b>Cloud KMS</b> · Secret Manager · Cloud DLP</p></div>
+<div style="background:#222850;padding:20px 28px;border-radius:12px"><p style="font-size:26px;color:#F4F4FA"><b>Pub/Sub</b> · ledger ingest, dead-letter topic</p></div>
 </div>
 </div>
 <div style="display:flex;gap:24px">
@@ -25,7 +26,7 @@
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;border:1px dashed #6A70A0;padding:28px;border-radius:16px">
 <p style="font-size:24px;font-weight:600;color:#F2B44C">PATH TO BANK SCALE</p>
-<p style="font-size:26px;line-height:1.4;color:#C9CCE6">Pub/Sub and Dataflow ingest · BigQuery history · Spanner Graph behind the same graph interface</p>
+<p style="font-size:26px;line-height:1.4;color:#C9CCE6">Dataflow on the existing Pub/Sub feed · BigQuery history · Spanner Graph behind the same graph interface</p>
 </div>
 </div>
 <aside>One container serves the API and the app. Each case’s trail is bounded by depth, time window and node caps, so it stays small even at bank scale — only the graph store changes, from Cloud SQL to Spanner Graph. Deployment is one script: infra/deploy.sh.</aside>

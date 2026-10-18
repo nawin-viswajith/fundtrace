@@ -17,6 +17,8 @@ class FakeModels:
     def generate_content(self, model, contents, config):
         self.seen.append(model)
         b = self.behaviours[model]
+        if isinstance(b, list):  # a sequence of behaviours, one per call
+            b = b.pop(0) if len(b) > 1 else b[0]
         if isinstance(b, Exception):
             raise b
         return b
@@ -31,6 +33,7 @@ def resp(text, parsed=None, it=1200, ot=150, tt=50, lp=-0.08):
 @pytest.fixture()
 def gw(seeded, monkeypatch):
     g = GeminiGateway()
+    g.BUSY_BACKOFF_S = 0
     g.s = g.s.model_copy(update={"llm_enabled": True, "gcp_project": "test-project", "gemini_fast_models": "gemini-3-flash,gemini-2.5-flash",
                                  "llm_daily_budget_usd": 5.0, "llm_case_budget_usd": 1.0})
     return g
@@ -129,3 +132,43 @@ def test_parallel_calls_share_one_client(monkeypatch):
     [t.start() for t in threads]
     [t.join() for t in threads]
     assert len(made) == 1 and all(c is made[0] for c in got)
+
+
+BUSY = RuntimeError("ClientError: 429 RESOURCE_EXHAUSTED. Resource exhausted. Please try again later.")
+
+
+def test_busy_model_is_retried_once_then_answers(gw, db):
+    """The live failure: Gemini 3.1 Pro (preview) returned 429 and the report fell back to facts only."""
+    gw.s = gw.s.model_copy(update={"gemini_pro_models": "gemini-3.1-pro-preview,gemini-3.8-flash"})
+    fm = FakeModels({"gemini-3.1-pro-preview": [BUSY, resp(GOOD)], "gemini-3.8-flash": resp(GOOD)})
+    gw._client = SimpleNamespace(models=fm)
+    r = gw.generate(node="draft_report", prompt_version="t", contents=["x"], schema=Classification, tier="pro", db=db)
+    assert r.ok and r.model == "gemini-3.1-pro-preview" and fm.seen == ["gemini-3.1-pro-preview", "gemini-3.1-pro-preview"]
+    assert [a["status"] for a in r.attempts] == ["error", "ok"]
+    db.rollback()
+
+
+def test_model_still_busy_falls_back_to_next_in_chain(gw, db):
+    gw.s = gw.s.model_copy(update={"gemini_pro_models": "gemini-3.1-pro-preview,gemini-3.8-flash"})
+    fm = FakeModels({"gemini-3.1-pro-preview": BUSY, "gemini-3.8-flash": resp(GOOD)})
+    gw._client = SimpleNamespace(models=fm)
+    r = gw.generate(node="draft_report", prompt_version="t", contents=["x"], schema=Classification, tier="pro", db=db)
+    assert r.ok and r.model == "gemini-3.8-flash"
+    assert fm.seen == ["gemini-3.1-pro-preview", "gemini-3.1-pro-preview", "gemini-3.8-flash"]
+    db.rollback()
+
+
+def test_busy_fast_model_also_falls_back(gw, db):
+    fm = FakeModels({"gemini-3-flash": RuntimeError("ServerError: 503 UNAVAILABLE. The model is overloaded."), "gemini-2.5-flash": resp(GOOD)})
+    gw._client = SimpleNamespace(models=fm)
+    r = gw.generate(node="judge", prompt_version="t", contents=["x"], schema=Classification, db=db)
+    assert r.ok and r.model == "gemini-2.5-flash"
+    db.rollback()
+
+
+def test_bad_request_is_not_retried(gw, db):
+    fm = FakeModels({"gemini-3-flash": RuntimeError("ClientError: 400 INVALID_ARGUMENT"), "gemini-2.5-flash": resp(GOOD)})
+    gw._client = SimpleNamespace(models=fm)
+    r = gw.generate(node="classify", prompt_version="t", contents=["x"], schema=Classification, db=db)
+    assert not r.ok and fm.seen == ["gemini-3-flash"]
+    db.rollback()

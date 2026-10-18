@@ -3,7 +3,8 @@
 Guarantees for every call:
 - bounded time (timeout), bounded spend (daily and per-case budget guard)
 - structured output validated against a Pydantic schema; invalid output is a failure, not a guess
-- model fallback chain from config (first model that answers is used)
+- model fallback chain from config (first model that answers is used); a model that is out of capacity
+  (429 / 503) is retried once, then the next model is tried
 - one `ai_calls` row with tokens, cost, latency, status and trace id
 - failures return `ok=False` with a status; callers must then show "Not analysed"
 """
@@ -11,6 +12,7 @@ from __future__ import annotations
 
 import json
 import logging
+import random
 import threading
 import time
 from dataclasses import dataclass, field
@@ -27,6 +29,13 @@ from app.db import session_scope
 from app.telemetry import current_trace_id, span
 
 log = logging.getLogger("fundtrace.llm")
+
+_BUSY = ("429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE", "overloaded")
+
+
+def _busy(msg: str) -> bool:
+    """Vertex AI is out of capacity for this model right now (rate limit or overload), not a problem with the request."""
+    return any(k in msg for k in _BUSY)
 
 
 @dataclass
@@ -111,6 +120,9 @@ def _spend(case_id: str | None, db=None) -> tuple[float, float]:
 
 
 class GeminiGateway:
+    BUSY_RETRIES = 1  # one more try on the same model when it is out of capacity
+    BUSY_BACKOFF_S = 2.0
+
     def __init__(self):
         self.s = get_settings()
         self._client = None
@@ -147,31 +159,42 @@ class GeminiGateway:
         models = self.s.pro_models if tier == "pro" else self.s.fast_models
         timeout_s = timeout_s or (self.s.llm_pro_timeout_seconds if tier == "pro" else self.s.llm_timeout_seconds)
         res = LLMResult(ok=False, status="error")
+        done = False
         for model in models:
-            t0 = time.perf_counter()
-            with span("gemini.generate", node=node, model=model, prompt_version=prompt_version, case_id=case_id) as sp:
-                try:
-                    cfg = types.GenerateContentConfig(
-                        system_instruction=system, temperature=temperature, response_mime_type="application/json",
-                        response_schema=schema, http_options=types.HttpOptions(timeout=int(timeout_s * 1000)),
-                    )
-                    resp = self.client().models.generate_content(model=model, contents=contents, config=cfg)
-                except Exception as exc:
-                    msg = f"{type(exc).__name__}: {exc}"[:400]
-                    status = "timeout" if "timeout" in msg.lower() or "deadline" in msg.lower() else "error"
-                    res = LLMResult(ok=False, status=status, model=model, error=msg, latency_ms=int((time.perf_counter() - t0) * 1000),
-                                    attempts=res.attempts + [{"model": model, "status": status}])
-                    sp.set_attribute("llm.status", status)
-                    if "404" in msg or "not found" in msg.lower() or "NOT_FOUND" in msg:
-                        continue  # model unavailable: try the next model in the chain
-                    if status == "timeout" and tier == "pro":
-                        continue  # a slow Pro model falls back to the next (faster) model in its chain
+            for attempt in range(1 + self.BUSY_RETRIES):
+                t0 = time.perf_counter()
+                with span("gemini.generate", node=node, model=model, prompt_version=prompt_version, case_id=case_id) as sp:
+                    try:
+                        cfg = types.GenerateContentConfig(
+                            system_instruction=system, temperature=temperature, response_mime_type="application/json",
+                            response_schema=schema, http_options=types.HttpOptions(timeout=int(timeout_s * 1000)),
+                        )
+                        resp = self.client().models.generate_content(model=model, contents=contents, config=cfg)
+                    except Exception as exc:
+                        msg = f"{type(exc).__name__}: {exc}"[:400]
+                        status = "timeout" if "timeout" in msg.lower() or "deadline" in msg.lower() else "error"
+                        res = LLMResult(ok=False, status=status, model=model, error=msg, latency_ms=int((time.perf_counter() - t0) * 1000),
+                                        attempts=res.attempts + [{"model": model, "status": status}])
+                        sp.set_attribute("llm.status", status)
+                        if _busy(msg):
+                            if attempt < self.BUSY_RETRIES:
+                                time.sleep(self.BUSY_BACKOFF_S * (attempt + 1) + random.uniform(0, 0.5))
+                                continue  # out of capacity for a moment: try the same model once more
+                            break  # still busy: try the next model in the chain
+                        if "404" in msg or "not found" in msg.lower() or "NOT_FOUND" in msg:
+                            break  # model unavailable: try the next model in the chain
+                        if status == "timeout" and tier == "pro":
+                            break  # a slow Pro model falls back to the next (faster) model in its chain
+                        done = True  # anything else (bad request, fast-model timeout) is not retried
+                        break
+                    res = self._parse(resp, model, schema, t0, res.attempts)
+                    sp.set_attribute("llm.status", res.status)
+                    sp.set_attribute("llm.input_tokens", res.input_tokens)
+                    sp.set_attribute("llm.output_tokens", res.output_tokens)
+                    sp.set_attribute("llm.cost_usd", res.cost_usd)
+                    done = True
                     break
-                res = self._parse(resp, model, schema, t0, res.attempts)
-                sp.set_attribute("llm.status", res.status)
-                sp.set_attribute("llm.input_tokens", res.input_tokens)
-                sp.set_attribute("llm.output_tokens", res.output_tokens)
-                sp.set_attribute("llm.cost_usd", res.cost_usd)
+            if done:
                 break
         _record(res, node, prompt_version, case_id, run_id, db)
         return res

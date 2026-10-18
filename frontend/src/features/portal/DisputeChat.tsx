@@ -1,28 +1,42 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Send } from "lucide-react";
 import { api } from "../../api/endpoints";
 import { errorMessage } from "../../api/client";
 import { InlineError, LoadingBlock } from "../../components/Primitives";
+import { usePortalMe } from "../../api/hooks";
 import type { ChatTurn } from "../../types/api";
-import { PaymentCard } from "./parts";
+import { ChatAvatar, DisputeSummaryCard, PaymentCard, ProofPicker, sendProof, type PendingProof } from "./parts";
 
 interface Line {
   who: "bot" | "me";
   text: string;
 }
 
+// Where each server step sits in the conversation (the proof question belongs to the last one).
+const STAGE: Record<string, number> = { payment: 1, reason: 2, otp: 3, noticed: 3, cyber: 4, cyber_ref: 4, description: 5, contact: 6, summary: 7 };
+const STAGES = 7;
+const PROOF_QUESTION =
+  "One more thing: do you have any proof? A screenshot of the payment, the bank's SMS, a receipt or your complaint acknowledgement helps us check much faster. You can skip this and send files later.";
+
 /** Guided dispute chat: one question at a time, answered with buttons (text only where the step asks for it). */
 export default function DisputeChat() {
   const nav = useNavigate();
   const qc = useQueryClient();
+  const me = usePortalMe();
   const [lines, setLines] = useState<Line[]>([]);
   const [turn, setTurn] = useState<ChatTurn | null>(null);
   const [text, setText] = useState("");
   const [declared, setDeclared] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [proof, setProof] = useState<PendingProof[]>([]);
+  const [proofAsked, setProofAsked] = useState(false); // the assistant has asked for proof
+  const [proofDone, setProofDone] = useState(false); // the customer has answered it
+  const held = useRef<string[]>([]); // the summary's own messages, shown after the proof question
   const listRef = useRef<HTMLDivElement>(null);
   const started = useRef(false);
+  const name = me.data?.name;
 
   const step = useMutation({
     mutationFn: (v: { choice?: string; text?: string; said?: string }) => api.portalChat(turn?.state ?? null, v.choice, v.text),
@@ -32,22 +46,37 @@ export default function DisputeChat() {
     },
     onSuccess: (t) => {
       setTurn(t);
+      const askProof = !!t.summary && !proofAsked;
+      if (askProof) {
+        held.current = t.messages;
+        setProofAsked(true);
+      }
       setLines((prev) => {
         // If an OTP, PIN or card number was hidden, show the customer's message the way it was saved.
-        const echo = t.masked.length && t.state.description && prev.length && prev[prev.length - 1].who === "me"
-          ? [...prev.slice(0, -1), { who: "me" as const, text: t.state.description }]
-          : prev;
-        return [...echo, ...t.messages.map((m) => ({ who: "bot" as const, text: m }))];
+        const echo =
+          t.masked.length && t.state.description && prev.length && prev[prev.length - 1].who === "me"
+            ? [...prev.slice(0, -1), { who: "me" as const, text: t.state.description }]
+            : prev;
+        const said = askProof ? [PROOF_QUESTION] : t.messages;
+        return [...echo, ...said.map((m) => ({ who: "bot" as const, text: m }))];
       });
       setText("");
     },
     onError: (e) => setErr(errorMessage(e)),
   });
 
+  const finishProof = () => {
+    const said = proof.length ? `I've added ${proof.length} file${proof.length === 1 ? "" : "s"}.` : "I don't have any proof to add.";
+    const next = held.current.length ? held.current : ["Please check the details. If everything is right, confirm the declaration and submit."];
+    held.current = [];
+    setLines((prev) => [...prev, { who: "me", text: said }, ...next.map((m) => ({ who: "bot" as const, text: m }))]);
+    setProofDone(true);
+  };
+
   const submit = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const s = turn!.state;
-      return api.portalRaise({
+      const d = await api.portalRaise({
         txn_id: s.txn_id!,
         reason: s.reason!,
         description: s.description!,
@@ -58,10 +87,12 @@ export default function DisputeChat() {
         declaration: declared,
         channel: "portal_chat",
       });
+      const failed = await sendProof(d.case_id, proof, api.portalUpload);
+      return { d, failed };
     },
-    onSuccess: async (d) => {
+    onSuccess: async ({ d, failed }) => {
       await qc.invalidateQueries({ queryKey: ["portal"] });
-      nav(`/portal/disputes/${d.case_id}`, { state: { justRaised: true, masked: d.masked ?? [] } });
+      nav(`/portal/disputes/${d.case_id}`, { state: { justRaised: true, masked: d.masked ?? [], filesSent: proof.length - failed, filesFailed: failed } });
     },
   });
 
@@ -72,7 +103,7 @@ export default function DisputeChat() {
   }, [step]);
   useEffect(() => {
     if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
-  }, [lines, turn]);
+  }, [lines, turn, proofDone]);
 
   const onText = (e: FormEvent) => {
     e.preventDefault();
@@ -81,18 +112,60 @@ export default function DisputeChat() {
     step.mutate({ text: t, said: t });
   };
 
+  const change = (slot: string) => {
+    const o = turn?.options.find((x) => x.value === `change:${slot}`);
+    return o ? () => step.mutate({ choice: o.value, said: o.label }) : undefined;
+  };
+  const stage = turn ? (STAGE[turn.step] ?? 1) : 0;
+  const inSummary = !!turn?.summary;
+  const showProof = inSummary && !proofDone;
+  const showSummary = inSummary && proofDone;
+
   return (
     <div className="portal-page">
-      <h1 className="portal-h1">Raise a dispute</h1>
-      <p className="portal-lede">Chat with our assistant and tap an answer to each question. Nothing is sent until you check the summary and press Submit.</p>
-      <section className="portal-card chat" aria-label="Dispute assistant">
+      <header className="portal-hello">
+        <p className="portal-kicker">Raise a dispute</p>
+        <h1 className="portal-h1">Chat with our assistant</h1>
+        <p className="portal-lede">Tap an answer to each question. Nothing is sent until you check the summary and press Submit.</p>
+      </header>
+      <section className="chat-shell" aria-label="Dispute assistant">
+        <header className="chat-head">
+          <ChatAvatar who="bot" />
+          <span className="chat-head-title">
+            <strong>Demo Bank assistant</strong>
+            <span className="small">Guided questions · usually 2 minutes</span>
+          </span>
+          <span className="chat-progress" aria-label={inSummary ? "Final check" : `Question ${stage} of ${STAGES - 1}`}>
+            <span className="chat-progress-label">{inSummary ? "Final check" : stage ? `Question ${stage} of ${STAGES - 1}` : "Starting"}</span>
+            <span className="chat-progress-bar" aria-hidden="true">
+              <span style={{ width: `${(Math.max(stage, 0) / STAGES) * 100}%` }} />
+            </span>
+          </span>
+        </header>
+
         <div className="chat-list" ref={listRef} aria-live="polite">
-          {lines.map((l, i) => (
-            <div key={i} className={`bubble bubble-${l.who}`}>
-              {l.text}
+          {lines.map((l, i) => {
+            const first = i === 0 || lines[i - 1].who !== l.who;
+            return (
+              <div key={i} className={`pmsg pmsg-${l.who} ${first ? "is-first" : ""}`}>
+                {first ? <ChatAvatar who={l.who} name={name} /> : <span className="pavatar-gap" aria-hidden="true" />}
+                <div className={`bubble bubble-${l.who}`}>
+                  {first && <span className="sr-only">{l.who === "bot" ? "Assistant: " : "You: "}</span>}
+                  {l.text}
+                </div>
+              </div>
+            );
+          })}
+          {step.isPending && (
+            <div className="pmsg pmsg-bot is-first">
+              <ChatAvatar who="bot" />
+              <div className="bubble bubble-bot bubble-typing" aria-label="The assistant is typing">
+                <span />
+                <span />
+                <span />
+              </div>
             </div>
-          ))}
-          {step.isPending && <div className="bubble bubble-bot bubble-typing">…</div>}
+          )}
           {!turn && !step.isPending && !err && <LoadingBlock lines={2} />}
         </div>
 
@@ -108,56 +181,52 @@ export default function DisputeChat() {
               </div>
             )}
 
-            {turn.summary && (
+            {showProof && (
+              <div className="chat-proof">
+                <ProofPicker files={proof} onChange={setProof} />
+                <div className="chat-proof-actions">
+                  <button type="button" className="btn btn-primary" onClick={finishProof} disabled={!proof.length}>
+                    Continue with {proof.length || "these"} file{proof.length === 1 ? "" : "s"}
+                  </button>
+                  <button type="button" className="btn btn-secondary" onClick={finishProof} disabled={proof.length > 0}>
+                    I don't have any
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {showSummary && turn.summary && (
               <div className="chat-summary">
-                <dl className="review-list">
-                  <div>
-                    <dt>Payment</dt>
-                    <dd>
-                      <PaymentCard p={turn.summary.payment} />
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>What happened</dt>
-                    <dd>{turn.summary.reason}</dd>
-                  </div>
-                  {turn.summary.otp_shared && (
-                    <div>
-                      <dt>Shared an OTP, PIN or password</dt>
-                      <dd>{turn.summary.otp_shared}</dd>
-                    </div>
-                  )}
-                  <div>
-                    <dt>Noticed</dt>
-                    <dd>{turn.summary.noticed}</dd>
-                  </div>
-                  {turn.summary.cyber_complaint && (
-                    <div>
-                      <dt>Cyber-crime complaint</dt>
-                      <dd>{turn.summary.cyber_complaint}</dd>
-                    </div>
-                  )}
-                  <div>
-                    <dt>Your description</dt>
-                    <dd className="review-text">{turn.summary.description}</dd>
-                  </div>
-                  <div>
-                    <dt>Contact me by</dt>
-                    <dd>{turn.summary.contact_preference}</dd>
-                  </div>
-                </dl>
+                <DisputeSummaryCard
+                  payment={turn.summary.payment}
+                  onChangePayment={change("txn_id")}
+                  description={turn.summary.description}
+                  onChangeDescription={change("description")}
+                  items={[
+                    { label: "What happened", value: turn.summary.reason, onChange: change("reason") },
+                    ...(turn.summary.otp_shared ? [{ label: "Shared an OTP, PIN or password", value: turn.summary.otp_shared }] : []),
+                    { label: "Noticed", value: turn.summary.noticed },
+                    ...(turn.summary.cyber_complaint ? [{ label: "Cyber-crime complaint", value: turn.summary.cyber_complaint }] : []),
+                    { label: "Contact me by", value: turn.summary.contact_preference, onChange: change("contact_preference") },
+                    {
+                      label: "Proof",
+                      value: proof.length ? `${proof.length} file${proof.length === 1 ? "" : "s"} to send` : "None added",
+                      onChange: () => setProofDone(false),
+                    },
+                  ]}
+                />
                 <label className="declaration">
                   <input type="checkbox" checked={declared} onChange={(e) => setDeclared(e.target.checked)} />
                   <span>The information I have given is true to the best of my knowledge. I understand the bank will look at its records of this payment.</span>
                 </label>
-                <button type="button" className="btn btn-primary" disabled={!declared || submit.isPending} onClick={() => submit.mutate()}>
-                  {submit.isPending ? "Sending…" : "Submit dispute"}
+                <button type="button" className="btn btn-primary btn-block" disabled={!declared || submit.isPending} onClick={() => submit.mutate()}>
+                  {submit.isPending ? (proof.length ? "Sending your dispute and files…" : "Sending…") : "Submit dispute"}
                 </button>
                 <InlineError error={submit.error} />
               </div>
             )}
 
-            {turn.options.length > 0 && (
+            {!inSummary && turn.options.length > 0 && (
               <div className="chat-options" role="group" aria-label="Choose an answer">
                 {turn.options.map((o) => (
                   <button key={o.value} type="button" className="chat-option" onClick={() => step.mutate({ choice: o.value, said: o.label })}>
@@ -177,7 +246,7 @@ export default function DisputeChat() {
                   <textarea
                     id="chat-text"
                     className="textarea"
-                    rows={4}
+                    rows={3}
                     maxLength={turn.input.max}
                     placeholder={turn.input.placeholder}
                     value={text}
@@ -194,14 +263,14 @@ export default function DisputeChat() {
                   />
                 )}
                 <button type="submit" className="btn btn-primary" disabled={text.trim().length < (turn.input.kind === "description" ? 1 : 4)}>
-                  Send
+                  <Send size={16} aria-hidden="true" /> Send
                 </button>
               </form>
             )}
           </div>
         )}
         {err && (
-          <p className="inline-error" role="alert">
+          <p className="inline-error chat-error" role="alert">
             {err}
           </p>
         )}

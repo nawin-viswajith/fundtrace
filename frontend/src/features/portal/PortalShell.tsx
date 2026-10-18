@@ -1,7 +1,6 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { useAuth } from "../auth/AuthProvider";
-import { SyntheticBanner } from "../../components/Domain";
 import { ThemeToggle } from "../../lib/theme";
 
 /** Layout for bank customers: a simple, friendly frame for raising and following disputes. */
@@ -14,7 +13,6 @@ export default function PortalShell() {
   };
   return (
     <div className="portal">
-      <SyntheticBanner />
       <header className="portal-top">
         <Link to="/portal" className="portal-brand" aria-label="Demo Bank customer help, home">
           <span className="portal-logo" aria-hidden="true">

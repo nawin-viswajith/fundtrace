@@ -4,7 +4,6 @@ import { Activity, Briefcase, LayoutDashboard, ListChecks, LogOut, Menu, Network
 import { useAuth } from "../auth/AuthProvider";
 import { SecurityDialog } from "../auth/Mfa";
 import { ThemeToggle } from "../../lib/theme";
-import { SyntheticBanner } from "../../components/Domain";
 import { Logo } from "./Logo";
 import GlobalSearch from "./GlobalSearch";
 
@@ -34,7 +33,6 @@ export default function AppShell() {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <SyntheticBanner />
       <header className="topbar">
         <button
           type="button"

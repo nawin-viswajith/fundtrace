@@ -139,7 +139,8 @@ def build(anchor: datetime, seed: int = 2026) -> Dataset:
 
     def rand_time(lo: datetime, hi: datetime) -> datetime:
         t = lo + timedelta(seconds=b.rng.randint(0, int((hi - lo).total_seconds())))
-        return t.replace(hour=b.rng.randint(3, 17), second=0)  # 08:30–23:30 IST in UTC terms
+        t = t.replace(hour=b.rng.randint(3, 17), second=0)  # 08:30–23:30 IST in UTC terms
+        return t - timedelta(days=1) if t > hi else t  # the new hour must not pass the upper limit
 
     for month in range(3):
         pay_day = start + timedelta(days=30 * month + 1)
@@ -186,8 +187,9 @@ def build(anchor: datetime, seed: int = 2026) -> Dataset:
 
     def history(acc: str, dev: str, n: int = 12) -> None:
         """Ordinary prior activity for a scenario customer (baseline for unusual-amount checks)."""
+        step = min(6.0, 78 / n)  # spread over the last 80 days; never after the anchor
         for i in range(n):
-            t = A - timedelta(days=80 - i * 6, hours=b.rng.randint(0, 5))
+            t = A - timedelta(days=80 - i * step, hours=b.rng.randint(0, 5))
             m = b.rng.choice(list(merchants.values())[:6])
             b.auth(acc, "success", t - timedelta(minutes=2), dev)
             b.txn(acc, m, b.rng.choice([350, 899, 1450, 2600, 4100]), t, device=dev, narrative="Purchase")

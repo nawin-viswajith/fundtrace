@@ -8,7 +8,6 @@ import { errorMessage } from "../../api/client";
 import { ThemeToggle } from "../../lib/theme";
 import { Skeleton } from "../../components/Primitives";
 import { Logo } from "../shell/Logo";
-import { SyntheticBanner } from "../../components/Domain";
 import type { FirebaseWebConfig, LoginResult, User } from "../../types/api";
 import { MfaCodeForm, MfaEnrol, RecoveryCodes } from "./Mfa";
 import { firebaseErrorMessage, googleIdToken } from "./firebase";
@@ -46,7 +45,6 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
-      <SyntheticBanner />
       <div className="login-topbar">
         <ThemeToggle />
       </div>

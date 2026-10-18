@@ -41,7 +41,7 @@
   --radius-lg: 0;
   --nav-w: 208px;
   --topbar-h: 52px;
-  --banner-h: 26px;
+  --banner-h: 0px; /* no top banner */
   --control-h: 32px;
   --control-h-sm: 28px;
 

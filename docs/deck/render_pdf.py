@@ -43,6 +43,7 @@ def build() -> str:
         html = (HERE / "slides" / f"{sid}.html").read_text(encoding="utf-8")
         for blob, name in BLOBS.items():
             html = html.replace(f"/_blob/{blob}", (SHOTS / name).as_uri())
+        html = html.replace("/_shot/", SHOTS.as_uri() + "/")  # screenshots added after the artifact upload
         slides.append(html)
     return (f'<!doctype html><html><head><meta charset="utf-8"><title>{deck["title"]}</title>{fonts}'
             f"<style>{CSS}</style></head><body>{''.join(slides)}</body></html>")

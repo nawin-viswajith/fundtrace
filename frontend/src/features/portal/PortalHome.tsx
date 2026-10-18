@@ -14,7 +14,8 @@ export default function PortalHome() {
   const disputes = list.data?.disputes ?? [];
   return (
     <div className="portal-page">
-      <header className="portal-hello">
+      <header className="portal-hello is-hero">
+        <p className="portal-kicker">Demo Bank · Help with a payment</p>
         <h1 className="portal-h1">{me.data ? `Hello ${firstName(me.data.name)}` : "Hello"}</h1>
         <p className="portal-lede">Something wrong with a payment from your account? Tell us and we'll look into it.</p>
       </header>

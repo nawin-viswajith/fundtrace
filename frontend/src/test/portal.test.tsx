@@ -60,6 +60,7 @@ describe("guided dispute chat", () => {
   afterEach(() => vi.restoreAllMocks());
 
   it("shows the customer's payments, and answers are choices, not free text", async () => {
+    vi.spyOn(api, "portalMe").mockResolvedValue(profile);
     const chat = vi
       .spyOn(api, "portalChat")
       .mockResolvedValueOnce(turn({ messages: ["Hello Kiran.", "Which payment is this about?"], payments: [pay] }))
@@ -79,6 +80,76 @@ describe("guided dispute chat", () => {
     expect(chat).toHaveBeenLastCalledWith({}, "txn:TXN-1", undefined); // the state from the previous answer goes back
     expect(await screen.findByRole("button", { name: /I was tricked/ })).toBeInTheDocument();
     expect(screen.getByText("₹1,500 to Rahul K")).toBeInTheDocument(); // the choice is echoed as the customer's reply
+  });
+});
+
+describe("proof in the guided chat", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  const summary = {
+    payment: pay,
+    reason: "I was tricked into making this payment",
+    otp_shared: "No",
+    noticed: "Today",
+    cyber_complaint: "Not reported yet",
+    description: "Someone called pretending to be the bank.",
+    contact_preference: "SMS",
+  };
+  const state = { txn_id: "TXN-1", reason: "scam", otp_shared: "no", noticed: "today", description: summary.description, contact_preference: "sms" };
+
+  function renderChat() {
+    return render(
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter initialEntries={["/portal/new/chat"]}>
+          <Routes>
+            <Route path="/portal/new/chat" element={<DisputeChat />} />
+            <Route path="/portal/disputes/:caseId" element={<p>Dispute page</p>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+  }
+
+  it("asks for proof before the summary, then sends the files once the dispute is raised", async () => {
+    vi.spyOn(api, "portalMe").mockResolvedValue(profile);
+    vi.spyOn(api, "portalChat").mockResolvedValue(
+      turn({ step: "summary", state, summary, messages: ["Please check the details."], options: [{ value: "change:reason", label: "Change what happened" }], ready: true }),
+    );
+    const raise = vi.spyOn(api, "portalRaise").mockResolvedValue({ case_id: "CASE-9001", masked: [] } as never);
+    const upload = vi.spyOn(api, "portalUpload").mockResolvedValue({} as never);
+    renderChat();
+    const u = userEvent.setup();
+    expect(await screen.findByText(/do you have any proof/)).toBeInTheDocument();
+    expect(screen.queryByText("Check your dispute")).not.toBeInTheDocument(); // the summary waits for the proof answer
+    const file = new File(["receipt"], "upi-receipt.png", { type: "image/png" });
+    await u.upload(screen.getByLabelText("Add files"), file);
+    expect(screen.getByText("upi-receipt.png")).toBeInTheDocument();
+    await u.click(screen.getByRole("button", { name: /Continue with 1 file/ }));
+    expect(screen.getByText("I've added 1 file.")).toBeInTheDocument();
+    expect(screen.getByText("Check your dispute")).toBeInTheDocument();
+    expect(screen.getByText("1 file to send")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Change what happened" })).toBeInTheDocument(); // edits sit inside the card
+    await u.click(screen.getByRole("checkbox"));
+    await u.click(screen.getByRole("button", { name: "Submit dispute" }));
+    expect(await screen.findByText("Dispute page")).toBeInTheDocument();
+    expect(raise).toHaveBeenCalledWith(expect.objectContaining({ txn_id: "TXN-1", channel: "portal_chat" }));
+    expect(upload).toHaveBeenCalledWith("CASE-9001", file, "customer_evidence");
+  });
+
+  it("lets the customer skip proof, and refuses files that are too big or the wrong type", async () => {
+    vi.spyOn(api, "portalMe").mockResolvedValue(profile);
+    vi.spyOn(api, "portalChat").mockResolvedValue(turn({ step: "summary", state, summary, messages: ["Please check the details."], ready: true }));
+    renderChat();
+    const u = userEvent.setup({ applyAccept: false });
+    await screen.findByText(/do you have any proof/);
+    const big = new File(["x"], "huge.png", { type: "image/png" });
+    Object.defineProperty(big, "size", { value: 6 * 1024 * 1024 });
+    await u.upload(screen.getByLabelText("Add files"), big);
+    expect(screen.getByRole("alert")).toHaveTextContent("larger than 5 MB");
+    await u.upload(screen.getByLabelText("Add files"), new File(["x"], "tool.exe", { type: "application/octet-stream" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("not a photo, PDF or text file");
+    await u.click(screen.getByRole("button", { name: "I don't have any" }));
+    expect(screen.getByText("None added")).toBeInTheDocument();
   });
 });
 

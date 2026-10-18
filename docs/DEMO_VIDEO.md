@@ -1,19 +1,32 @@
 # Demo video script (target 2:50, hard limit 3:00)
 
-Record at 1440×900, light theme, browser zoom 100%. Log in as `sup.meera` before recording; start on the case queue.
-Before the take: in AI Ops, run **Reset demo data** (admin) so SLA clocks and the golden hour are live,
-then run the AI investigation once on CASE-24051 and analyse its evidence, so the report exists if Gemini is slow during the take.
+Record at 1440×900, light theme, browser zoom 100%, in two browser profiles: one signed in as `cust.priya`
+(customer portal), one as `sup.meera` (bank view).
+
+## Before the take (do this 30 minutes ahead, not just before)
+
+1. **Fresh data.** As `admin`, open **AI & system health** and run **Reset demo data**. This restarts SLA clocks and
+   the golden hour, and removes any payments dated after today.
+2. **AI warm-up.** Run the AI investigation on **CASE-24051**. Open **Evidence** and analyse the receipt on CASE-24051
+   and the screenshot on **CASE-24049**. Check that the report says **Verified**, and in **AI & system health → Recent
+   AI calls** that the calls are `ok`. If you see `429 RESOURCE_EXHAUSTED`, Gemini 3.1 Pro is short of capacity: the
+   gateway now retries it once and then uses Gemini 3.8 Flash, so just run it again.
+3. **Proof file.** Keep a screenshot of a UPI payment (PNG) on the desktop to upload in the customer chat.
+4. Close the case assistant panel and any open accordions.
 
 | Time | Screen | Narration (spoken) |
 |---|---|---|
-| 0:00–0:15 | Queue | "A customer says: I didn't make this ₹50,000 UPI payment. With real-time payments, that money can be three accounts away in minutes. FundTrace helps an investigator follow it — and be honest about what the records do and don't prove." |
-| 0:15–0:30 | Open CASE-24051, Overview | "It's P1, and the system says why: high value, high-severity signals, and a golden hour — funds may still sit in a visible account. Six dimensions, deliberately separate. No black-box trust score." |
-| 0:30–1:05 | Trail graph | "This is the trail rebuilt from ledger records, in time order. Fifty thousand to a nine-day-old account, then split: thirty thousand to C, twenty thousand to another bank — where our visibility ends, and we say so. Solid lines are confirmed records. Dashed lines are attribution: B already held ₹1,200, so balance arithmetic proves at least ₹28,800 of this transfer is the disputed money — that's derived. Where the ledger can't force it, we call it inferred." |
-| 1:05–1:25 | Risk signals → Show on graph | "Every signal shows the facts that triggered it: four failed logins and an OTP from a device first seen on this account fourteen minutes earlier — the same device used on another victim's account. The beneficiary is in two other disputes. Signals prompt review; they are not proof." |
-| 1:25–1:45 | Evidence (then CASE-24049 quickly) | "Gemini reads the customer's screenshot — but code does the comparison with the ledger. Here they match. In this other case, the screenshot says ₹45,000 against a ₹50,000 ledger record: a contradiction, on the graph. And the hidden note telling the AI to approve a refund? Detected and ignored." |
-| 1:45–2:20 | AI report | "The LangGraph agent explores the trail with fixed tools, drafts a report with Gemini, and every claim cites a record — click one and you see it. A validator checks every ID, amount and time; a judge model fact-checks each claim. We measure it: claims, flags, hallucination rate, confidence, cost per case, and the trace in Cloud Trace. And a section on what this does not prove." |
-| 2:20–2:40 | Overview → hold, Actions & audit | "The investigator decides: approve the hold on the account still holding funds, review the report, record the decision. Every step is in a hash-chained audit trail." |
-| 2:40–2:55 | AI Ops, then architecture slide | "AI Ops tracks cost, latency, failures and hallucinations per call; our evaluation passes all 94 ground-truth checks. Built on Gemini on Vertex AI, LangGraph, Cloud Run and Cloud SQL — with a path to Spanner Graph and BigQuery for bank scale." |
-| 2:55–3:00 | Title | "FundTrace: follow the money, show the proof, mark the guesses." |
+| 0:00–0:10 | Customer portal home (Priya) | "Priya sees ₹50,000 leave her account that she never sent. With real-time payments, that money can be three accounts away in minutes." |
+| 0:10–0:35 | Chat with our assistant → pick the payment → "I didn't make this payment" → OTP: No → Today → description → SMS → add the screenshot → Check your dispute → Submit | "She raises it in the bank's app. The assistant asks one question at a time and she taps answers, so every dispute lands mapped to the right account and payment. It asks for proof — she adds the bank's screenshot — checks the summary card and submits." |
+| 0:35–0:45 | Bank view: Case queue → the new case at the top | "On the bank side it's already a case: customer, payment, category, SLA clocks and priority set. No re-keying." |
+| 0:45–1:00 | CASE-24051 Overview: "At a glance", six separate checks | "This is the investigation for that kind of dispute. P1, and it says why. Six separate checks — warning signs, evidence, records, tracing, policy, AI — and deliberately no single trust score." |
+| 1:00–1:25 | Money trail | "The trail is rebuilt from ledger records in time order: fifty thousand to a nine-day-old account, then split — thirty thousand to Sunil, twenty thousand to another bank, where our visibility ends, and we say so. Rahul already held ₹1,200, so balance arithmetic proves at least ₹28,800 of the transfer to Sunil is the disputed money. That's derived. Where the ledger can't force it, we say inferred." |
+| 1:25–1:40 | Warning signs → open "Failed logins" | "Fifteen explainable warning signs. Each shows the records behind it: four failed logins, then an OTP from a device first seen fourteen minutes earlier — the same device as another victim's account. Signs prompt review; they are not proof." |
+| 1:40–1:55 | Evidence (CASE-24049) | "Gemini reads the customer's screenshot, but code compares it with the ledger. Here the screenshot says ₹45,000 against a ₹50,000 record — a contradiction. And the hidden note telling the AI to approve the refund? Detected and ignored." |
+| 1:55–2:20 | AI report (CASE-24051) | "A LangGraph agent explores the trail with fixed tools and Gemini writes the report. Every sentence cites a record. Code checks every ID, amount and time; a Gemini judge fact-checks each claim. Thirty-five claims, all confirmed, zero not backed by records — measured on every report, with its cost." |
+| 2:20–2:35 | Linked cases → "Money recovered from shared accounts" | "Three disputes traced money into Rahul's account, and together their holds ask for ₹3,600 — but only ₹1,200 is there. FundTrace shows the money once and splits it fairly. Every figure has a calculation record anyone can recompute." |
+| 2:35–2:50 | AI & system health | "And we run the AI responsibly: cost, latency and errors per call, 104 of 104 ground-truth checks, investigator agreement with the AI, and field encryption with Cloud KMS. All on Gemini, LangGraph and Cloud Run." |
+| 2:50–3:00 | Title slide | "FundTrace: follow the money, show the proof, mark the guesses. The investigator decides." |
 
-Backup: if Gemini is unavailable during recording, show the facts-only report — it demonstrates the "Not analysed" principle — and cut to the pre-generated AI report.
+**Backup:** if Gemini fails during the take, the report is built "facts only" and says so — that shows the
+"Not analysed" principle. Cut to the report generated in step 2.

@@ -43,3 +43,14 @@ def test_source_provenance_survives_normalisation(db, seeded):
     case = db.get(m.DisputeCase, seeded["truth"]["S1"]["case"])
     t = db.get(m.Transaction, case.disputed_txn_id)
     assert {s["system"] for s in t.sources} == {"core", "upi_switch"}
+
+
+def test_seeded_world_has_no_future_payments():
+    """Customers see their recent payments in the portal: none may be dated after the seed time."""
+    from datetime import datetime
+
+    from app.seed.synthetic import build
+
+    anchor = datetime(2026, 10, 18, 12, 0)
+    late = [t.get("id") for t in build(anchor).raw_transactions if datetime.fromisoformat(t["occurred_at"].rstrip("Z")) > anchor]
+    assert not late, late
