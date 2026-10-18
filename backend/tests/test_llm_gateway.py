@@ -204,3 +204,12 @@ def test_server_deadline_moves_to_the_next_model(gw, db):
     r = gw.generate(node="judge", prompt_version="t", contents=["x"], schema=Classification, db=db)
     assert r.ok and r.model == "gemini-2.5-flash" and fm.seen == ["gemini-3-flash", "gemini-2.5-flash"]
     db.rollback()
+
+
+def test_chat_tier_uses_the_flash_lite_chain(gw, db):
+    gw.s = gw.s.model_copy(update={"gemini_chat_models": "gemini-3.1-flash-lite,gemini-2.5-flash-lite"})
+    fm = FakeModels({"gemini-3.1-flash-lite": resp(GOOD)})
+    gw._client = SimpleNamespace(models=fm)
+    r = gw.generate(node="customer_help", prompt_version="t", contents=["x"], schema=Classification, tier="chat", db=db)
+    assert r.ok and r.model == "gemini-3.1-flash-lite"
+    db.rollback()

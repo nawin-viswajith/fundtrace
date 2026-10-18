@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     # Comma-separated fallback chains: the first model that responds is used.
     gemini_fast_models: str = "gemini-3.8-flash,gemini-2.5-flash"
     gemini_pro_models: str = "gemini-3.1-pro-preview,gemini-3.8-flash"
+    # Short, low-stakes customer chat (intent read, story extraction): a small Flash-Lite model answers in a
+    # couple of seconds instead of tens of seconds, at a fraction of the cost. Falls back to the fast chain.
+    gemini_chat_models: str = "gemini-3.1-flash-lite,gemini-2.5-flash-lite,gemini-3.8-flash"
     llm_timeout_seconds: float = 60.0  # fast tier (explore, evidence, judge, copilot)
     llm_pro_timeout_seconds: float = 150.0  # report drafting; on timeout falls back to the next model in the chain
     llm_judge_timeout_seconds: float = 90.0  # one fact-check batch; the model may reason at length on hard claims
@@ -94,6 +97,10 @@ class Settings(BaseSettings):
     @property
     def pro_models(self) -> list[str]:
         return [m.strip() for m in self.gemini_pro_models.split(",") if m.strip()]
+
+    @property
+    def chat_models(self) -> list[str]:
+        return [m.strip() for m in self.gemini_chat_models.split(",") if m.strip()]
 
     @property
     def mfa_roles(self) -> set[str]:

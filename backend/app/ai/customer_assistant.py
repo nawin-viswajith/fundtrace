@@ -50,9 +50,17 @@ POLICY_LABEL = "Demo Bank assistant"
 
 SUGGESTIONS = ["Someone asked for my OTP", "How long does a dispute take?", "What proof should I send?",
                "Where is my dispute?", "I think I was scammed just now"]
-REFUSAL = ("I can only help with banking and payments, staying safe from fraud and scams, and disputes with Demo Bank, "
-           "including where your own disputes have got to. I can't help with that question. Try one of these:")
-NOT_FOUND = "I couldn't find a help article that answers that. These are the things I can help with:"
+REFUSAL = ("I'm just Demo Bank's helper, so that one's outside what I know! I can chat about banking and payments, "
+           "staying safe from fraud and scams, and disputes with Demo Bank — including where your own disputes have "
+           "got to. Here's what I can help with:")
+NOT_FOUND = "Hmm, I couldn't find a help article that answers that. Here's what I can help with instead:"
+
+# Small talk never needs Gemini: it's instant, free, and still works when the AI is down. Anything longer than a
+# bare greeting/thanks/goodbye (e.g. "hi, did someone call me about my KYC?") still goes to the model as normal.
+GREETING_RE = re.compile(r"^(hi+|hello+|hey+|hiya|yo|howdy|good\s*(morning|afternoon|evening|day))[\s!.,]*$", re.I)
+HOW_ARE_YOU_RE = re.compile(r"^how\s*(are|'?re)\s*(you|u)([\s!?.,]*(doing|going)?)?[\s!?.,]*$", re.I)
+THANKS_RE = re.compile(r"^(thanks?|thank\s*you|thx|ty|cheers|appreciate\s*it|great|awesome|perfect)[\s!.,]*$", re.I)
+BYE_RE = re.compile(r"^(bye|goodbye|see\s*ya|see\s*you|take\s*care|that'?s\s*all|ok(ay)?(\s*thanks)?|got\s*it|cool)[\s!.,]*$", re.I)
 SECRET_WARNING = ("For your safety I've hidden what looked like an OTP, PIN, password or card number in your message. Never share "
                   "these with anyone, not even Demo Bank. If you've already given them to someone, block your card or UPI in the "
                   "app and call 1930 now.")
@@ -318,6 +326,25 @@ def _sources_block(ids: list[str]) -> str:
     return "\n\n".join(parts)
 
 
+def _small_talk_reply(db: Session, user: m.User, msg: str) -> dict | None:
+    """A bare greeting, "how are you", thanks or goodbye — answered instantly and warmly, no AI call needed."""
+    if GREETING_RE.match(msg):
+        name = intake.profile(db, user)["name"].split(" ")[0]
+        text = (f"Hi {name}! I'm Ask Demo Bank. I can help with banking and payments, staying safe from fraud, "
+                "raising or checking a dispute — what's up?")
+    elif HOW_ARE_YOU_RE.match(msg):
+        text = "Doing well, thanks for asking! What can I help you with today — a dispute, a safety question, or something else?"
+    elif THANKS_RE.match(msg):
+        text = "You're welcome! Anything else I can help with?"
+    elif BYE_RE.match(msg):
+        text = "Take care, and don't forget: we'll never ask for your OTP, PIN or password. Come back anytime!"
+    else:
+        return None
+    out = _base(None, None)
+    out.update(intent="greeting", text=text, suggestions=SUGGESTIONS[:3])
+    return out
+
+
 def ask(db: Session, user: m.User, message: str, history: list[dict] | None = None, gateway: Gateway | None = None) -> dict:
     """One question to "Ask Demo Bank". Always returns an answer the customer can act on, with or without AI."""
     intake.customer_of(user)
@@ -325,6 +352,9 @@ def ask(db: Session, user: m.User, message: str, history: list[dict] | None = No
     if not 2 <= len(msg) <= 1000:
         return {**_base(None, None), "status": "invalid", "source": "policy", "source_label": POLICY_LABEL,
                 "text": "Please write a question of up to 1000 characters.", "suggestions": SUGGESTIONS[:]}
+    small_talk = _small_talk_reply(db, user, msg)
+    if small_talk is not None:
+        return _log(small_talk, msg)
     masked, findings = dlp.mask(msg)
     masked = masked or msg
     warning = SECRET_WARNING if findings else None
@@ -351,7 +381,7 @@ def ask(db: Session, user: m.User, message: str, history: list[dict] | None = No
                 f"CONVERSATION SO FAR:\n{prompts.fence(dlp.redact_for_llm(convo) or '(none)')}\n\n"
                 f"CUSTOMER MESSAGE: {prompts.fence(masked)}"]
     res = gw.generate(node="customer_help", prompt_version=prompts.CUSTOMER_HELP_V, contents=contents, schema=CustomerHelpAnswer,
-                      tier="fast", system=prompts.CUSTOMER_GROUND_RULES, db=db)
+                      tier="chat", system=prompts.CUSTOMER_GROUND_RULES, db=db)
     if not res.ok:
         return _log(_fallback(out, masked, hits, disputes, "The AI assistant couldn't answer just now, so this answer comes "
                                                             "straight from our help articles."), msg)
@@ -532,7 +562,7 @@ def extract_story(db: Session, user: m.User, story: str, gateway: Gateway | None
     today = m.utcnow().date()
     contents = [f"{prompts.INTAKE_EXTRACT_INSTRUCTIONS}\n\nTODAY: {today.isoformat()}\n\nSTORY: {prompts.fence(story)}"]
     res = gw.generate(node="intake_extract", prompt_version=prompts.INTAKE_EXTRACT_V, contents=contents, schema=StoryExtraction,
-                      tier="fast", system=prompts.CUSTOMER_GROUND_RULES, temperature=0.0, db=db)
+                      tier="chat", system=prompts.CUSTOMER_GROUND_RULES, temperature=0.0, db=db)
     if not res.ok:
         return None
     x: StoryExtraction = res.data

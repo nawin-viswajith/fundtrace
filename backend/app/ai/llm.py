@@ -173,7 +173,7 @@ class GeminiGateway:
 
         from google.genai import types
 
-        models = self.s.pro_models if tier == "pro" else self.s.fast_models
+        models = self.s.pro_models if tier == "pro" else self.s.chat_models if tier == "chat" else self.s.fast_models
         timeout_s = timeout_s or (self.s.llm_pro_timeout_seconds if tier == "pro" else self.s.llm_timeout_seconds)
         level = thinking or (self.s.llm_thinking_pro if tier == "pro" else self.s.llm_thinking_fast)
         res = LLMResult(ok=False, status="error")

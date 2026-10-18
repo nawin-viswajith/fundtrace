@@ -1,103 +1,83 @@
-/* Bank view identity: the same navy/amber brand as the customer portal (styles/portal-identity.css),
-   kept subtle because this is a dense, all-day working screen with dozens of cards per page — a light
-   touch (a top accent, a faint offset shadow, one amber mark) rather than the portal's bold blocks. */
+/* Bank view identity: the same navy/amber brand as the customer portal (styles/portal-identity.css).
+   The first pass here was a 3px hairline that was too subtle to register as a change — this version
+   gives the always-visible top bar the same navy-with-amber treatment as the portal header, and makes
+   card accents and buttons clearly, not faintly, part of the same family. Still kept lighter than the
+   portal's bold blocks in the body, since this is a dense, all-day working screen with dozens of cards
+   per page, not a handful of hero panels. */
 
 .shell {
   --brand: #14183a;
+  --brand-2: #1f2452;
   --amber: #f2b44c;
-  --card-lift: 2px 2px 0 rgba(20, 24, 58, 0.06);
+  --amber-ink: #3a2a08;
+  --card-lift: 3px 3px 0 rgba(20, 24, 58, 0.1);
 }
 :root[data-theme="dark"] .shell {
-  --card-lift: 2px 2px 0 rgba(0, 0, 0, 0.3);
+  --card-lift: 3px 3px 0 rgba(0, 0, 0, 0.35);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .shell {
-    --card-lift: 2px 2px 0 rgba(0, 0, 0, 0.3);
+    --card-lift: 3px 3px 0 rgba(0, 0, 0, 0.35);
   }
 }
 
+/* ---- top bar: navy, amber underline, same language as the portal header */
 .topbar {
-  border-bottom: 3px solid var(--brand);
+  background: var(--brand);
+  border-bottom: 3px solid var(--amber);
+  color: #f4f4fa;
+}
+.brand,
+.brand-name {
+  color: #f4f4fa;
 }
 .brand .logo rect:first-child {
-  fill: var(--brand);
+  fill: var(--amber);
 }
-.brand-name {
-  font-weight: 700;
+.brand .logo path,
+.brand .logo rect:not(:first-child) {
+  stroke: var(--amber-ink);
+  fill: var(--amber-ink);
+}
+.topbar .icon-btn {
+  color: #cfd3ef;
+}
+.topbar .icon-btn:hover {
+  background: var(--brand-2);
+  color: #f4f4fa;
+}
+.user-chip {
+  border-right-color: var(--brand-2);
 }
 .user-chip:hover {
-  background: var(--surface-2);
+  background: var(--brand-2);
+}
+.user-name {
+  color: #f4f4fa;
+}
+.role-tag {
+  color: #cfd3ef;
+  border-color: #3b4270;
 }
 .role-supervisor,
 .role-admin {
-  border-color: var(--brand);
-  color: var(--brand);
+  border-color: var(--amber);
+  color: var(--amber);
 }
-:root[data-theme="dark"] .shell .role-supervisor,
-:root[data-theme="dark"] .shell .role-admin {
-  color: var(--accent-text);
-  border-color: var(--accent);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .shell .role-supervisor,
-  :root:not([data-theme="light"]) .shell .role-admin {
-    color: var(--accent-text);
-    border-color: var(--accent);
-  }
+.avatar {
+  background: var(--brand-2);
+  color: #f4f4fa;
 }
 
+/* ---- sidebar: active item carries the amber accent, same as the portal's active states */
 .navlink.is-active {
-  border-left-color: var(--brand);
+  background: var(--accent-soft);
+  border-left-color: var(--amber);
+  border-left-width: 3px;
 }
 .navlink.is-active svg {
   color: var(--brand);
 }
-:root[data-theme="dark"] .shell .navlink.is-active,
-:root[data-theme="dark"] .shell .navlink.is-active svg {
-  border-left-color: var(--accent);
-  color: var(--accent-text);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .shell .navlink.is-active {
-    border-left-color: var(--accent);
-  }
-  :root:not([data-theme="light"]) .shell .navlink.is-active svg {
-    color: var(--accent-text);
-  }
-}
-
-/* cards: a faint offset shadow and a thin top accent, same family as the portal's cards but much quieter */
-.shell .card {
-  border-top: 3px solid var(--brand);
-  box-shadow: var(--card-lift);
-}
-:root[data-theme="dark"] .shell .card,
-.shell[data-theme="dark"] .card {
-  border-top-color: var(--accent);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .shell .card {
-    border-top-color: var(--accent);
-  }
-}
-/* a card used purely as a layout wrapper (no header) would look like an odd stray bar; keep the accent only
-   where a card has a title, which is how .card is used throughout the app */
-.shell .card:not(:has(.card-title)) {
-  border-top-color: var(--border);
-}
-
-.shell .btn-primary {
-  box-shadow: 2px 2px 0 var(--accent-hover);
-}
-.shell .btn-primary:active:not(:disabled) {
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0 var(--accent-hover);
-}
-.shell .btn-primary:disabled {
-  box-shadow: none;
-}
-
-/* one plain-language mark tying the two sides of the product together */
 .sidenav-foot::before {
   content: "";
   display: block;
@@ -105,6 +85,35 @@
   height: 3px;
   background: var(--amber);
   margin-bottom: var(--s-2);
+}
+
+/* ---- cards: a visible lifted shadow and a navy top edge, the same family as the portal's cards */
+.shell .card {
+  border-top: 4px solid var(--brand);
+  box-shadow: var(--card-lift);
+}
+/* a card used purely as a layout wrapper (no header) would look like a stray bar; keep the accent only
+   where a card has a title, which is how .card is used throughout the app */
+.shell .card:not(:has(.card-title)) {
+  border-top-color: var(--border);
+  box-shadow: none;
+}
+
+.shell .btn-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  box-shadow: 2px 2px 0 var(--amber);
+}
+.shell .btn-primary:hover:not(:disabled) {
+  background: var(--brand-2);
+  border-color: var(--brand-2);
+}
+.shell .btn-primary:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--amber);
+}
+.shell .btn-primary:disabled {
+  box-shadow: none;
 }
 
 @media (max-width: 720px) {

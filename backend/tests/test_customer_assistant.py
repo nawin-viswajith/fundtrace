@@ -251,3 +251,59 @@ def test_rank_payments_no_hints_keeps_order():
     cards = [{"id": "TXN-A", "amount_minor": 1, "paid_to": "X", "occurred_at": "2026-10-10T00:00:00Z"}]
     ranked, matched = ca.rank_payments(cards, {})
     assert ranked == cards and matched == []
+
+
+# ---------------------------------------------------------------------------- small talk (no Gemini call needed)
+
+def test_bare_greeting_is_answered_instantly_without_calling_gemini(db):
+    u = user(db, "cust.kiran")
+    gw = FakeGateway(lambda node, contents: pytest.fail("a bare greeting must not call Gemini"))
+    out = ca.ask(db, u, "hi", gateway=gw)
+    assert out["status"] == "ok" and out["source"] == "ai" and out["intent"] == "greeting"
+    assert "Ask Demo Bank" in out["text"] and gw.calls == []
+
+
+def test_greeting_fast_path_also_works_when_ai_is_unavailable(db):
+    u = user(db, "cust.kiran")
+    out = ca.ask(db, u, "  Hello!  ", gateway=FakeGateway(lambda n, c: {}, status="disabled"))
+    assert out["intent"] == "greeting" and out["status"] == "ok"
+
+
+@pytest.mark.parametrize("msg", ["thanks", "Thank you!", "ok thanks", "bye", "goodbye", "how are you?", "How're you doing"])
+def test_other_small_talk_is_answered_instantly_too(db, msg):
+    u = user(db, "cust.kiran")
+    gw = FakeGateway(lambda node, contents: pytest.fail("small talk must not call Gemini"))
+    out = ca.ask(db, u, msg, gateway=gw)
+    assert out["status"] == "ok" and out["intent"] == "greeting" and out["text"]
+
+
+def test_a_real_question_that_starts_with_a_greeting_still_goes_to_gemini(db):
+    u = user(db, "cust.kiran")
+
+    def responder(node, contents):
+        return {"intent": "faq", "answer": "A screenshot or the bank's SMS helps us check faster.",
+                "cited_article_ids": ["DSP-PROOF"], "cited_case_ids": [], "actions": [], "follow_up_questions": []}
+
+    out = ca.ask(db, u, "hi, what proof should I send?", gateway=FakeGateway(responder))
+    assert out["intent"] == "faq" and out["source"] == "ai"
+
+
+# ---------------------------------------------------------------------------- model tier
+
+def test_customer_help_and_story_extraction_use_the_small_chat_tier(db):
+    seen_tiers = []
+
+    def responder(node, contents):
+        return {"intent": "faq", "answer": "A screenshot or the bank's SMS helps us check faster.",
+                "cited_article_ids": ["DSP-PROOF"], "cited_case_ids": [], "actions": [], "follow_up_questions": []}
+
+    gw = FakeGateway(responder)
+    real_generate = gw.generate
+
+    def spy(*, tier="fast", **kw):
+        seen_tiers.append(tier)
+        return real_generate(tier=tier, **kw)
+
+    gw.generate = spy
+    ca.ask(db, user(db, "cust.kiran"), "What proof should I send?", gateway=gw)
+    assert seen_tiers == ["chat"]
