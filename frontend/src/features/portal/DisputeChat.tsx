@@ -84,7 +84,7 @@ export default function DisputeChat() {
   return (
     <div className="portal-page">
       <h1 className="portal-h1">Raise a dispute</h1>
-      <p className="portal-lede">Answer a few questions. Nothing is sent until you check the summary and press Submit.</p>
+      <p className="portal-lede">Chat with our assistant and tap an answer to each question. Nothing is sent until you check the summary and press Submit.</p>
       <section className="portal-card chat" aria-label="Dispute assistant">
         <div className="chat-list" ref={listRef} aria-live="polite">
           {lines.map((l, i) => (

@@ -43,22 +43,6 @@
   font-weight: 700;
   font-size: var(--fs-sm);
 }
-.portal-nav {
-  display: flex;
-  gap: var(--s-4);
-  margin-left: var(--s-4);
-}
-.portal-nav a {
-  color: var(--text-2);
-  text-decoration: none;
-  padding: var(--s-1) 0;
-  border-bottom: 2px solid transparent;
-}
-.portal-nav a.is-active {
-  color: var(--text);
-  border-bottom-color: var(--accent);
-  font-weight: 600;
-}
 .portal-user {
   margin-left: auto;
   color: var(--text-2);
@@ -120,36 +104,110 @@
   gap: var(--s-5);
 }
 
-/* the two ways to raise a dispute */
-.choice-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s-4);
-}
-.choice-card {
+/* home: greeting, then the two ways to raise a dispute, then the customer's disputes */
+.portal-hello {
   display: flex;
   flex-direction: column;
   gap: var(--s-2);
-  padding: var(--s-5);
-  background: var(--surface);
+}
+.portal-hello .portal-lede {
+  margin: 0;
+}
+.portal-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--s-3);
+}
+.portal-section-head .portal-h2 {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.portal-section-head p {
+  margin: 0;
+}
+.portal-count {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-2);
   border: 1px solid var(--border-strong);
+  padding: 0 var(--s-2);
+}
+
+.raise-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.raise-opt {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+  column-gap: var(--s-3);
+  row-gap: var(--s-4);
+  padding: var(--s-5);
   color: var(--text);
   text-decoration: none;
+  border-top: 3px solid transparent;
 }
-.choice-card svg {
+.raise-opt + .raise-opt {
+  border-left: 1px solid var(--border);
+}
+.raise-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
   color: var(--accent);
+  border: 1px solid var(--border);
 }
-.choice-card strong {
+.raise-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+.raise-title {
+  font-weight: 600;
   font-size: var(--fs-lg);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
 }
-.choice-card span {
+.raise-tag {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0 var(--s-2);
+}
+.raise-text {
   color: var(--text-2);
 }
-.choice-card:hover,
-.choice-card:focus-visible {
-  border-color: var(--accent);
+.raise-cta {
+  grid-column: 2;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-weight: 600;
+  color: var(--accent);
+}
+.raise-opt:hover,
+.raise-opt:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--surface-2);
+  border-top-color: var(--accent);
+}
+.raise-opt:hover .raise-cta,
+.raise-opt:focus-visible .raise-cta {
+  text-decoration: underline;
 }
 
 /* my disputes */
@@ -166,13 +224,16 @@
 .dispute-row {
   display: flex;
   align-items: center;
-  gap: var(--s-3);
+  gap: var(--s-4);
   padding: var(--s-4);
   color: var(--text);
   text-decoration: none;
 }
-.dispute-row:hover {
+.dispute-row:hover,
+.dispute-row:focus-visible {
   background: var(--surface-2);
+  outline: none;
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 .dispute-row-main {
   display: flex;
@@ -181,12 +242,39 @@
   flex: 1;
   min-width: 0;
 }
+.dispute-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--s-1);
+  min-width: 180px;
+}
 .dispute-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
   font-weight: 600;
   font-size: var(--fs-sm);
 }
 .dispute-status.step-4 {
   color: var(--good-text);
+}
+.progress-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  width: 100%;
+}
+.progress-bar span {
+  height: 4px;
+  background: var(--border);
+}
+.progress-bar span.is-on {
+  background: var(--accent);
+}
+.dispute-go {
+  color: var(--text-3);
+  flex: none;
 }
 .dispute-action {
   font-size: var(--fs-xs);
@@ -548,11 +636,6 @@
     padding: var(--s-3) var(--s-4);
     gap: var(--s-2);
   }
-  .portal-nav {
-    order: 3;
-    width: 100%;
-    margin-left: 0;
-  }
   .portal-user {
     display: none;
   }
@@ -562,9 +645,29 @@
   .portal-card {
     padding: var(--s-4);
   }
-  .choice-grid,
+  .raise-panel,
   .portal-two {
     grid-template-columns: 1fr;
+  }
+  .raise-opt {
+    padding: var(--s-4);
+  }
+  .raise-opt + .raise-opt {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+  .dispute-row {
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+  .dispute-progress {
+    align-items: flex-start;
+    min-width: 0;
+    width: 100%;
+    order: 3;
+  }
+  .dispute-go {
+    display: none;
   }
   .wizard-steps {
     grid-template-columns: repeat(4, minmax(0, 1fr));

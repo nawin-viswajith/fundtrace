@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { useAuth } from "../auth/AuthProvider";
 import { SyntheticBanner } from "../../components/Domain";
@@ -25,14 +25,6 @@ export default function PortalShell() {
             <span className="portal-brand-sub">Help with a payment</span>
           </span>
         </Link>
-        <nav className="portal-nav" aria-label="Customer">
-          <NavLink to="/portal" end className={({ isActive }) => (isActive ? "is-active" : "")}>
-            My disputes
-          </NavLink>
-          <NavLink to="/portal/new" className={({ isActive }) => (isActive ? "is-active" : "")}>
-            Raise a dispute
-          </NavLink>
-        </nav>
         <span className="portal-user">{user?.full_name.replace(/\s*\(synthetic\)\s*$/i, "")}</span>
         <ThemeToggle />
         <button type="button" className="icon-btn" onClick={signOut} aria-label="Sign out" title="Sign out">
