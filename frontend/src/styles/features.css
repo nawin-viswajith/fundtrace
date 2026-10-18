@@ -122,6 +122,11 @@
   border-color: var(--text-3);
   background: var(--surface-2);
 }
+.demo-user-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
 .demo-pw {
   font-size: 12.5px;
   margin-top: 8px;

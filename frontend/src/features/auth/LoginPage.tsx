@@ -67,9 +67,6 @@ export default function LoginPage() {
               <h2 id="signin-title" className="login-card-title">
                 Sign in
               </h2>
-              <p className="synthetic-notice small" role="note">
-                <strong>Synthetic data only.</strong> Nothing here comes from a real bank.
-              </p>
               {sessionExpired && <p className="inline-note">Your session ended. Please sign in again.</p>}
               <PasswordStep onResult={next} login={login} cfg={cfg} />
               {cfg.data?.firebase && <GoogleButton onToken={async (t) => next(await loginWithFirebase(t))} config={cfg.data.firebase} />}
@@ -201,8 +198,8 @@ function PasswordStep({
             <ul className="demo-list">
               {cfg.data.demo_users.map((u) => (
                 <li key={u.username}>
-                  <button type="button" className="demo-user" onClick={() => fill(u.username)} aria-label={`Fill in ${u.username}`}>
-                    <code>{u.username}</code>
+                  <button type="button" className="demo-user" onClick={() => fill(u.username)} aria-label={`Fill in ${u.name}`}>
+                    <span className="demo-user-name">{u.name}</span>
                     <span className={`role-tag role-${u.role}`}>{u.role}</span>
                   </button>
                 </li>
@@ -214,21 +211,14 @@ function PasswordStep({
                 <ul className="demo-list">
                   {cfg.data.demo_customers.map((u) => (
                     <li key={u.username}>
-                      <button type="button" className="demo-user" onClick={() => fill(u.username)} aria-label={`Fill in ${u.username}`}>
-                        <code>{u.username}</code>
+                      <button type="button" className="demo-user" onClick={() => fill(u.username)} aria-label={`Fill in ${u.name}`}>
+                        <span className="demo-user-name">{u.name}</span>
                         <span className="role-tag role-customer">customer</span>
                       </button>
                     </li>
                   ))}
                 </ul>
               </>
-            )}
-            {cfg.data.demo_password ? (
-              <p className="demo-pw">
-                Password for all: <code>{cfg.data.demo_password}</code>
-              </p>
-            ) : (
-              <p className="demo-pw muted">Ask the presenter for the demo password.</p>
             )}
           </>
         )}

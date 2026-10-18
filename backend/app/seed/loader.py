@@ -5,7 +5,7 @@ import logging
 import uuid
 from datetime import datetime
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session
 
 from app import audit
@@ -61,6 +61,9 @@ def ensure_customer_users(db: Session) -> None:
 
 def wipe(db: Session) -> None:
     db.execute(delete(m.User).where(m.User.role == "customer"))  # they point at customers; recreated after seeding
+    # transactions.reversal_of_id is self-referencing; a bulk DELETE of the whole table can still hit the FK
+    # (MySQL checks it row by row, so a row can fail on a sibling not yet deleted in the same statement).
+    db.execute(update(m.Transaction).values(reversal_of_id=None))
     for t in _TABLES_IN_DELETE_ORDER:
         db.execute(delete(t))
     db.flush()

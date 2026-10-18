@@ -252,3 +252,12 @@ def test_app_shell_is_revalidated_and_hashed_assets_are_cached(client):
     r = client.get(f"/assets/{asset.name}")
     assert r.status_code == 200 and "immutable" in r.headers["cache-control"]
     assert client.get("/api/healthz").headers["cache-control"] == "no-store"
+
+
+def test_reset_demo_wipes_and_reseeds_without_error(client, db):
+    """Regression: transactions.reversal_of_id is self-referencing; wipe() must null it before deleting the
+    table, or MySQL rejects the bulk DELETE with a foreign-key error (it doesn't show up on SQLite)."""
+    login(client, "admin")
+    r = client.post("/api/admin/reset-demo")
+    assert r.status_code == 200, r.text
+    assert client.get("/api/cases").status_code == 200

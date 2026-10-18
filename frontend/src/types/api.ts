@@ -49,8 +49,8 @@ export interface FirebaseWebConfig {
 }
 export interface AuthConfig {
   demo: boolean;
-  demo_users: { username: string; role: Role }[];
-  demo_customers?: { username: string; customer_id: string }[];
+  demo_users: { username: string; name: string; role: Role }[];
+  demo_customers?: { username: string; name: string; customer_id: string }[];
   demo_password: string | null;
   firebase_enabled: boolean;
   firebase?: FirebaseWebConfig | null;

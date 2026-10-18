@@ -80,19 +80,29 @@ def me(user: m.User = Depends(current_user)):
     return {"user": user_out(user)}
 
 
+def _display_name(db: Session, username: str) -> str:
+    """First name only, for the compact demo-accounts list (e.g. "Asha" rather than "inv.asha" or "Asha Raman")."""
+    import re
+
+    user = db.scalar(select(m.User).where(m.User.username == username))
+    name = user.full_name if user else username
+    name = re.sub(r"\s*\(synthetic\)\s*$", "", name, flags=re.I).strip() or username
+    return "Admin" if username == "admin" else name.split(" ")[0]
+
+
 @router.get("/config")
-def auth_config():
+def auth_config(db: Session = Depends(get_db)):
     s = get_settings()
     firebase = None
     if s.firebase_project_id and s.firebase_api_key:
         firebase = {"apiKey": s.firebase_api_key, "authDomain": s.firebase_auth_domain or f"{s.firebase_project_id}.firebaseapp.com",
                     "projectId": s.firebase_project_id}
+    demo_logins = [("inv.asha", "investigator"), ("inv.ravi", "investigator"), ("sup.meera", "supervisor"), ("admin", "admin")]
     return {
         "demo": True,
-        "demo_users": [{"username": "inv.asha", "role": "investigator"}, {"username": "inv.ravi", "role": "investigator"},
-                       {"username": "sup.meera", "role": "supervisor"}, {"username": "admin", "role": "admin"}],
+        "demo_users": [{"username": u, "name": _display_name(db, u), "role": r} for u, r in demo_logins],
         "demo_password": s.demo_password if s.show_demo_credentials else None,
-        "demo_customers": [{"username": u, "customer_id": c} for u, c in CUSTOMER_USERS],
+        "demo_customers": [{"username": u, "name": _display_name(db, u), "customer_id": c} for u, c in CUSTOMER_USERS],
         "firebase_enabled": firebase is not None,
         "firebase": firebase,
         "mfa_required_roles": sorted(s.mfa_roles),
