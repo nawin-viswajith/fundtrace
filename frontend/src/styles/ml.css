@@ -1,0 +1,78 @@
+/* Behaviour model (machine learning): case-view section and ops-page panel. Light theme, square corners, 1px borders. */
+.ml-section {
+  border-top: 1px solid var(--border);
+  padding-top: var(--s-5);
+  margin-top: var(--s-5);
+}
+.ml-section-title {
+  margin-bottom: var(--s-3);
+}
+.ml-acc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+}
+.ml-row + .ml-row {
+  border-top: 1px solid var(--border);
+}
+.ml-row.ml-not-scored {
+  background: var(--surface-2);
+}
+.ml-head {
+  display: grid;
+  grid-template-columns: 20px minmax(100px, auto) 1fr auto auto;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-3) var(--s-4);
+  background: var(--surface);
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.ml-head-static {
+  cursor: default;
+}
+.ml-row.is-open .ml-head {
+  background: var(--surface-2);
+}
+.ml-chevron {
+  transition: transform 0.1s ease;
+}
+.ml-row.is-open .ml-chevron {
+  transform: rotate(90deg);
+}
+.ml-name {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.ml-line {
+  color: var(--text);
+}
+.ml-score {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.ml-score-max {
+  font-weight: 400;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
+.ml-band {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  padding: 2px 8px;
+  border: 1px solid currentcolor;
+  white-space: nowrap;
+}
+.ml-body {
+  padding: var(--s-3) var(--s-4) var(--s-4) calc(20px + var(--s-3) + var(--s-4));
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.ml-card .kv-row dt {
+  min-width: 160px;
+}

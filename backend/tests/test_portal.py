@@ -173,3 +173,103 @@ def test_customer_answers_reach_the_ai_snapshot_as_untrusted_text(db):
     snap = build_snapshot(build_context(db, case))
     answers = snap["records"][case.id]["customer_answers"]
     assert answers.startswith("<untrusted>") and "31810250012345" in answers
+
+
+# ---------------------------------------------------------------------------- "tell us in your own words" (free-text intake)
+
+def test_story_too_short_falls_back_to_step_by_step(client):
+    login(client, "cust.kiran")
+    r = client.post("/api/portal/chat/story", json={"story": "help"}).json()
+    assert r["step"] == "payment" and "a little more" in " ".join(r["messages"]).lower()
+
+
+def test_story_pre_fills_and_requires_confirmation(client, monkeypatch):
+    from app.ai import customer_assistant as ca
+    from app.ai.llm import FakeGateway
+
+    login(client, "cust.kiran")
+    txns = client.get("/api/portal/transactions").json()["transactions"]
+    txn = next(t for t in txns if not t["dispute_case_id"])
+
+    def responder(node, contents):
+        return {"reason": "scam", "otp_shared": "no", "noticed": "today", "contact_preference": None,
+                "amount": txn["amount_minor"] / 100, "payee_name": txn["paid_to"], "payment_date": txn["occurred_at"][:10]}
+
+    monkeypatch.setattr("app.ai.customer_assistant.get_gateway", lambda: FakeGateway(responder))
+    r = client.post("/api/portal/chat/story",
+                    json={"story": "Someone called pretending to be from the bank and tricked me into paying. I did not share any OTP."}).json()
+    assert r["state"]["description"].startswith("Someone called")
+    assert r["step"] == "confirm_payment"
+    assert r["payments"][0]["id"] == txn["id"]
+    # confirm the payment
+    r = client.post("/api/portal/chat", json={"state": r["state"], "choice": "confirmyes:payment"}).json()
+    assert r["state"]["txn_id"] == txn["id"]
+    assert r["step"] == "confirm_reason"
+    r = client.post("/api/portal/chat", json={"state": r["state"], "choice": "confirmyes:reason"}).json()
+    assert r["state"]["reason"] == "scam"
+    assert r["step"] == "confirm_otp_shared"
+    # decline the OTP suggestion: it must not be auto-accepted, and the real otp question is asked once the
+    # other suggestions are settled
+    r = client.post("/api/portal/chat", json={"state": r["state"], "choice": "confirmno:otp_shared"}).json()
+    assert "otp_shared" not in r["state"] and r["step"] == "confirm_noticed"
+    r = client.post("/api/portal/chat", json={"state": r["state"], "choice": "confirmyes:noticed"}).json()
+    assert r["state"]["noticed"] == "today"
+    assert r["step"] == "otp"  # the suggestion was declined, so the real question is still asked
+    r = client.post("/api/portal/chat", json={"state": r["state"], "choice": "otp:no"}).json()
+    assert r["step"] == "cyber"  # the normal flow continues after all suggestions are settled
+    r = client.post("/api/portal/chat", json={"state": r["state"], "choice": "cyber:not_yet"}).json()
+    assert r["step"] == "contact"  # description was already filled from the story
+    r = client.post("/api/portal/chat", json={"state": r["state"], "choice": "contact:sms"}).json()
+    assert r["ready"] and r["summary"]["reason"] == "I was tricked into making this payment"
+
+
+def test_story_ai_unavailable_continues_step_by_step(client, monkeypatch):
+    from app.ai.llm import FakeGateway
+
+    login(client, "cust.kiran")
+    monkeypatch.setattr("app.ai.customer_assistant.get_gateway", lambda: FakeGateway(lambda n, c: {}, status="disabled"))
+    r = client.post("/api/portal/chat/story", json={"story": "Someone tricked me into paying them over the phone yesterday."}).json()
+    assert "step by step" in r["messages"][-2].lower() or "step by step" in " ".join(r["messages"]).lower()
+    assert r["step"] == "payment"
+
+
+def test_story_declining_the_payment_match_falls_back_to_the_list(client, monkeypatch):
+    from app.ai.llm import FakeGateway
+
+    login(client, "cust.kiran")
+    txns = client.get("/api/portal/transactions").json()["transactions"]
+    txn = next(t for t in txns if not t["dispute_case_id"])
+
+    def responder(node, contents):
+        return {"reason": None, "otp_shared": None, "noticed": None, "contact_preference": None,
+                "amount": txn["amount_minor"] / 100, "payee_name": txn["paid_to"], "payment_date": None}
+
+    monkeypatch.setattr("app.ai.customer_assistant.get_gateway", lambda: FakeGateway(responder))
+    r = client.post("/api/portal/chat/story", json={"story": "I paid someone and now I think it was a mistake, please help."}).json()
+    assert r["step"] == "confirm_payment"
+    r = client.post("/api/portal/chat", json={"state": r["state"], "choice": "confirmno:payment"}).json()
+    assert r["step"] == "payment" and r["payments"]
+
+
+# ---------------------------------------------------------------------------- "Ask Demo Bank" API isolation
+
+def test_customer_can_call_help_endpoints_staff_cannot(client, monkeypatch):
+    from app.ai.llm import FakeGateway
+
+    login(client, "cust.kiran")
+    assert client.get("/api/portal/help").status_code == 200
+    assert client.get("/api/portal/safety-check").status_code == 200
+
+    def responder(node, contents):
+        return {"intent": "faq", "answer": "You can raise a dispute from your recent payments.",
+                "cited_article_ids": ["DSP-HOW"], "cited_case_ids": [], "actions": []}
+
+    monkeypatch.setattr("app.ai.customer_assistant.get_gateway", lambda: FakeGateway(responder))
+    r = client.post("/api/portal/help/ask", json={"message": "How do I raise a dispute?"})
+    assert r.status_code == 200 and r.json()["status"] == "ok"
+
+    login(client, "inv.asha")
+    assert client.get("/api/portal/help").status_code == 403
+    assert client.get("/api/portal/safety-check").status_code == 403
+    assert client.post("/api/portal/help/ask", json={"message": "hello"}).status_code == 403
+    assert client.post("/api/portal/chat/story", json={"story": "x" * 25}).status_code == 403

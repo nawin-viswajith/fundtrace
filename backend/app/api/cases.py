@@ -247,6 +247,23 @@ def risk_evaluate(case_id: str, user: m.User = Depends(current_user), db: Sessio
     return {"evaluation_id": ctx["evaluation_id"], "rules": ctx["rules"], "summary": ctx["rules_summary"]}
 
 
+@router.get("/cases/{case_id}/behaviour")
+def behaviour(case_id: str, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    """Behaviour-model scores (machine learning, no labels) for accounts on this case's money trail.
+
+    A separate signal from the rules: it never changes rule statuses, priority or scores.
+    """
+    from app.services.ml.model import model_brief, score_accounts
+
+    case = load_case_for(user, db, case_id)
+    res, fwd, att, store = inv.build_trace(db, case)
+    accounts = [n["id"] for n in fwd.nodes.values() if n["type"] == "account" and "payer" not in n["roles"]]
+    model, scored = score_accounts(db, accounts)
+    accounts_out = [{"account_id": a, "label": fwd.nodes[a]["label"], "roles": fwd.nodes[a]["roles"], **scored[a]} for a in accounts]
+    return {"model": model_brief(model), "accounts": accounts_out,
+            "note": "Unusual is not fraud. It helps you decide where to look, not what to decide."}
+
+
 # ---------------------------------------------------------------------------- evidence
 
 @router.get("/cases/{case_id}/evidence")
@@ -435,6 +452,42 @@ def assistant(case_id: str, body: AssistantIn, user: m.User = Depends(current_us
 
     case = load_case_for(user, db, case_id)
     out = chat(db, case, user, body.message, body.history)
+    db.commit()
+    return out
+
+
+@router.post("/cases/{case_id}/hypotheses")
+def run_hypotheses(case_id: str, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    """Run the AI hypothesis proposer ("Gemini proposes, the ledger proves"), or the system fallback if AI is unavailable."""
+    from app.ai.hypotheses import run as run_hyp
+
+    case = load_case_for(user, db, case_id)
+    out = run_hyp(db, case, user)
+    db.commit()
+    return out
+
+
+@router.get("/cases/{case_id}/hypotheses")
+def get_hypotheses(case_id: str, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    """The latest persisted hypothesis run for this case, without spending anything."""
+    from app.ai.hypotheses import latest as latest_hyp
+
+    case = load_case_for(user, db, case_id)
+    out = latest_hyp(db, case)
+    return out or {"status": "none", "hypotheses": [], "counts": {}}
+
+
+class AskLedgerIn(BaseModel):
+    question: str = Field(min_length=3, max_length=300)
+
+
+@router.post("/cases/{case_id}/ask-ledger")
+def ask_ledger_route(case_id: str, body: AskLedgerIn, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    """"Ask the ledger": Gemini translates a plain question into checks; the deterministic verifier answers."""
+    from app.ai.hypotheses import ask_ledger
+
+    case = load_case_for(user, db, case_id)
+    out = ask_ledger(db, case, body.question, user)
     db.commit()
     return out
 

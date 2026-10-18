@@ -30,6 +30,7 @@ import { TrailLegend } from "./TrailLegend";
 import { leadSentence } from "./moneySummary";
 import { cleanName, directionLabel, relationLabel, windowLabel } from "./plainText";
 import { useCssVars } from "../../lib/cssVars";
+import { HypothesesSection } from "../hypotheses/HypothesesSection";
 
 /** Smallest zoom on phones, so box text stays readable (people drag to see the rest). */
 const NARROW_MIN_ZOOM = 0.85;
@@ -283,6 +284,8 @@ function TrailGraph() {
         onSelect={selectFromPanel}
         traceParams={{ direction: params.direction, depth: params.depth, window_hours: params.window_hours, expand: params.expand }}
       />
+
+      <HypothesesSection caseId={caseId} />
     </div>
   );
 }

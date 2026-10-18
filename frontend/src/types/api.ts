@@ -1172,6 +1172,12 @@ export interface ChatState {
   description?: string;
   contact_preference?: string;
   page?: number;
+  // "Tell us in your own words": AI suggestions waiting for the customer's Yes/No confirmation.
+  suggest?: Partial<Record<"reason" | "otp_shared" | "noticed" | "contact_preference", string>>;
+  declined_suggest?: string[];
+  payment_candidate?: string;
+  payment_declined?: boolean;
+  story_tried?: boolean;
 }
 export interface ChatOption {
   value: string;
@@ -1197,4 +1203,74 @@ export interface ChatTurn {
   summary: ChatSummary | null;
   ready: boolean;
   masked: DlpFinding[];
+}
+
+// ------------------------------------------------------------------ "Ask Demo Bank" (customer assistant) and safety check
+export interface HelpArticleBrief {
+  id: string;
+  title: string;
+  summary: string;
+  topic: "dispute" | "safety" | "scam" | "bank";
+}
+export interface HelpIndex {
+  articles: HelpArticleBrief[];
+  suggestions: string[];
+  label: string;
+}
+export interface HelpAction {
+  kind: "start_dispute_chat" | "start_dispute_form" | "open_dispute" | "call_1930" | "report_cybercrime";
+  label: string;
+  href: string;
+  case_id?: string;
+}
+export interface HelpOwnDispute {
+  case_id: string;
+  payment: string;
+  paid_on: string;
+  reason: string;
+  status: string;
+  step: number;
+  explain: string;
+  needs_from_you: string[];
+  next_deadline: { label: string; due_at: string } | null;
+  decision: string | null;
+}
+export interface HelpAnswer {
+  status: "ok" | "refused" | "fallback" | "invalid";
+  source: "ai" | "help_articles" | "policy";
+  source_label: string;
+  intent: string | null;
+  text: string;
+  warning: string | null;
+  urgent: boolean;
+  masked_message: string | null;
+  articles: HelpArticleBrief[];
+  disputes: HelpOwnDispute[];
+  actions: HelpAction[];
+  suggestions: string[];
+  note?: string | null;
+  model?: string;
+}
+export interface SafetyCheckItem {
+  kind: string;
+  level: "check" | "ok";
+  title: string;
+  text: string;
+  action?: HelpAction;
+}
+export interface ScamTip {
+  id: string;
+  title: string;
+  summary: string;
+  signs: string[];
+  do: string[];
+}
+export interface SafetyCheck {
+  checked_at: string;
+  window_days: number;
+  items: SafetyCheckItem[];
+  all_clear: boolean;
+  all_clear_text: string | null;
+  tips: ScamTip[];
+  tip_index: number;
 }

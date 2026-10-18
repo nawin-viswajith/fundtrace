@@ -1,0 +1,315 @@
+# Demo Bank customer help articles: the ONLY source the "Ask Demo Bank" assistant answers from.
+#
+# Written for the FundTrace demo in plain language. Safety advice follows public Indian guidance
+# (national cyber-crime helpline 1930, cybercrime.gov.in, RBI's "never share your OTP" messaging).
+# Deadlines are not written here: "{deadlines}" is filled in by code from the SLA configuration
+# (app/services/scoring.py SLA_POLICIES), so the help text and the bank's case file always agree.
+#
+# Fields: id, topic (dispute | safety | scam | bank), title, keywords (extra search words), summary (one or two
+# sentences, used as the answer when AI is unavailable), body (<= ~120 words), and for scams: signs and do.
+
+- id: DSP-HOW
+  topic: dispute
+  title: How to raise a dispute
+  keywords: [raise, dispute, complaint, claim, report, wrong payment, money back, refund, start, form, chat, file]
+  summary: >-
+    Sign in, open "Raise a dispute" and choose the chat or the form. Pick the payment from your own list, tell us what
+    happened, and check the summary before you submit. It takes about two minutes.
+  body: >-
+    You can raise a dispute about any payment from your Demo Bank account in this portal. Choose the guided chat (one
+    question at a time, or tell us in your own words) or the four-step form. You pick the payment from your own recent
+    payments, so it is linked to the right account. We then ask what happened, whether an OTP, PIN or password was
+    shared, when you noticed, and how to contact you. Nothing is sent until you check the summary and press Submit. You
+    get a reference number (CASE-…) straight away and can follow progress under "My disputes".
+  actions: [start_dispute_chat, start_dispute_form]
+
+- id: DSP-STEPS
+  topic: dispute
+  title: What happens after you raise a dispute
+  keywords: [after, next, happens, process, stages, steps, received, investigated, investigation, review, decided, decision, outcome]
+  summary: >-
+    Your dispute moves through four steps: Received, Being investigated, Final review and Decided. You can see the
+    current step and any request from us under "My disputes".
+  body: >-
+    1. Received: your dispute is in our team's queue with a reference number. 2. Being investigated: we check the
+    payment, our records of your account, and where the money went; we may ask the receiving bank to hold it. If we
+    need something from you, the status says "We need something from you" and lists what to send. 3. Final review: the
+    investigation is complete and an authorised officer makes the decision. 4. Decided: you see the decision in plain
+    words. If you disagree, you can ask us to review it. People make every decision, not a computer.
+  actions: []
+
+- id: DSP-TIME
+  topic: dispute
+  title: How long a dispute takes
+  keywords: [long, time, how long, days, deadline, when, timeline, sla, wait, temporary credit, shadow credit, decision date]
+  summary: >-
+    Our deadlines depend on what happened: {deadlines} Your dispute page shows the exact dates for your case. These
+    values are illustrative for this demo.
+  body: >-
+    Our deadlines depend on what happened:
+    {deadlines}
+    Your dispute page shows the exact dates for your case. These values are illustrative for this demo, modelled on
+    public guidance.
+  actions: []
+
+- id: DSP-PROOF
+  topic: dispute
+  title: What proof helps us check faster
+  keywords: [proof, evidence, document, documents, screenshot, receipt, upload, attach, send, file, files, sms, statement]
+  summary: >-
+    A screenshot of the payment, the bank's SMS, a receipt or order page, messages or call details from the other person,
+    and your cyber-crime complaint acknowledgement all help. You can add files while raising the dispute or later.
+  body: >-
+    Helpful proof: a screenshot of the payment or the bank's SMS; a receipt, invoice or order page; chats, emails or the
+    phone number of the person who contacted you; and your cyber-crime complaint acknowledgement (from 1930 or
+    cybercrime.gov.in). Photos, PDFs and text files up to 5 MB each work. Before uploading, cover any OTP, PIN, CVV or
+    full card number. You can add files in the chat or form, or later on your dispute's page, especially if we ask for
+    something.
+  actions: []
+
+- id: DSP-STATUS
+  topic: dispute
+  title: Checking the status of your dispute
+  keywords: [status, where, my dispute, progress, update, track, follow, reference, case, need something, waiting]
+  summary: >-
+    Open "My disputes" on the home page to see each dispute's current step, the deadlines, and anything we have asked
+    you for.
+  body: >-
+    Every dispute you raise appears under "My disputes" with its reference (CASE-…), its current step (Received, Being
+    investigated, Final review, Decided) and its deadlines. If the status says "We need something from you", open the
+    dispute to see what to send and upload it there. You can also see the files you sent and a short history of what has
+    happened. We will also contact you the way you chose (SMS, email or phone).
+  actions: []
+
+- id: DSP-OTP-SHARED
+  topic: dispute
+  title: I shared my OTP or PIN. Can I still raise a dispute?
+  keywords: [shared, gave, told, otp, pin, password, mistake, still, eligible, liability, fault, blame]
+  summary: >-
+    Yes. Sharing an OTP, PIN or password does not stop you raising a dispute. Tell us honestly; we look at everything.
+    First block your card or UPI and call 1930.
+  body: >-
+    Yes, you can still raise a dispute. Please tell us honestly whether you shared an OTP, PIN or password; it helps us
+    understand what happened and does not stop us investigating. Right now: block your card or UPI in the app, change
+    your banking password and MPIN, and call the national cyber-crime helpline on 1930. Then raise the dispute here as
+    soon as you can. The outcome depends on the facts of each case, so we can't promise a refund.
+  actions: [call_1930, start_dispute_chat]
+
+- id: DSP-REPORT-FAST
+  topic: dispute
+  title: Why reporting quickly matters
+  keywords: [quick, quickly, fast, soon, late, delay, golden hour, hold, freeze, recover, recovery, three days, liability]
+  summary: >-
+    Report as soon as you can. Money can sometimes be held at the receiving bank before it moves on, and reporting an
+    unauthorised payment within three working days generally gives you the strongest protection under RBI rules.
+  body: >-
+    The first hours matter most. When you report quickly, we can ask the receiving bank to hold the money before it is
+    moved on, which gives the best chance of getting it back. For payments you did not make, RBI rules on unauthorised
+    electronic transactions generally give the strongest protection when you tell your bank within three working days.
+    Reporting later is still worth it: always raise the dispute and call 1930.
+  actions: [call_1930, start_dispute_chat]
+
+- id: SAFE-FIRST-HOUR
+  topic: safety
+  title: Lost money to fraud just now? Do this first
+  keywords: [scammed, just now, lost, stolen, fraud, hacked, now, urgent, emergency, help, immediately, money gone, cheated, first hour, what do i do]
+  summary: >-
+    Call the national cyber-crime helpline on 1930 now, or report at cybercrime.gov.in. Block your card or UPI in the
+    app, never share any OTP or PIN, then raise a dispute here.
+  body: >-
+    1. Call 1930, the national cyber-crime helpline, straight away (or report at cybercrime.gov.in). Note the
+    acknowledgement number. 2. Block your card or UPI in the Demo Bank app, and change your banking password and MPIN.
+    3. Don't reply to the fraudster and never share any OTP or PIN, even if they promise a refund. 4. Raise a dispute
+    here and add the complaint number. 5. Keep screenshots, messages and phone numbers as proof.
+  actions: [call_1930, report_cybercrime, start_dispute_chat]
+
+- id: SAFE-NEVER-SHARE
+  topic: safety
+  title: Never share your OTP, PIN, CVV or password
+  keywords: [otp, pin, mpin, cvv, password, share, asked, asking, someone asked, bank asked, code, verification code]
+  summary: >-
+    Demo Bank will never ask for your OTP, PIN, CVV or password, by phone, SMS, email or chat. Anyone who asks is a
+    fraudster. Don't share it, end the call, and call 1930 if you already did.
+  body: >-
+    Your OTP, UPI PIN, ATM PIN, CVV and passwords are only for you. Demo Bank, the RBI, the police and genuine companies
+    never ask for them. An OTP message tells you what it is for: read it, and if it is for a payment you are not making,
+    don't use it. If someone asks for it, even calling from a number that looks like the bank, it is a scam: hang up.
+    If you have already shared one, block your card or UPI in the app and call 1930 now.
+  actions: [call_1930]
+
+- id: SCAM-KYC
+  topic: scam
+  title: Fake KYC and "bank" calls
+  keywords: [kyc, update kyc, account blocked, account suspended, bank call, bank official, verify, pan, aadhaar, sms link, expire]
+  summary: >-
+    Messages saying your account will be blocked unless you "update KYC" are a common scam. The bank never asks you to
+    update KYC through a link or a call, or to share an OTP.
+  body: >-
+    A caller or SMS says your account or card will be blocked today unless you update your KYC, often with a link or a
+    request to install an app. The link leads to a fake bank page that steals your login and OTP. Demo Bank does KYC
+    updates only in the app or at a branch, never through a link in an SMS or a call.
+  signs: ["Urgent threat that your account will be blocked", "A link or app to install for KYC", "Request for OTP, PIN or card details"]
+  do: ["Don't click the link; open the Demo Bank app yourself", "Hang up and call the number on the back of your card", "Report the message at sancharsaathi.gov.in (Chakshu) or call 1930 if you lost money"]
+  actions: [call_1930]
+
+- id: SCAM-SCREEN
+  topic: scam
+  title: Screen-sharing and remote-access apps
+  keywords: [screen share, screen sharing, anydesk, teamviewer, quicksupport, remote, app install, install app, apk, control phone]
+  summary: >-
+    Never install a screen-sharing or remote-access app (such as AnyDesk or TeamViewer) because a caller asks. It lets
+    them see your OTPs and use your banking app.
+  body: >-
+    Fraudsters posing as bank, telecom or delivery staff ask you to install an app "to fix a problem" or to share your
+    screen. Once installed, they can watch your OTPs and PIN and move money from your phone. Some send an .apk file on
+    WhatsApp that reads your SMS. Genuine support never needs control of your phone.
+  signs: ["Request to install AnyDesk, TeamViewer or an .apk file", "Asked to share your screen during a call", "Caller stays on the line while you open banking apps"]
+  do: ["Refuse and hang up", "If you installed one, uninstall it and switch off mobile data", "Block your card or UPI in the app and call 1930"]
+  actions: [call_1930, start_dispute_chat]
+
+- id: SCAM-COLLECT
+  topic: scam
+  title: UPI "collect request" scams
+  keywords: [upi, collect, collect request, request money, receive money, pin to receive, approve, gpay, phonepe, paytm, refund request, qr]
+  summary: >-
+    You never need to enter your UPI PIN to receive money. A "collect request" that asks for your PIN takes money out of
+    your account.
+  body: >-
+    A buyer, "refund team" or stranger sends a UPI collect request and says you must enter your PIN to receive money. In
+    fact, approving a collect request with your PIN sends money from your account. Receiving money never needs your PIN
+    or a QR scan.
+  signs: ["Asked to enter your UPI PIN to receive money", "A collect request from someone you don't know", "Pressure to approve quickly"]
+  do: ["Decline collect requests you don't recognise", "Never enter your PIN to receive money", "If money went out, raise a dispute and call 1930"]
+  actions: [start_dispute_chat, call_1930]
+
+- id: SCAM-CARE
+  topic: scam
+  title: Fake customer-care numbers
+  keywords: [customer care, helpline number, google, search, contact number, toll free, complaint number, support number, refund call]
+  summary: >-
+    Fraudsters put fake "customer care" numbers in search results and on social media. Use only the number in the Demo
+    Bank app, on our website or on the back of your card.
+  body: >-
+    When you search online for a company's helpline, the top results can be fake numbers run by fraudsters. They answer
+    as "customer care", then ask you to install an app, share an OTP or make a "test" payment for a refund. Get contact
+    numbers only from the official app, website or the back of your card.
+  signs: ["Number found through a search engine or social media post", "Asked for a small payment to process a refund", "Asked for OTP or to install an app"]
+  do: ["Hang up and use the number in the official app", "Never pay to receive a refund", "Call 1930 if you lost money"]
+  actions: [call_1930]
+
+- id: SCAM-JOB
+  topic: scam
+  title: Job and "task" scams
+  keywords: [job, work from home, part time, task, like videos, review, rating, telegram, whatsapp, commission, prepaid task, earn]
+  summary: >-
+    Offers to earn money for liking videos or writing reviews, which later ask you to pay to "unlock" earnings, are
+    scams. Genuine jobs never ask you to pay.
+  body: >-
+    You are invited on WhatsApp or Telegram to earn by liking videos, rating hotels or completing "tasks". The first small
+    payouts are real, to win your trust. Then you are asked to pay for "prepaid tasks" or fees to withdraw your earnings,
+    and the amounts grow. The money goes to mule accounts and the earnings never arrive.
+  signs: ["Unsolicited job offer on WhatsApp or Telegram", "Small early payouts, then requests to pay in", "Fees to withdraw your earnings"]
+  do: ["Stop paying, even to 'recover' earlier payments", "Keep the chats and payment details", "Call 1930 and raise a dispute for each payment"]
+  actions: [call_1930, start_dispute_chat]
+
+- id: SCAM-INVEST
+  topic: scam
+  title: Investment and crypto scams
+  keywords: [investment, invest, crypto, bitcoin, trading, stock tips, ipo, high returns, guaranteed returns, double money, app, group]
+  summary: >-
+    Promises of guaranteed or very high returns through trading apps, crypto or "expert" groups are scams. Invest only
+    through SEBI-registered brokers and official apps.
+  body: >-
+    Fraudsters add you to "stock tips" or crypto groups, show fake profits on a website or app, and encourage you to
+    invest more. When you try to withdraw, you are asked for "tax" or "fees", and the money never comes back. Check
+    whether a broker or adviser is registered on the SEBI website before investing.
+  signs: ["Guaranteed or very high returns", "Fake dashboard showing quick profits", "Fees or tax demanded before withdrawal"]
+  do: ["Don't pay any 'withdrawal fee'", "Check SEBI registration", "Call 1930 and raise a dispute for the payments"]
+  actions: [call_1930, start_dispute_chat]
+
+- id: SCAM-SIM
+  topic: scam
+  title: SIM swap fraud
+  keywords: [sim, sim swap, no signal, network, mobile number, sim card, duplicate sim, esim, upgrade, 4g, 5g]
+  summary: >-
+    If your phone suddenly loses signal for a long time, a fraudster may have taken over your mobile number to receive
+    your OTPs. Contact your mobile operator and Demo Bank at once.
+  body: >-
+    A fraudster gets a duplicate SIM for your number, often after a call offering a free "4G/5G upgrade" or asking you to
+    forward an SMS. Your phone loses signal, and the fraudster receives your OTPs. Never forward SMS codes to anyone, and
+    don't share your SIM's number or ID details on a call.
+  signs: ["Phone shows no network for a long time without reason", "Call offering a SIM or eSIM upgrade", "Asked to forward an SMS"]
+  do: ["Call your mobile operator from another phone", "Block your card and UPI in the app", "Call 1930 if money moved"]
+  actions: [call_1930]
+
+- id: SCAM-PHISH
+  topic: scam
+  title: Phishing links and QR codes
+  keywords: [link, phishing, sms link, email, website, fake site, qr, qr code, scan, url, login page, parcel, electricity bill, reward points]
+  summary: >-
+    Don't open links in unexpected SMS, emails or WhatsApp messages about bills, parcels, reward points or your account.
+    Scanning a QR code is for paying, never for receiving money.
+  body: >-
+    Phishing messages copy real brands: an unpaid electricity bill, a stuck parcel, expiring reward points. The link opens
+    a fake page that takes your login, card or OTP. Fake QR codes can also send money from your account. Type addresses
+    yourself or use the official app, and check the payee name before you pay.
+  signs: ["Urgent message with a short or odd-looking link", "A login page reached from a message", "A QR code sent to you 'to receive money'"]
+  do: ["Don't click; go to the official app or website yourself", "Never scan a QR to receive money", "Report the message at sancharsaathi.gov.in (Chakshu)"]
+  actions: [report_cybercrime]
+
+- id: SCAM-LOTTERY
+  topic: scam
+  title: Lottery, prize and refund scams
+  keywords: [lottery, prize, won, winner, gift, lucky draw, kbc, refund, tax refund, cashback, customs, parcel fee]
+  summary: >-
+    If you have to pay a fee to receive a prize, refund or parcel, it is a scam. Genuine prizes and refunds never need an
+    upfront payment or your OTP.
+  body: >-
+    You are told you have won a lottery or lucky draw, are owed a tax refund or cashback, or that a parcel is held at
+    customs. To get it, you must pay a "processing fee", "tax" or share an OTP. After the first payment, more fees follow.
+  signs: ["A prize from a contest you never entered", "A fee or tax to release money or a parcel", "Request for OTP or card details"]
+  do: ["Don't pay anything", "Don't share OTP or card details", "Call 1930 if you already paid"]
+  actions: [call_1930]
+
+- id: SCAM-ARREST
+  topic: scam
+  title: Fake police, courier and "digital arrest" calls
+  keywords: [police, cbi, customs, arrest, digital arrest, courier, drugs, parcel, video call, court, warrant, case against you, rbi officer]
+  summary: >-
+    No police, CBI, customs or RBI officer will arrest you over a video call or ask you to transfer money to "verify" it.
+    Hang up and call 1930.
+  body: >-
+    A caller claims a parcel in your name contained drugs, or that your account is linked to a crime. They keep you on a
+    video call ("digital arrest"), show fake uniforms or documents, and demand money to a "safe account" for verification.
+    Real officers never do this. Hang up, tell family, and call 1930.
+  signs: ["Threat of arrest over a phone or video call", "Told to stay on the call and not tell anyone", "Asked to move money to a 'safe' or 'verification' account"]
+  do: ["Hang up; it is not a real arrest", "Never transfer money to 'verify' it", "Call 1930 and report at cybercrime.gov.in"]
+  actions: [call_1930, report_cybercrime]
+
+- id: BANK-PROTECT
+  topic: bank
+  title: How Demo Bank protects you
+  keywords: [protect, protection, safe, secure, security, bank does, alerts, monitoring, block, limits, safe banking]
+  summary: >-
+    We send an alert for every payment, check unusual activity, let you block your card or UPI in the app, and
+    investigate every dispute with a person making the decision.
+  body: >-
+    We send you an SMS for every debit, so you can spot payments you didn't make. We watch for unusual activity such as
+    new devices and sudden large payments. You can block your card or UPI, and set limits, in the app at any time. When
+    you raise a dispute, our team traces the payment and can ask other banks to hold the money; a person makes every
+    decision. We never ask for your OTP, PIN or password.
+  actions: [start_dispute_chat]
+
+- id: BANK-BLOCK
+  topic: bank
+  title: Blocking your card or UPI
+  keywords: [block, freeze, stop, lost card, stolen card, lost phone, disable, card block, upi block, hotlist, deactivate]
+  summary: >-
+    Block your card or UPI in the Demo Bank app straight away if you lose your card or phone or see a payment you didn't
+    make. You can unblock it later.
+  body: >-
+    In the Demo Bank app, open Cards or UPI and choose Block. It takes effect immediately and you can unblock or reissue
+    later. If you lost your phone, ask your mobile operator to block the SIM as well, and change your banking password
+    from another device. Blocking stops new payments; to get back money that has already gone, raise a dispute and call
+    1930.
+  actions: [start_dispute_chat, call_1930]

@@ -23,6 +23,9 @@ export default function PortalShell() {
             <span className="portal-brand-sub">Help with a payment</span>
           </span>
         </Link>
+        <Link to="/portal/help" className="icon-btn portal-help-link">
+          Help
+        </Link>
         <span className="portal-user">{user?.full_name.replace(/\s*\(synthetic\)\s*$/i, "")}</span>
         <ThemeToggle />
         <button type="button" className="icon-btn" onClick={signOut} aria-label="Sign out" title="Sign out">

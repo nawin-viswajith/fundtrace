@@ -38,6 +38,9 @@ import type {
   DraftOpResult,
   ReportDraft,
   IngestEvent,
+  HelpIndex,
+  HelpAnswer,
+  SafetyCheck,
   IngestEventsResponse,
   LoginResult,
   MfaSetup,
@@ -186,6 +189,11 @@ export const api = {
   },
   portalChat: (state: ChatState | null, choice?: string, text?: string) =>
     request<ChatTurn>("/api/portal/chat", { method: "POST", body: { state, choice: choice ?? null, text: text ?? null } }),
+  portalChatStory: (story: string) => request<ChatTurn>("/api/portal/chat/story", { method: "POST", body: { story } }),
+  portalHelpIndex: () => request<HelpIndex>("/api/portal/help"),
+  portalHelpAsk: (message: string, history?: { role: string; text: string }[]) =>
+    request<HelpAnswer>("/api/portal/help/ask", { method: "POST", body: { message, history: history ?? null } }),
+  portalSafetyCheck: () => request<SafetyCheck>("/api/portal/safety-check"),
   generateData: (body: GenerateDataRequest) => request<GenerateDataResult>("/api/admin/generate-data", { method: "POST", body }),
   adminUsers: () => request<{ users: AdminUser[] }>("/api/admin/users"),
   adminResetMfa: (userId: number, reason: string) =>

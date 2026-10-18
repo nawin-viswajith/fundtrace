@@ -130,6 +130,34 @@ def ops_eval_run(include_classification: bool = False, user: m.User = Depends(re
     return {"id": run.id, "metrics": run.metrics, "details": run.details}
 
 
+# ---------------------------------------------------------------------------- behaviour model (ML)
+
+@router.get("/ops/ml")
+def ops_ml(user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    """The behaviour model's card (what it is, its features, its limitations) and its last hold-out evaluation."""
+    from app.services.ml import holdout
+    from app.services.ml.model import get_model, model_card
+
+    return {"model_card": model_card(get_model(db)), "holdout": holdout.latest(db), "holdout_running": holdout.is_running()}
+
+
+@router.post("/ops/ml/evaluate")
+def ops_ml_evaluate(seeds: int = 5, cases_per_seed: int = 30, user: m.User = Depends(require_role("supervisor", "admin")),
+                    db: Session = Depends(get_db)):
+    """Run the behaviour-model and rules hold-out on fresh synthetic worlds (isolated in-memory databases, never this
+    one). Synthetic hold-out, not real-world performance."""
+    from app.services.ml import holdout
+
+    seed_list = tuple(holdout.DEFAULT_SEEDS[:max(1, min(seeds, len(holdout.DEFAULT_SEEDS)))]) or (holdout.DEFAULT_SEEDS[0],)
+    try:
+        run = holdout.run_and_store(db, seeds=seed_list, cases_per_seed=max(5, min(cases_per_seed, 60)))
+    except RuntimeError as exc:
+        raise HTTPException(409, str(exc))
+    audit.record(db, None, user.username, user.role, "ml_evaluation_run", {"eval_run_id": run.id, "seeds": list(seed_list)})
+    db.commit()
+    return {"id": run.id, "metrics": run.metrics, "details": run.details}
+
+
 # ---------------------------------------------------------------------------- rules
 
 @router.get("/rules")

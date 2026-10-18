@@ -1,0 +1,114 @@
+/* Bank view identity: the same navy/amber brand as the customer portal (styles/portal-identity.css),
+   kept subtle because this is a dense, all-day working screen with dozens of cards per page — a light
+   touch (a top accent, a faint offset shadow, one amber mark) rather than the portal's bold blocks. */
+
+.shell {
+  --brand: #14183a;
+  --amber: #f2b44c;
+  --card-lift: 2px 2px 0 rgba(20, 24, 58, 0.06);
+}
+:root[data-theme="dark"] .shell {
+  --card-lift: 2px 2px 0 rgba(0, 0, 0, 0.3);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .shell {
+    --card-lift: 2px 2px 0 rgba(0, 0, 0, 0.3);
+  }
+}
+
+.topbar {
+  border-bottom: 3px solid var(--brand);
+}
+.brand .logo rect:first-child {
+  fill: var(--brand);
+}
+.brand-name {
+  font-weight: 700;
+}
+.user-chip:hover {
+  background: var(--surface-2);
+}
+.role-supervisor,
+.role-admin {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+:root[data-theme="dark"] .shell .role-supervisor,
+:root[data-theme="dark"] .shell .role-admin {
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .shell .role-supervisor,
+  :root:not([data-theme="light"]) .shell .role-admin {
+    color: var(--accent-text);
+    border-color: var(--accent);
+  }
+}
+
+.navlink.is-active {
+  border-left-color: var(--brand);
+}
+.navlink.is-active svg {
+  color: var(--brand);
+}
+:root[data-theme="dark"] .shell .navlink.is-active,
+:root[data-theme="dark"] .shell .navlink.is-active svg {
+  border-left-color: var(--accent);
+  color: var(--accent-text);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .shell .navlink.is-active {
+    border-left-color: var(--accent);
+  }
+  :root:not([data-theme="light"]) .shell .navlink.is-active svg {
+    color: var(--accent-text);
+  }
+}
+
+/* cards: a faint offset shadow and a thin top accent, same family as the portal's cards but much quieter */
+.shell .card {
+  border-top: 3px solid var(--brand);
+  box-shadow: var(--card-lift);
+}
+:root[data-theme="dark"] .shell .card,
+.shell[data-theme="dark"] .card {
+  border-top-color: var(--accent);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .shell .card {
+    border-top-color: var(--accent);
+  }
+}
+/* a card used purely as a layout wrapper (no header) would look like an odd stray bar; keep the accent only
+   where a card has a title, which is how .card is used throughout the app */
+.shell .card:not(:has(.card-title)) {
+  border-top-color: var(--border);
+}
+
+.shell .btn-primary {
+  box-shadow: 2px 2px 0 var(--accent-hover);
+}
+.shell .btn-primary:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--accent-hover);
+}
+.shell .btn-primary:disabled {
+  box-shadow: none;
+}
+
+/* one plain-language mark tying the two sides of the product together */
+.sidenav-foot::before {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 3px;
+  background: var(--amber);
+  margin-bottom: var(--s-2);
+}
+
+@media (max-width: 720px) {
+  .shell .card {
+    box-shadow: none;
+  }
+}

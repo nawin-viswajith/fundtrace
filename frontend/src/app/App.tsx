@@ -23,6 +23,7 @@ const NewDisputePage = lazy(() => import("../features/portal/PortalHome").then((
 const DisputeForm = lazy(() => import("../features/portal/DisputeForm"));
 const DisputeChat = lazy(() => import("../features/portal/DisputeChat"));
 const DisputeDetail = lazy(() => import("../features/portal/DisputeDetail"));
+const AskDemoBank = lazy(() => import("../features/portal/AskDemoBank"));
 
 function PageFallback() {
   return (
@@ -64,6 +65,7 @@ export default function App() {
                     <Route path="new/form" element={<DisputeForm />} />
                     <Route path="new/chat" element={<DisputeChat />} />
                     <Route path="disputes/:caseId" element={<DisputeDetail />} />
+                    <Route path="help" element={<AskDemoBank />} />
                   </Route>
                   <Route
                     path="/cases/:caseId/reports/:reportId/print"

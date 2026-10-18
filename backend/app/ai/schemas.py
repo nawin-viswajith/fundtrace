@@ -269,3 +269,48 @@ class StoryExtraction(BaseModel):
     amount: float | None = Field(default=None, description="Payment amount in rupees, if stated")
     payee_name: str | None = Field(default=None, description="Who the money went to, if stated (a name, not an account number)")
     payment_date: str | None = Field(default=None, description="Date of the payment as YYYY-MM-DD, if it can be worked out from the story and TODAY")
+
+
+# ---- Hypotheses: "Gemini proposes, the ledger proves" ---------------------------------------------
+# Gemini never states an amount as a fact here. It proposes typed, checkable claims (see
+# app.services.hypothesis_check) that deterministic code then proves, allows, refutes, or rejects as
+# invented. Keep this schema's `checks` loose (dict) because the claim language is owned by the
+# verifier, not by the LLM schema; the verifier re-validates every check and rejects anything unknown.
+
+
+class HypothesisCheck(BaseModel):
+    kind: str = Field(description="One of: flow_at_least, still_in_account, left_bank, rapid_pass_through, shared_device, "
+                                  "linked_disputes, typology. Only use ids (account/payment) that appear in the snapshot.")
+    from_account: str | None = Field(default=None, description="flow_at_least: the account the money left")
+    to_account: str | None = Field(default=None, description="flow_at_least: the account the money reached")
+    account: str | None = Field(default=None, description="still_in_account / rapid_pass_through / linked_disputes")
+    account_a: str | None = Field(default=None, description="shared_device")
+    account_b: str | None = Field(default=None, description="shared_device")
+    amount_rupees: float | None = Field(default=None, description="flow_at_least / still_in_account / left_bank, in rupees — "
+                                        "a hypothesis for code to test, never stated as a fact")
+    share_pct: float | None = Field(default=None, description="rapid_pass_through: percent sent on")
+    within_minutes: int | None = Field(default=None, description="rapid_pass_through")
+    min_cases: int | None = Field(default=None, description="linked_disputes")
+    pattern: str | None = Field(default=None, description="typology: fan_out, layering_chain, round_trip, cash_out, mule_reuse, "
+                               "rapid_pass_through")
+
+
+class HypothesisIdea(BaseModel):
+    statement: str = Field(description="One plain-English sentence for a non-technical bank officer. Do not state an amount as a "
+                           "fact: say 'may have' / 'could have', since only the checks below are ever proven.")
+    rationale: str = Field(description="One short sentence citing record ids from the snapshot that suggested this idea.")
+    typology: str = Field(default="other", description="fan_out, layering_chain, round_trip, cash_out, mule_reuse, "
+                          "rapid_pass_through, or other")
+    record_ids: list[str] = Field(default_factory=list, description="Record ids (account/payment) this idea is based on")
+    checks: list[HypothesisCheck] = Field(description="1 to 3 checks in the claim language that would prove or refute this idea")
+
+
+class HypothesisSet(BaseModel):
+    hypotheses: list[HypothesisIdea] = Field(description="Up to 6 ideas about where the disputed money went, most useful first")
+
+
+class LedgerQuestion(BaseModel):
+    """"Ask the ledger": Gemini only translates the investigator's plain question into checks; it never answers."""
+    checks: list[HypothesisCheck] = Field(default_factory=list, description="1 to 3 checks that would answer the question")
+    cannot_express: bool = Field(description="True if the question cannot be turned into a check in the claim language")
+    reason: str | None = Field(default=None, description="If cannot_express, one short sentence why")

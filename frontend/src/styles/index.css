@@ -9,6 +9,10 @@
 @import "./plain-trail.css";
 @import "./portal.css";
 @import "./portal-identity.css";
+@import "./portal-assistant.css";
 @import "./recovery.css";
 @import "./calc.css";
 @import "./quality.css";
+@import "./bank-identity.css";
+@import "./hypotheses.css";
+@import "./ml.css";

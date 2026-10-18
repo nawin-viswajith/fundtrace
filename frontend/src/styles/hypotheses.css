@@ -1,0 +1,204 @@
+/* ==========================================================================
+   "AI ideas about where the money went — checked against the bank's records"
+   (Money trail tab). Square corners, 1px borders, status in words + colour.
+   ========================================================================== */
+
+.hyp-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  margin-top: var(--s-5);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--border);
+}
+
+.hyp-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+
+.hyp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-3);
+}
+
+.hyp-card {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  background: var(--surface);
+  padding: var(--s-3) var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.hyp-card-proven {
+  border-left-color: var(--prov-confirmed);
+}
+
+.hyp-card-possible {
+  border-left-color: var(--prov-inferred);
+}
+
+.hyp-card-refuted {
+  border-left-color: var(--prov-unknown);
+}
+
+.hyp-card-invented {
+  border-left-color: var(--bad);
+}
+
+.hyp-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
+.hyp-source {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.hyp-source-system {
+  color: var(--warn-text);
+}
+
+.hyp-statement {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin: 0;
+}
+
+.verdict-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  padding: 2px var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.verdict-chip-proven {
+  background: var(--prov-confirmed-soft);
+  color: var(--prov-confirmed-text);
+  border-color: var(--prov-confirmed);
+}
+
+.verdict-chip-possible {
+  background: var(--prov-inferred-soft);
+  color: var(--prov-inferred-text);
+  border-color: var(--prov-inferred);
+}
+
+.verdict-chip-refuted {
+  background: var(--neutral-soft);
+  color: var(--neutral-text);
+}
+
+.verdict-chip-cannot_check {
+  background: var(--prov-unknown-soft);
+  color: var(--prov-unknown-text);
+}
+
+.verdict-chip-invented {
+  background: var(--bad-soft);
+  color: var(--bad-text);
+  border-color: var(--bad);
+}
+
+.hyp-checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--s-2);
+}
+
+.hyp-check {
+  padding-left: var(--s-2);
+  border-left: 2px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hyp-check-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
+.hyp-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-4);
+  margin: var(--s-1) 0 0;
+}
+
+.hyp-figures > div {
+  display: flex;
+  gap: var(--s-1);
+  font-size: var(--fs-xs);
+}
+
+.hyp-figures dt {
+  color: var(--text-3);
+}
+
+.hyp-figures dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.hyp-ids {
+  margin-top: var(--s-1);
+}
+
+.ask-ledger {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: var(--s-3) var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.ask-ledger-form {
+  display: flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
+.ask-ledger-form .input {
+  flex: 1 1 320px;
+}
+
+.ask-ledger-answer {
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  padding: var(--s-2) var(--s-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.ask-ledger-answer p {
+  margin: 0;
+}

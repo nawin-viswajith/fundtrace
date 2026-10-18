@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app import models as m
+from app.ai import customer_assistant
 from app.db import get_db
 from app.security import require_role
 from app.services import intake, intake_chat
@@ -85,3 +86,38 @@ class ChatIn(BaseModel):
 def chat(body: ChatIn, user: m.User = Depends(customer), db: Session = Depends(get_db)):
     """One step of the guided dispute chat (fixed options; free text only for the description and complaint number)."""
     return intake_chat.turn(db, user, body.state, choice=body.choice, text=body.text)
+
+
+class StoryIn(BaseModel):
+    story: str = Field(min_length=1, max_length=2000)
+
+
+@router.post("/chat/story")
+def chat_story(body: StoryIn, user: m.User = Depends(customer), db: Session = Depends(get_db)):
+    """Start the guided chat from a free-text story: Gemini extracts fixed-option suggestions and payment hints for
+    the customer to confirm. The chat itself is unchanged; this only pre-fills the first answers."""
+    return intake_chat.turn_from_story(db, user, body.story)
+
+
+class HelpIn(BaseModel):
+    message: str = Field(max_length=1000)
+    history: list[dict] | None = None
+
+
+@router.get("/help")
+def help_index(user: m.User = Depends(customer)):
+    """The help articles index and suggested questions, for the help page to show before the first message."""
+    return customer_assistant.help_index()
+
+
+@router.post("/help/ask")
+def help_ask(body: HelpIn, user: m.User = Depends(customer), db: Session = Depends(get_db)):
+    """One turn of "Ask Demo Bank": banking/payments FAQ, fraud safety, and the customer's own dispute status."""
+    return customer_assistant.ask(db, user, body.message, history=body.history)
+
+
+@router.get("/safety-check")
+def safety_check(user: m.User = Depends(customer), db: Session = Depends(get_db)):
+    """Deterministic safety insights computed from the customer's own account (new payees, unusual payment size,
+    failed sign-ins, new devices) plus a rotating scam-awareness tip."""
+    return customer_assistant.safety_check(db, user)

@@ -27,6 +27,7 @@ The investigator stays in charge. The AI never decides liability.
 | | What we built | Why it matters |
 |---|---|---|
 | **Traceable-amount ranges** | Every onward transfer gets a lower and upper bound of how much could be the disputed money. The bounds use four tracing conventions: clean-first (lowest intermediate balance), FIFO, pro-rata and tainted-first. | "Amounts add up" is not evidence. A positive lower bound is **derived** (balance arithmetic forces it). An upper bound alone is only **inferred**. |
+| **Gemini proposes, the ledger proves** | On the Money trail tab, Gemini reads the trail and suggests hypotheses in plain language — a typology (fan-out, layering, round-trip, cash-out, mule reuse), a flow between two accounts, money still at this bank. Every hypothesis is immediately checked by **deterministic code** against the same attribution bounds and graph, never by the model, and comes back *Proven by the records*, *Possible*, *Ruled out by the records*, *Can't check*, or *Invented — rejected* if it names a record that does not exist. An investigator can also type a plain question ("Did at least ₹25,000 reach Sunil?"); Gemini only translates it into a check, and the answer sentence is written by code from the result. | The most "AI" part of the product is also the most rigorously checked: nothing the model proposes reaches the investigator unverified, and it never does the arithmetic. |
 | **Five provenance labels** | Every node, edge and report claim is *Confirmed*, *Derived*, *Inferred*, *Unknown* or *Contradictory*. | Inferred links are never shown as facts. |
 | **Honest trail endpoints** | A trail stops for one of several reasons: *visibility ends* (another bank or cash), *merchant*, *high-activity hub*, *cycle*, *depth limit* or *result cap*. Each stop is explicit and expandable. | Missing data is shown as unknown, not as absent. |
 | **Agentic, bounded AI** | A LangGraph agent with Gemini chooses which trail branches to explore using **fixed, parameter-checked tools**. It can never run free-form queries. | Real agency without open-ended data access. |
@@ -81,6 +82,7 @@ backend/app/
   crypto.py   field-level encryption (AES-256-GCM, Cloud KMS-wrapped key, rotation, backfill)
   services/   graph_store · trace · attribution · rules · ledger · ledger_sources (camt.053/CSV/JSON) · ingest · scoring
               evidence_scoring · policy · workflow · network · storage · mfa · dlp · retention
+              ml/ (behaviour model: features, Isolation Forest, synthetic hold-out evaluation)
   ai/         llm (Gemini gateway) · investigator (LangGraph) · tools · validator · facts_report · evidence · copilot · prompts · schemas · snapshot · pricing
   api/        auth (password, Firebase, MFA) · cases · ops · ingest (Pub/Sub push, statement upload)
   seed/       synthetic world S1–S10 + evidence files · loader
@@ -175,7 +177,7 @@ The script is idempotent. It does the following:
    - The header shows claims, flagged, hallucination rate, confidence, cost and trace.
    - There is a *Limitations* section.
 7. **Decision.** Approve the hold with a note, review the report, record the decision with a rationale, then verify the audit chain.
-8. **AI Ops and scale.** Cost per case, hallucination trend and evaluation results (94/94 deterministic checks, rule precision and recall 1.0), then the production architecture.
+8. **AI Ops and scale.** Cost per case, hallucination trend and evaluation results (94/94 deterministic checks, rule precision and recall 1.0 — measured on the scenarios we wrote), then the behaviour model's card and its synthetic hold-out (fresh random seeds, not our own scenarios), then the production architecture.
 
 ### Synthetic scenarios
 
@@ -205,7 +207,10 @@ the bank's case file:
 - **Form:** a four-step wizard. 1) Pick the payment from your own recent payments. 2) What happened (six fixed
   reasons). 3) Details. 4) Check and submit.
 - **Guided chat:** one question at a time, answered with buttons. Nothing is filed until the customer confirms
-  the summary.
+  the summary. The chat also offers **"Tell us in your own words"**: Gemini reads the customer's free-text story
+  and suggests the payment and fixed answers, which the customer still confirms one by one with Yes / No buttons
+  (declining any one drops back to the normal, fully manual question) — so the fixed-option integrity of the chat
+  is unchanged either way. If AI can't read the story, the chat says so and continues step by step.
 
 The questions:
 - what happened (six fixed reasons)
@@ -224,6 +229,21 @@ customer's answers under their statement, and the AI receives them as untrusted 
 Customers follow their dispute in plain words (Received → Being investigated → Final review → Decided). They see
 the bank's deadlines and anything the bank asked them for, and can upload files. They never see risk signals,
 other accounts, staff notes, AI reports or decision rationales.
+
+### Ask Demo Bank (customer assistant)
+
+A Gemini-backed help assistant (`/portal/help`) answers banking and payments FAQs, fraud safety and scam
+awareness, how disputes work here, and the signed-in customer's own dispute status — nothing else. Gemini
+classifies each question into a fixed set of intents; code enforces the scope and refuses anything else with a
+written reply and suggestions, never a bare "no". Answers are grounded in a curated set of help articles
+(`backend/app/data/customer_help.yaml`); code retrieves the best-matching articles with a small BM25-style search
+and passes only those to Gemini, which must cite the article ids it used. An answer that cites nothing valid,
+talks about another customer's dispute, or asks for a secret is dropped for the best article's own summary
+instead. Customer text is DLP-masked before it reaches Gemini, and a message that looks like an OTP, PIN or card
+number gets a code-written warning. When AI is unavailable, over budget or fails, the assistant answers straight
+from the help articles, labelled "From our help articles". The portal home also shows a deterministic **safety
+check** (new payees, an unusually large payment, failed sign-ins, a new device) and a rotating scam-awareness tip,
+computed from the customer's own data without any AI call.
 
 ## Ledger ingest
 
@@ -260,6 +280,31 @@ python -m scripts.publish_ledger --project P --format iso20022.camt.053 ../docs/
   were later declined, so supervisors can see which signs create review work without changing the outcome.
 - **Three more warning signs:** R13 many payments in a short time, R14 first payment to this beneficiary (not applied
   to merchants or busy business accounts), R15 payments just below a review limit.
+
+## Machine learning: a behaviour model, honestly measured
+
+A judge who hears "precision and recall 1.0" should ask whether that was measured on scenarios the team wrote
+itself — ours was. So alongside the 15 explainable rules there is one real, unsupervised model, and a less
+circular way of testing both:
+
+- **Behaviour model** (`backend/app/services/ml/`). A scikit-learn Isolation Forest scores every in-bank personal
+  account 0–100 on how unlike the bank's other accounts it behaves (account age, how many different people pay
+  in/out, how much of the money received leaves again within an hour, how fast, the biggest fan-out within two
+  hours, how many one-time payers, devices used and shared with other accounts). No labels are used anywhere —
+  the model has never been told which accounts are mules or victims. Merchants and high-activity accounts are
+  measured but excluded from scoring (their patterns are normal business). Each score comes with up to three
+  plain-language reasons (the account's value vs. the bank's typical value) and a model card (features,
+  settings, limitations). It is fitted once per ledger state and cached in memory. **It is a separate signal, not
+  a 16th rule:** it never changes a warning sign, priority, score or decision — "unusual" is never "fraud".
+  Shown on a case's Warning signs tab for accounts on the money trail, and as a model card on the AI & system
+  health page.
+- **Hold-out evaluation** (`backend/app/services/ml/holdout.py`, `GET/POST /api/ops/ml*`). Rather than scoring the
+  hand-written scenarios again, this builds fresh synthetic banks at several random seeds and adds disputes
+  through the demo-data generator (a different code path from the scenarios), each in its own isolated in-memory
+  database. It then measures, without using labels to train, how well the behaviour score ranks the accounts
+  known to be mules (ROC-AUC, precision@k, mean with min/max over seeds — typically ROC-AUC ≈ 0.75–0.80, well
+  above chance but far from the scenario-only 1.0), and measures the rules' detection by category with Wilson 95%
+  confidence intervals. Labelled throughout as a **synthetic hold-out, not real-world performance**.
 
 ## Data schema (core tables)
 

@@ -33,13 +33,16 @@ export default function DisputeChat() {
   const [proof, setProof] = useState<PendingProof[]>([]);
   const [proofAsked, setProofAsked] = useState(false); // the assistant has asked for proof
   const [proofDone, setProofDone] = useState(false); // the customer has answered it
+  const [tellingStory, setTellingStory] = useState(false); // showing the free-text "in your own words" box
+  const [story, setStory] = useState("");
   const held = useRef<string[]>([]); // the summary's own messages, shown after the proof question
   const listRef = useRef<HTMLDivElement>(null);
   const started = useRef(false);
   const name = me.data?.name;
 
   const step = useMutation({
-    mutationFn: (v: { choice?: string; text?: string; said?: string }) => api.portalChat(turn?.state ?? null, v.choice, v.text),
+    mutationFn: (v: { choice?: string; text?: string; said?: string; story?: string }) =>
+      v.story !== undefined ? api.portalChatStory(v.story) : api.portalChat(turn?.state ?? null, v.choice, v.text),
     onMutate: (v) => {
       setErr(null);
       if (v.said) setLines((prev) => [...prev, { who: "me", text: v.said! }]);
@@ -61,6 +64,8 @@ export default function DisputeChat() {
         return [...echo, ...said.map((m) => ({ who: "bot" as const, text: m }))];
       });
       setText("");
+      setTellingStory(false);
+      setStory("");
     },
     onError: (e) => setErr(errorMessage(e)),
   });
@@ -120,6 +125,13 @@ export default function DisputeChat() {
   const inSummary = !!turn?.summary;
   const showProof = inSummary && !proofDone;
   const showSummary = inSummary && proofDone;
+  const isConfirmStep = !!turn?.step.startsWith("confirm_"); // an AI-suggested answer waiting for Yes / No
+  const sendStory = (e: FormEvent) => {
+    e.preventDefault();
+    const t = story.trim();
+    if (!t) return;
+    step.mutate({ story: t, said: t });
+  };
 
   return (
     <div className="portal-page">
@@ -169,13 +181,46 @@ export default function DisputeChat() {
           {!turn && !step.isPending && !err && <LoadingBlock lines={2} />}
         </div>
 
-        {turn && !step.isPending && (
+        {turn && !step.isPending && tellingStory && turn.step === "payment" && (
+          <div className="chat-answer">
+            <form className="chat-input story-input" onSubmit={sendStory}>
+              <label className="sr-only" htmlFor="story-text">
+                Tell us what happened, in your own words
+              </label>
+              <textarea
+                id="story-text"
+                className="textarea"
+                rows={4}
+                maxLength={2000}
+                placeholder="e.g. I got a call from someone saying they were from the bank and asking me to pay to keep my account safe…"
+                value={story}
+                onChange={(e) => setStory(e.target.value)}
+                autoFocus
+              />
+              <div className="chat-proof-actions">
+                <button type="submit" className="btn btn-primary" disabled={story.trim().length < 20 || step.isPending}>
+                  <Send size={16} aria-hidden="true" /> Tell us
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={() => setTellingStory(false)}>
+                  Back to the questions
+                </button>
+              </div>
+              <p className="small muted">At least 20 characters. Please don't include OTPs, PINs, passwords or full card numbers.</p>
+            </form>
+          </div>
+        )}
+
+        {turn && !step.isPending && !tellingStory && (
           <div className="chat-answer">
             {turn.payments && turn.payments.length > 0 && (
               <div className="pay-list" role="list" aria-label="Your recent payments">
                 {turn.payments.map((p) => (
                   <div role="listitem" key={p.id}>
-                    <PaymentCard p={p} onSelect={() => step.mutate({ choice: `txn:${p.id}`, said: `${p.amount} to ${p.paid_to}` })} />
+                    {isConfirmStep ? (
+                      <PaymentCard p={p} />
+                    ) : (
+                      <PaymentCard p={p} onSelect={() => step.mutate({ choice: `txn:${p.id}`, said: `${p.amount} to ${p.paid_to}` })} />
+                    )}
                   </div>
                 ))}
               </div>
@@ -228,13 +273,21 @@ export default function DisputeChat() {
 
             {!inSummary && turn.options.length > 0 && (
               <div className="chat-options" role="group" aria-label="Choose an answer">
-                {turn.options.map((o) => (
-                  <button key={o.value} type="button" className="chat-option" onClick={() => step.mutate({ choice: o.value, said: o.label })}>
-                    <span className="choice-label">{o.label}</span>
-                    {o.help && <span className="choice-help">{o.help}</span>}
-                  </button>
-                ))}
+                {turn.options
+                  .filter((o) => o.value !== "story")
+                  .map((o) => (
+                    <button key={o.value} type="button" className="chat-option" onClick={() => step.mutate({ choice: o.value, said: o.label })}>
+                      <span className="choice-label">{o.label}</span>
+                      {o.help && <span className="choice-help">{o.help}</span>}
+                    </button>
+                  ))}
               </div>
+            )}
+
+            {turn.step === "payment" && turn.options.some((o) => o.value === "story") && (
+              <button type="button" className="link-btn small story-toggle" onClick={() => setTellingStory(true)}>
+                Tell us in your own words instead
+              </button>
             )}
 
             {turn.input && (

@@ -7,6 +7,12 @@ mapped exactly like a form-raised one, and the chat behaves the same with or wit
 
 The server is stateless: the client sends the state back with each answer. Nothing is filed until the customer
 confirms the summary and the client calls the normal submission endpoint.
+
+"Tell us in your own words" (turn_from_story): Gemini reads the customer's free-text story and suggests fixed
+answers (the payment, what happened, OTP shared, when noticed) plus the description itself. Integrity is kept
+because every suggestion is only a pre-fill: the customer must confirm each one with Yes / No buttons before it
+becomes a real answer ("confirm_<field>" steps below); "No" drops back to the normal, fully manual question for
+that field. If AI can't read the story, the chat says so and continues step by step as usual.
 """
 from __future__ import annotations
 
@@ -20,16 +26,46 @@ from app.services import dlp, intake
 
 PAGE = 6
 SLOTS = ("txn_id", "reason", "otp_shared", "noticed", "cyber_complaint_ref", "description", "contact_preference")
+# Extra state carried only while a story's suggestions are being confirmed.
+STORY_SLOTS = ("suggest", "declined_suggest", "payment_candidate", "payment_declined")
+CONFIRM_FIELDS = ("reason", "otp_shared", "noticed", "contact_preference")
+CONFIRM_PROMPTS = {
+    "reason": lambda v: f"It sounds like what happened was: “{intake.REASONS[v][0]}” — is that right?",
+    "otp_shared": lambda v: f"It sounds like, about this payment: “{intake.OTP_OPTIONS[v]}” — is that right?",
+    "noticed": lambda v: f"It sounds like you noticed this payment: {intake.NOTICED_OPTIONS[v]} — is that right?",
+    "contact_preference": lambda v: f"It sounds like you'd like us to contact you by {intake.CONTACT_OPTIONS[v]} — is that right?",
+}
 
 
 def _first_name(user: m.User, db: Session) -> str:
     return intake.profile(db, user)["name"].split(" ")[0]
 
 
+def _pending_confirm(st: dict) -> str | None:
+    """The next AI-suggested field still waiting for the customer's Yes/No, or None once they're all settled."""
+    suggest = st.get("suggest") or {}
+    declined = st.get("declined_suggest") or []
+    reason_val = st.get("reason") or suggest.get("reason")
+    fraud = reason_val in intake.FRAUD_REASONS
+    for key in CONFIRM_FIELDS:
+        if key in declined or st.get(key):
+            continue
+        if key == "otp_shared" and not fraud:
+            continue
+        if key in suggest:
+            return key
+    return None
+
+
 def _next_step(st: dict) -> str:
-    fraud = st.get("reason") in intake.FRAUD_REASONS
+    if st.get("payment_candidate") and not st.get("txn_id") and not st.get("payment_declined"):
+        return "confirm_payment"
     if not st.get("txn_id"):
         return "payment"
+    pending = _pending_confirm(st)
+    if pending:
+        return f"confirm_{pending}"
+    fraud = st.get("reason") in intake.FRAUD_REASONS
     if not st.get("reason"):
         return "reason"
     if fraud and not st.get("otp_shared"):
@@ -64,7 +100,18 @@ def _prompt(db: Session, user: m.User, st: dict) -> dict:
     step = _next_step(st)
     st["step"] = step
     out: dict = {"step": step, "options": [], "payments": None, "input": None, "summary": None, "ready": False}
-    if step == "payment":
+    if step == "confirm_payment":
+        t = intake.own_transaction(db, user, st["payment_candidate"])
+        out["text"] = "From what you told us, we think this might be the payment — is that right?"
+        out["payments"] = [intake._txn_card(db, t, {})]
+        out["options"] = [{"value": "confirmyes:payment", "label": "Yes, that's the one"},
+                          {"value": "confirmno:payment", "label": "No, let me choose"}]
+    elif step.startswith("confirm_") and step[len("confirm_"):] in CONFIRM_FIELDS:
+        field = step[len("confirm_"):]
+        out["text"] = CONFIRM_PROMPTS[field]((st.get("suggest") or {})[field])
+        out["options"] = [{"value": f"confirmyes:{field}", "label": "Yes, that's right"},
+                          {"value": f"confirmno:{field}", "label": "No, let me choose"}]
+    elif step == "payment":
         page = int(st.get("page") or 0)
         cards = [c for c in intake.transactions(db, user, limit=200) if not c["dispute_case_id"]]
         shown = cards[page * PAGE:(page + 1) * PAGE]
@@ -74,6 +121,8 @@ def _prompt(db: Session, user: m.User, st: dict) -> dict:
             out["options"].append({"value": "more", "label": "Show older payments"})
         if page > 0:
             out["options"].append({"value": "newer", "label": "Back to recent payments"})
+        if page == 0 and not st.get("story_tried"):
+            out["options"].append({"value": "story", "label": "Tell us in your own words instead"})
         if not cards:
             out["text"] = "I couldn't find any recent payments from your accounts that you can dispute here. Please contact your branch."
     elif step == "reason":
@@ -112,7 +161,7 @@ def _prompt(db: Session, user: m.User, st: dict) -> dict:
 
 def turn(db: Session, user: m.User, state: dict | None, choice: str | None = None, text: str | None = None) -> dict:
     """Apply one answer (a chosen option, or text where the step allows it) and return the next question."""
-    st = {k: v for k, v in (state or {}).items() if k in SLOTS + ("page", "cyber_pending", "step")}
+    st = {k: v for k, v in (state or {}).items() if k in SLOTS + STORY_SLOTS + ("page", "cyber_pending", "step", "story_tried")}
     said: list[str] = []
     masked: list[dict] = []
     step = _next_step(st)
@@ -121,7 +170,22 @@ def turn(db: Session, user: m.User, state: dict | None, choice: str | None = Non
                     "It takes about two minutes, and nothing is sent until you confirm at the end.")
     elif choice:
         kind, _, val = choice.partition(":")
-        if choice == "more" and step == "payment":
+        if choice == "story" and step == "payment":
+            st["story_tried"] = True  # the client switches to the free-text box and calls turn_from_story instead
+        elif kind == "confirmyes" and step == f"confirm_{val}" and val == "payment":
+            st["txn_id"] = st.pop("payment_candidate")
+        elif kind == "confirmno" and step == f"confirm_{val}" and val == "payment":
+            st["payment_declined"] = True
+            said.append("No problem, pick it from the list below.")
+        elif kind == "confirmyes" and step == f"confirm_{val}" and val in CONFIRM_FIELDS:
+            st[val] = (st.get("suggest") or {}).pop(val)
+            if val == "reason" and st[val] not in intake.FRAUD_REASONS:
+                st.pop("otp_shared", None)
+                (st.get("suggest") or {}).pop("otp_shared", None)
+        elif kind == "confirmno" and step == f"confirm_{val}" and val in CONFIRM_FIELDS:
+            (st.get("suggest") or {}).pop(val, None)
+            st["declined_suggest"] = list({*st.get("declined_suggest", []), val})
+        elif choice == "more" and step == "payment":
             st["page"] = int(st.get("page") or 0) + 1
         elif choice == "newer" and step == "payment":
             st["page"] = 0
@@ -186,3 +250,42 @@ def turn(db: Session, user: m.User, state: dict | None, choice: str | None = Non
         raise HTTPException(422, "Send a choice or text")
     nxt = _prompt(db, user, st)
     return {"state": st, "messages": said + [nxt.pop("text")], "masked": masked, **nxt}
+
+
+def turn_from_story(db: Session, user: m.User, story: str) -> dict:
+    """Start (or restart) the chat from a free-text story. The story is DLP-masked and becomes the description
+    outright; Gemini only suggests the fixed-option answers and which payment it might be, and every suggestion
+    still needs the customer's Yes/No before it counts (see module docstring). If AI can't read the story, this
+    behaves like starting the guided chat normally, with a note that free text isn't available right now."""
+    from app.ai import customer_assistant
+
+    masked, found = dlp.mask(story.strip()[:2000])
+    st: dict = {"story_tried": True}
+    said = [f"Hello {_first_name(user, db)}, thanks for telling me in your own words."]
+    if found:
+        said.append("For your safety I've hidden what looked like an OTP, PIN or card number. Never share these with anyone, "
+                    "including the bank.")
+    if len(masked) < 20:
+        said.append("Please tell me a little more — at least a sentence or two — and I'll pre-fill what I can; otherwise we'll go "
+                    "through it step by step.")
+        nxt = _prompt(db, user, st)
+        return {"state": st, "messages": said + [nxt.pop("text")], "masked": found, **nxt}
+    st["description"] = masked
+    extracted = customer_assistant.extract_story(db, user, masked)
+    if extracted is None:
+        said.append("I can't use AI to read your story right now, so let's go through it step by step instead.")
+    else:
+        if extracted["suggest"]:
+            st["suggest"] = extracted["suggest"]
+        hints = extracted["hints"]
+        if hints:
+            cards = [c for c in intake.transactions(db, user, limit=200) if not c["dispute_case_id"]]
+            ranked, matched = customer_assistant.rank_payments(cards, hints)
+            if matched:
+                st["payment_candidate"] = matched[0]
+        if st.get("suggest") or st.get("payment_candidate"):
+            said.append("I've guessed a few answers from what you told us — please confirm each one, or tell me I got it wrong.")
+        else:
+            said.append("I couldn't tell enough from that to guess any answers, so let's go through it step by step.")
+    nxt = _prompt(db, user, st)
+    return {"state": st, "messages": said + [nxt.pop("text")], "masked": found, **nxt}

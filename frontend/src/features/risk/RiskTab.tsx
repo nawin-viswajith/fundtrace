@@ -9,6 +9,7 @@ import { IdChip } from "../../components/Domain";
 import { useToast } from "../../components/Toast";
 import { formatParam, isGraphId, paramLabel } from "../../lib/labels";
 import type { RuleResult } from "../../types/api";
+import { BehaviourSection } from "../ml/BehaviourSection";
 
 const STATUS_ORDER: Record<string, number> = { triggered: 0, not_evaluable: 1, not_triggered: 2 };
 const SEV_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
@@ -82,6 +83,7 @@ export function RiskTab() {
       <p className="small muted">
         Rule settings version <code>{d.ruleset_version}</code>. Supervisors can change the settings on the Rules page.
       </p>
+      <BehaviourSection caseId={caseId} />
     </div>
   );
 }

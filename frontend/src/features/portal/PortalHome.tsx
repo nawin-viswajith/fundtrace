@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Bot, ClipboardList } from "lucide-react";
-import { usePortalDisputes, usePortalMe } from "../../api/hooks";
+import { ArrowRight, Bot, CheckCircle2, ClipboardList, MessageCircleQuestion, ShieldAlert } from "lucide-react";
+import { usePortalDisputes, usePortalMe, usePortalSafetyCheck } from "../../api/hooks";
 import type { PortalDisputeBrief } from "../../types/api";
 import { EmptyState, ErrorState, LoadingBlock, Time } from "../../components/Primitives";
 import { firstName } from "./parts";
@@ -28,6 +28,16 @@ export default function PortalHome() {
           <p className="small muted">Both ways ask the same questions. Nothing is sent until you check it and press Submit.</p>
         </div>
         <NewDisputeChoices />
+        <AskDemoBankCard />
+      </section>
+
+      <section className="portal-section" aria-labelledby="safety">
+        <div className="portal-section-head">
+          <h2 id="safety" className="portal-h2">
+            Your safety check
+          </h2>
+        </div>
+        <SafetyPanel />
       </section>
 
       <section className="portal-section" aria-labelledby="my-disputes">
@@ -116,6 +126,70 @@ export function NewDisputeChoices() {
         </span>
       </Link>
     </div>
+  );
+}
+
+function SafetyPanel() {
+  const check = usePortalSafetyCheck();
+  if (check.isLoading) return <LoadingBlock lines={2} />;
+  if (check.error) return <ErrorState error={check.error} onRetry={() => check.refetch()} />;
+  const data = check.data;
+  if (!data) return null;
+  const tip = data.tips[data.tip_index];
+  return (
+    <div className="safety-grid">
+      <div className="portal-card safety-card">
+        {data.all_clear ? (
+          <p className="safety-clear">
+            <CheckCircle2 size={20} aria-hidden="true" /> {data.all_clear_text}
+          </p>
+        ) : (
+          <ul className="safety-items">
+            {data.items.map((it, i) => (
+              <li key={i} className="safety-item">
+                <ShieldAlert size={18} aria-hidden="true" className="safety-item-icon" />
+                <span>
+                  <strong>{it.title}</strong>
+                  <span className="small muted safety-item-text">{it.text}</span>
+                  {it.action && (
+                    <Link to={it.action.href.startsWith("/portal") ? it.action.href : "#"} className="link-btn small">
+                      {it.action.label}
+                    </Link>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {tip && (
+        <div className="portal-card portal-card-action safety-tip">
+          <p className="portal-kicker">Scam to watch for</p>
+          <strong>{tip.title}</strong>
+          <p className="small muted">{tip.summary}</p>
+          <Link to="/portal/help" className="link-btn small">
+            Learn more in Ask Demo Bank
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function AskDemoBankCard() {
+  return (
+    <Link to="/portal/help" className="assist-entry">
+      <span className="assist-entry-icon" aria-hidden="true">
+        <MessageCircleQuestion size={22} />
+      </span>
+      <span className="assist-entry-body">
+        <span className="assist-entry-title">
+          Ask Demo Bank <span className="raise-tag">AI</span>
+        </span>
+        <span className="small muted">FAQs, fraud safety tips, and the status of your own disputes — answered by Gemini.</span>
+      </span>
+      <ArrowRight size={16} aria-hidden="true" className="assist-entry-go" />
+    </Link>
   );
 }
 
