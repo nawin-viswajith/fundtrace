@@ -59,7 +59,7 @@ A case with incomplete evidence is neither fraudulent nor legitimate. It is inco
                                    │                     ├► Cloud Storage (evidence, write-once, SHA-256)
                                    │                     └► Secret Manager (DB URL, JWT secret)
                                    ├─ Deterministic core: ledger normalisation → time-ordered trace (NetworkX)
-                                   │   → attribution → 12 rules → completeness / consistency / SLA / policy
+                                   │   → attribution → 15 rules → completeness / consistency / SLA / policy
                                    └─ LangGraph investigator ──► Gemini on Vertex AI
                                         gather → explore (tools) → evidence → draft → validate → judge → finalize
  OpenTelemetry → Cloud Trace · structured, redacted JSON logs → Cloud Logging → log-based metrics → Cloud Monitoring
@@ -85,7 +85,7 @@ backend/app/
   api/        auth (password, Firebase, MFA) · cases · ops · ingest (Pub/Sub push, statement upload)
   seed/       synthetic world S1–S10 + evidence files · loader
   eval/       evaluation harness (ground truth)
-backend/tests/   94 tests: trace, attribution, rules, ledger, scenarios, validator, investigator, gateway, API, security/ingest
+backend/tests/   159 tests: trace, attribution, rules, ledger, scenarios, validator, investigator, gateway, API, security/ingest, portal, recovery, calculation record, quality metrics
 frontend/        React app
 infra/           deploy.sh (one command) · monitoring-dashboard.json
 docs/            api-samples · PROGRESS.md
@@ -243,6 +243,24 @@ cd backend
 python -m scripts.publish_ledger --project P --format iso20022.camt.053 ../docs/samples/statement-camt053.xml
 ```
 
+## Recovery, calculation records and quality checks
+
+- **Shared-account recovery split** (Linked cases page). When several open disputes traced money into the same
+  account, their hold suggestions can add up to more than the account holds. FundTrace shows the money actually
+  there once and splits it pro rata between the cases, by money traced in or by amount disputed. Paise are rounded
+  with the largest-remainder method so the parts add up exactly, and no case gets more than its own claim. A
+  supervisor can record a split with a note; it is kept on file and never moves money.
+- **Calculation record** (Money trail tab). Every attribution figure comes with a record: the four methods and their
+  versions, the trace settings, every transaction and opening balance used, and checks on the arithmetic (money
+  conserved, no negative balances, nothing counted twice, source systems agree, bounds in order, records complete).
+  A SHA-256 fingerprint and a "recalculate" button show that the same inputs give the same result. The record can be
+  downloaded as JSON (audited).
+- **Reviewer and rule quality** (AI & system health page). How often investigators agree with the AI fact-check
+  (agreement and Cohen's kappa, shown from 10 reviewed claims), and how often each warning sign appears on cases that
+  were later declined, so supervisors can see which signs create review work without changing the outcome.
+- **Three more warning signs:** R13 many payments in a short time, R14 first payment to this beneficiary (not applied
+  to merchants or busy business accounts), R15 payments just below a review limit.
+
 ## Data schema (core tables)
 
 | Table | Contents |
@@ -254,6 +272,7 @@ python -m scripts.publish_ledger --project P --format iso20022.camt.053 ../docs/
 | `ai_runs`, `ai_calls`, `reports` | Every AI run and call: tokens, cost, latency, snapshot hash, prompt and rule versions, claims and verdicts |
 | `audit_events` | Hash-chained audit per case |
 | `ingest_events` | One row per ledger delivery (Pub/Sub message or uploaded file) and its outcome |
+| `recovery_allocations` | Recorded shared-account recovery splits (who recorded it, basis, shares, note) |
 | `policies`, `eval_runs` | Synthetic policy library, ground truth and evaluation results |
 
 ## Security and privacy

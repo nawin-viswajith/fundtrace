@@ -373,22 +373,22 @@ def build(anchor: datetime, seed: int = 2026) -> Dataset:
          "I was charged ₹9,999 at FreshKart but the bill was ₹9,990.", t10 + timedelta(hours=6), "new", None)
 
     truth.update({
-        "S1": {"case": "CASE-24051", "triggered": ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R10", "R11"], "not_triggered": ["R8", "R9", "R12"],
+        "S1": {"case": "CASE-24051", "triggered": ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R10", "R11", "R14"], "not_triggered": ["R8", "R9", "R12"],
                "not_evaluable": ["R9"], "endpoints": {ext_d: "visibility_ends", ext_e: "visibility_ends"},
                "attribution": {s1_b_c: {"min": 28800_00, "max": 30000_00}}, "holdable": [mule_c],
                "trail": [s1, s1_b_c, s1_b_d, s1_c_e]},
         "S2": {"case": "CASE-24044", "attribution": {s2_out: {"min": 2000_00, "max": 40000_00}}, "triggered": ["R11"]},
-        "S3a": {"case": "CASE-24031", "triggered": ["R1", "R3", "R4", "R5", "R7"]},
-        "S3b": {"case": "CASE-24038", "triggered": ["R1", "R3", "R7"]},
-        "S4": {"case": "CASE-24047", "endpoints": {hub: "merchant"}, "not_evaluable": ["R1", "R2"], "not_triggered": ["R4", "R5", "R11"]},
+        "S3a": {"case": "CASE-24031", "triggered": ["R1", "R3", "R4", "R5", "R7", "R14"]},
+        "S3b": {"case": "CASE-24038", "triggered": ["R1", "R3", "R7", "R14"]},
+        "S4": {"case": "CASE-24047", "endpoints": {hub: "merchant"}, "not_evaluable": ["R1", "R2"], "not_triggered": ["R4", "R5", "R11", "R14"]},
         "S5": {"case": "CASE-24042", "triggered": ["R8"]},
         "S6": {"case": "CASE-24039", "endpoints": {acc_6: "cycle"}},
         "S7": {"case": "CASE-24049", "consistency_contradictory": True},
         "S8": {"case": "CASE-24033", "not_evaluable": ["R1", "R2"],
-               "not_triggered": ["R3", "R4", "R5", "R6", "R7", "R8", "R10", "R11", "R12"]},
-        "S9": {"case": "CASE-24027", "not_evaluable": ["R4", "R5"], "policy_overall": "needs_information"},
+               "not_triggered": ["R3", "R4", "R5", "R6", "R7", "R8", "R10", "R11", "R12", "R13", "R14", "R15"]},
+        "S9": {"case": "CASE-24027", "not_evaluable": ["R4", "R5", "R14"], "policy_overall": "needs_information"},
         "S10": {"case": "CASE-24045", "source_discrepancy": True},
     })
     # S1's ledger already has R9 not evaluable (no analysed evidence); keep lists disjoint for evaluation.
-    truth["S1"]["not_triggered"] = ["R8", "R12"]
+    truth["S1"]["not_triggered"] = ["R8", "R12", "R13", "R15"]
     return d

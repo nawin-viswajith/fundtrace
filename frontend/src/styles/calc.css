@@ -1,0 +1,191 @@
+/* ==========================================================================
+   Calculation record ("How these figures were calculated") and the §7.6
+   source-disagreement range note in the money panel.
+   Status is always written out in words with an icon; colour only reinforces it.
+   ========================================================================== */
+
+.calc-record > summary .calc-summary-hint {
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+.calc-record .disclosure-body > * + * {
+  margin-top: var(--s-3);
+}
+
+/* -- range note (sources disagree on an amount) ---------------------------- */
+.calc-range-note {
+  display: flex;
+  gap: var(--s-2);
+  align-items: flex-start;
+  padding: var(--s-2) var(--s-3);
+  margin-bottom: var(--s-3);
+  background: var(--warn-soft);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--warn);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+
+.calc-range-note > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--warn-text);
+}
+
+.calc-range-note p {
+  margin: 0;
+}
+
+.calc-range-note p + p {
+  margin-top: var(--s-2);
+}
+
+.calc-range-who {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-3);
+  margin-top: var(--s-1);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+}
+
+/* -- methods ---------------------------------------------------------------- */
+.calc-methods {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-2);
+}
+
+.calc-methods li {
+  padding-left: var(--s-2);
+  border-left: 2px solid var(--border-strong);
+}
+
+/* -- checks ----------------------------------------------------------------- */
+.calc-checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.calc-check {
+  padding: var(--s-2) var(--s-3);
+  border-left: 3px solid var(--border-strong);
+}
+
+.calc-check + .calc-check {
+  border-top: 1px solid var(--border);
+}
+
+.calc-check-pass {
+  border-left-color: var(--good);
+}
+
+.calc-check-warn {
+  border-left-color: var(--warn);
+}
+
+.calc-check-fail {
+  border-left-color: var(--bad);
+}
+
+.calc-check-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.calc-check p {
+  margin: var(--s-1) 0 0;
+  color: var(--text-2);
+}
+
+.calc-check-items {
+  margin: var(--s-1) 0 0;
+  padding-left: var(--s-4);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.calc-item-status {
+  font-weight: 600;
+}
+
+.calc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 1px var(--s-2);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.calc-status-pass {
+  color: var(--good-text);
+  background: var(--good-soft);
+}
+
+.calc-status-warn {
+  color: var(--warn-text);
+  background: var(--warn-soft);
+}
+
+.calc-status-fail {
+  color: var(--bad-text);
+  background: var(--bad-soft);
+}
+
+.calc-status-not_applicable {
+  color: var(--neutral-text);
+  background: var(--neutral-soft);
+}
+
+/* -- fingerprint and actions -------------------------------------------- */
+.calc-inner {
+  border-top: 1px solid var(--border);
+}
+
+.calc-fingerprint {
+  display: grid;
+  gap: var(--s-1);
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.calc-fingerprint code {
+  font-size: var(--fs-xs);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  color: var(--text);
+}
+
+.calc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.calc-verify {
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+.calc-verify p {
+  margin: 0;
+}
+
+.calc-verify .calc-status {
+  margin-right: var(--s-1);
+}

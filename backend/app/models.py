@@ -401,3 +401,25 @@ class IngestEvent(Base):
     error: Mapped[str | None] = mapped_column(String(255), nullable=True)
     received_by: Mapped[str] = mapped_column(String(128))
     received_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class RecoveryAllocation(Base):
+    """A supervisor's record of how money in an account shared by several open disputes would be split.
+
+    A record for the file, not a payment: saving one moves, holds or releases no money. The figures are
+    stored exactly as computed (services/recovery.py) so the record still reads the same after the
+    traces change. `account_id` is a plain id rather than a foreign key so a decision record is never
+    blocked or cascaded by ledger data maintenance.
+    """
+    __tablename__ = "recovery_allocations"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    account_id: Mapped[str] = mapped_column(String(32), index=True)
+    method: Mapped[str] = mapped_column(String(32))  # e.g. pro-rata-v1
+    basis: Mapped[str] = mapped_column(String(16))  # traced | disputed
+    currency: Mapped[str] = mapped_column(String(3), default="INR")
+    available_minor: Mapped[int] = mapped_column(BigInteger)
+    allocations: Mapped[list] = mapped_column(JSON, default=list)  # [{case_id, eligible_minor, allocated_minor}]
+    details: Mapped[dict] = mapped_column(JSON, default=dict)  # formula, assumptions, input ids, balance source, claims
+    note: Mapped[str] = mapped_column(EncryptedText("recovery_allocations.note"))
+    recorded_by: Mapped[str] = mapped_column(String(64))
+    recorded_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

@@ -15,6 +15,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app import telemetry
 from app import crypto
 from app.api import auth, cases, ingest, ops, overview, portal
+from app.api import recovery as recovery_api
 from app.config import get_settings
 from app.db import create_all, init_engine, session_scope
 
@@ -99,6 +100,7 @@ def create_app() -> FastAPI:
     app.include_router(overview.router)
     app.include_router(ingest.router)
     app.include_router(portal.router)
+    app.include_router(recovery_api.router)
 
     try:
         from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor

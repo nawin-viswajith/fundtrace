@@ -103,3 +103,21 @@ def test_ai_statements_stay_within_budget_and_are_checked(db, seeded):
     texts = [db.get(m.DisputeCase, c["case_id"]).allegation for c in out["created"]]
     assert sum("My phone was with me all along" in t for t in texts) == 2 and not any("1,23,456" in t for t in texts)
     db.rollback()
+
+
+def test_generated_data_never_touches_existing_cases(db, seeded):
+    """Generating must only add to the world: seeded cases keep exactly the same assessment."""
+    from app.services.investigation import build_context
+
+    def snapshot():
+        out = {}
+        for c in db.scalars(select(m.DisputeCase).where(m.DisputeCase.scenario.is_not(None), m.DisputeCase.scenario != "GEN")).all():
+            ctx = build_context(db, c, now=m.utcnow().replace(second=0, microsecond=0))
+            out[c.id] = ({r["rule_id"]: r["status"] for r in ctx["rules"]}, ctx["attribution"]["buckets"])
+        return out
+
+    before = snapshot()
+    sup = db.scalar(select(m.User).where(m.User.username == "sup.meera"))
+    generate(db, sup, GenerateIn(count=12, status_mode="new", assign="nobody"))
+    assert snapshot() == before
+    db.rollback()

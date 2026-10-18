@@ -8,6 +8,8 @@ import { Card, EmptyState, ErrorState, LoadingBlock, Money, Note } from "../../c
 import { SectionTitle, IdChip } from "../../components/Domain";
 import type { Ring } from "../../types/api";
 import { useCssVars } from "../../lib/cssVars";
+import { canSupervise, useAuth } from "../auth/AuthProvider";
+import { RecoveryPools } from "../recovery/RecoveryPools";
 
 const centre = { left: "50%", top: "50%", opacity: 0, transform: "translate(-50%, -50%)", pointerEvents: "none" } as const;
 
@@ -93,6 +95,7 @@ function RingGraph({ ring }: { ring: Ring }) {
 
 export default function NetworkPage() {
   const q = useRings();
+  const { user } = useAuth();
   return (
     <div className="page">
       <SectionTitle>Linked cases</SectionTitle>
@@ -180,6 +183,7 @@ export default function NetworkPage() {
           )}
         </div>
       )}
+      <RecoveryPools canRecord={canSupervise(user)} />
     </div>
   );
 }

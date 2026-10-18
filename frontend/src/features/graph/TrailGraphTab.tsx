@@ -276,7 +276,13 @@ function TrailGraph() {
         Click a box or line to see its details. Drag to move the map; scroll or pinch to zoom. Prefer a list? The Timeline tab shows the same payments in time order.
       </p>
 
-      <AttributionPanel att={q.data.attribution} paths={g.paths} nodes={nodeById} onSelect={selectFromPanel} />
+      <AttributionPanel
+        att={q.data.attribution}
+        paths={g.paths}
+        nodes={nodeById}
+        onSelect={selectFromPanel}
+        traceParams={{ direction: params.direction, depth: params.depth, window_hours: params.window_hours, expand: params.expand }}
+      />
     </div>
   );
 }

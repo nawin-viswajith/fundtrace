@@ -42,7 +42,7 @@ def test_headline_triggers_movement_rules():
 
 def test_quiet_case_does_not_trigger():
     r = by_id(ctx_for(quiet_store()))
-    for rid in ("R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R10", "R11", "R12"):
+    for rid in ("R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R10", "R11", "R12", "R13", "R14", "R15"):
         assert r[rid].status == NOT_TRIGGERED, (rid, r[rid].status, r[rid].missing_fields)
 
 
@@ -131,6 +131,78 @@ def test_disabled_rule_is_skipped_and_params_override():
     res = {r.rule_id: r for r in evaluate(ctx, {"R7": (2, {"max_age_days": 5}, True), "R12": (2, {}, False)})}
     assert "R12" not in res
     assert res["R7"].status == NOT_TRIGGERED and res["R7"].version == 2
+
+
+def external_payer_store():
+    return store([acct("ACC-X", external=True), acct("ACC-B", 0)], [txn("TXN-1", "ACC-X", "ACC-B", 48000, 0)])
+
+
+def payer_store(payments, history_to="ACC-M", history=6):
+    """ACC-A pays ``payments`` [(id, dst, amount, minutes)] after ``history`` ordinary payments (2 days apart)."""
+    accounts = [acct("ACC-A", 1_000_000), acct("ACC-B", 0), acct("ACC-C", 0), acct("ACC-M", 0, kind="merchant")]
+    hist = [txn(f"TXN-H{i}", "ACC-A", history_to, 900, -60 * 24 * 2 * (i + 1)) for i in range(history)]
+    return store(accounts, hist + [txn(i, "ACC-A", dst, amt, mins) for i, dst, amt, mins in payments])
+
+
+def test_r13_many_payments_in_a_short_time():
+    burst = [(f"TXN-V{i}", "ACC-C", 2000, -20 + 5 * i) for i in range(4)] + [("TXN-1", "ACC-B", 50000, 0)]
+    r = by_id(ctx_for(payer_store(burst)))["R13"]
+    assert r.status == TRIGGERED and r.severity == "medium"
+    assert {"TXN-1", "TXN-V0", "TXN-V3"} <= set(r.source_ids)
+    assert all(f["source_ids"] for f in r.facts)
+    # payments after the disputed one count too (the window covers before and after)
+    after = [("TXN-1", "ACC-B", 50000, 0)] + [(f"TXN-V{i}", "ACC-C", 2000, 5 + 5 * i) for i in range(4)]
+    assert by_id(ctx_for(payer_store(after)))["R13"].status == TRIGGERED
+    # five payments spread over 40 minutes: no 30-minute stretch holds five
+    spread = [(f"TXN-V{i}", "ACC-C", 2000, -40 + 10 * i) for i in range(4)] + [("TXN-1", "ACC-B", 50000, 0)]
+    nt = by_id(ctx_for(payer_store(spread)))["R13"]
+    assert nt.status == NOT_TRIGGERED and nt.facts
+    # failed attempts moved no money and are not counted
+    failed = store([acct("ACC-A", 100000), acct("ACC-B", 0)],
+                   [txn(f"TXN-F{i}", "ACC-A", "ACC-B", 100, -10 + i, status="failed") for i in range(4)] + [txn("TXN-1", "ACC-A", "ACC-B", 500, 0)])
+    assert by_id(ctx_for(failed))["R13"].status == NOT_TRIGGERED
+    ne = by_id(ctx_for(external_payer_store()))["R13"]
+    assert ne.status == NOT_EVALUABLE and ne.missing_fields
+    lowered = {r.rule_id: r for r in evaluate(ctx_for(payer_store(spread)), {"R13": (2, {"window_minutes": 45}, True)})}
+    assert lowered["R13"].status == TRIGGERED and lowered["R13"].version == 2
+
+
+def test_r14_first_payment_to_this_beneficiary():
+    r = by_id(ctx_for(payer_store([("TXN-1", "ACC-B", 50000, 0)])))["R14"]
+    assert r.status == TRIGGERED and r.severity == "medium"
+    assert "TXN-1" in r.source_ids and r.facts and all(f["source_ids"] for f in r.facts)
+    # paid this beneficiary before -> not triggered, citing the earlier payment
+    known = by_id(ctx_for(payer_store([("TXN-1", "ACC-B", 50000, 0)], history_to="ACC-B")))["R14"]
+    assert known.status == NOT_TRIGGERED and "TXN-H0" in known.source_ids
+    # small amount -> not triggered
+    assert by_id(ctx_for(payer_store([("TXN-1", "ACC-B", 4000, 0)])))["R14"].status == NOT_TRIGGERED
+    # too little history to say the beneficiary is new -> not evaluable, never clear
+    thin = by_id(ctx_for(payer_store([("TXN-1", "ACC-B", 50000, 0)], history=2)))["R14"]
+    assert thin.status == NOT_EVALUABLE and "found 2" in thin.missing_fields[0]
+    assert by_id(ctx_for(s1_store()))["R14"].status == NOT_EVALUABLE
+    assert by_id(ctx_for(external_payer_store()))["R14"].status == NOT_EVALUABLE
+    raised = {r.rule_id: r for r in evaluate(ctx_for(payer_store([("TXN-1", "ACC-B", 50000, 0)])),
+                                              {"R14": (3, {"min_amount_rupees": 60000}, True)})}
+    assert raised["R14"].status == NOT_TRIGGERED and raised["R14"].params["lookback_days"] == 180
+    # a first order at a merchant is ordinary: the sign does not apply (and says why)
+    shop = by_id(ctx_for(payer_store([("TXN-1", "ACC-M", 50000, 0)], history_to="ACC-C")))["R14"]
+    assert shop.status == NOT_TRIGGERED and "merchant" in shop.facts[0]["text"]
+
+
+def test_r15_payments_just_below_a_review_limit():
+    pays = [("TXN-P", "ACC-C", 48000, -300), ("TXN-1", "ACC-B", 47500, 0)]
+    r = by_id(ctx_for(payer_store(pays)))["R15"]
+    assert r.status == TRIGGERED and r.severity == "low"
+    assert {"TXN-P", "TXN-1"} <= set(r.source_ids) and all(f["source_ids"] for f in r.facts)
+    # one payment exactly at the limit and one well below the band -> not triggered
+    nt = by_id(ctx_for(payer_store([("TXN-P", "ACC-C", 44000, -300), ("TXN-1", "ACC-B", 50000, 0)])))["R15"]
+    assert nt.status == NOT_TRIGGERED and nt.facts
+    # outside the 24-hour window
+    far = [("TXN-P", "ACC-C", 48000, -60 * 25), ("TXN-1", "ACC-B", 47500, 0)]
+    assert by_id(ctx_for(payer_store(far)))["R15"].status == NOT_TRIGGERED
+    assert by_id(ctx_for(external_payer_store()))["R15"].status == NOT_EVALUABLE
+    wider = {r.rule_id: r for r in evaluate(ctx_for(payer_store(far)), {"R15": (2, {"window_hours": 30}, True)})}
+    assert wider["R15"].status == TRIGGERED
 
 
 def test_rules_are_reproducible():

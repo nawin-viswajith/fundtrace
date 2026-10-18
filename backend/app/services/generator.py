@@ -132,15 +132,40 @@ class _World:
                                             "status": "posted", "occurred_at": at.isoformat() + "Z"}]))
         return tid
 
+    def merchant_name(self) -> str:
+        return self.rng.choice(STORES)
+
+    def merchant(self, name: str) -> str:
+        """One merchant account per store name per batch."""
+        cache = self.__dict__.setdefault("_merchants", {})
+        if name not in cache:
+            cache[name] = self.account(name, kind="merchant", opened_days=900, balance=20_000_000)
+        return cache[name]
+
     def person(self) -> str:
         return f"{self.rng.choice(FIRST)} {self.rng.choice(LAST)[0]}"
 
 
 def _customers(db: Session) -> list[tuple[str, str, str]]:
-    """(customer id, savings account id, display name) for customers with an account at this bank."""
+    """(customer id, savings account id, display name) for customers with an account at this bank.
+
+    Customers involved in any existing (non-generated) dispute, and the customer-portal demo customers, are left
+    out: adding payments to their accounts would change the history, balances and warning signs of cases that
+    already exist. Generated data must only ever add to the world, never alter existing cases.
+    """
+    from app.seed.loader import CUSTOMER_USERS
+    from app.services.investigation import build_trace, default_params
+
+    existing = db.scalars(select(m.DisputeCase).where((m.DisputeCase.scenario.is_(None)) | (m.DisputeCase.scenario != "GEN"))).all()
+    busy = {c.customer_id for c in existing} | {c for _, c in CUSTOMER_USERS}
+    # Any account on an existing case's money trail (mules, onward accounts) must not gain new payments either.
+    on_trails: set[str] = set()
+    for case in existing:
+        res, _, _, _ = build_trace(db, case, default_params(direction="both"))
+        on_trails |= {n["id"] for n in res.nodes.values() if n["type"] == "account"}
     rows = db.execute(select(m.Customer.id, m.Account.id, m.Customer.display_name).join(m.Account, m.Account.customer_id == m.Customer.id)
                       .where(m.Account.institution_id == "INST-SELF", m.Account.kind == "savings")).all()
-    return [(c, a, n) for c, a, n in rows]
+    return [(c, a, n) for c, a, n in rows if c not in busy and a not in on_trails]
 
 
 def _money_trail(w: _World, mule: str, amount: int, t0, mule_dev: str) -> None:
@@ -193,9 +218,9 @@ def _one(db: Session, w: _World, p: GenerateIn, category: str, customer: tuple[s
         disputed = w.txn(payer, w.account(store, inst="INST-EXT-A"), amount, t0, "CARD", None, "Card purchase online")
         payee_label = store
     else:
-        merchant = db.scalar(select(m.Account).where(m.Account.kind == "merchant").order_by(m.Account.id).offset(rng.randint(0, 5)).limit(1))
-        payee_label = merchant.holder_label.replace(" (synthetic)", "") if merchant else "Merchant"
-        mid = merchant.id if merchant else w.account("Merchant", kind="merchant", balance=20_000_000)
+        # a new merchant account for generated data, so seeded merchants (e.g. the marketplace hub) are untouched
+        payee_label = w.merchant_name()
+        mid = w.merchant(payee_label)
         disputed = w.txn(payer, mid, amount, t0, "UPI", own_dev, "Purchase")
         if category == "processing_error":
             disputed = w.txn(payer, mid, amount, t0 + timedelta(minutes=rng.randint(1, 3)), "UPI", own_dev, "Purchase")

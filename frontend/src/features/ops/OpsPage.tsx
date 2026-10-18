@@ -14,6 +14,7 @@ import { formatInt, formatMs, formatPct, formatUsd, humanize } from "../../lib/f
 import type { EvalRun, OpsMetrics } from "../../types/api";
 import { CostPerDayChart, QualityTrendChart, VerdictChart } from "./charts";
 import { IngestCard, SecurityCard, UsersCard } from "./AdminPanels";
+import QualityPanels from "./QualityPanels";
 
 function Kpi({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -93,6 +94,7 @@ export default function OpsPage() {
       </Card>
 
       <EvalSection runs={evals.data?.runs} loading={evals.isLoading} error={evals.error} retry={() => evals.refetch()} canRun={canSupervise(user)} />
+      {canSupervise(user) && <QualityPanels />}
       {canSupervise(user) && <IngestCard canUpload={user?.role === "admin"} />}
       {canSupervise(user) && <SecurityCard />}
       {user?.role === "admin" && <UsersCard />}

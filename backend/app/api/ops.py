@@ -13,6 +13,7 @@ from app.ai.pricing import PRICE_SOURCE, PRICE_TABLE_VERSION, price_for, table
 from app.config import get_settings
 from app.db import get_db
 from app.security import current_user, require_role
+from app.services import quality_metrics
 from app.services.investigation import rule_catalogue
 from app.services.generator import GenerateIn
 from app.services.rules import CATALOGUE_BY_ID
@@ -110,6 +111,12 @@ def ops_evals(user: m.User = Depends(current_user), db: Session = Depends(get_db
     rows = db.scalars(select(m.EvalRun).where(m.EvalRun.kind != "ground_truth").order_by(m.EvalRun.id.desc()).limit(10)).all()
     return {"runs": [{"id": r.id, "kind": r.kind, "started_at": r.started_at.isoformat() + "Z", "metrics": r.metrics, "details": r.details}
                      for r in rows]}
+
+
+@router.get("/ops/quality")
+def ops_quality(user: m.User = Depends(require_role("supervisor", "admin")), db: Session = Depends(get_db)):
+    """Reviewer agreement with the AI fact-check and the review burden of each warning sign (rule)."""
+    return quality_metrics.compute(db)
 
 
 @router.post("/ops/evals/run")

@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { Info } from "lucide-react";
 import type { Attribution, AttributionMethod, GraphNode, TracePath } from "../../types/api";
 import { BUCKET_LABELS, ENDPOINT_BADGE, METHOD_LABELS, METHODS } from "../../lib/labels";
@@ -6,6 +7,9 @@ import { Card, Note } from "../../components/Primitives";
 import { IdChip } from "../../components/Domain";
 import { BUCKET_ORDER, METHOD_EXPLAINED, plainRange, spanOf, summariseBuckets } from "./moneySummary";
 import { cleanName } from "./plainText";
+import { WorkspaceCtx } from "../case/workspace";
+import { useCalcRecord, type CalcParams } from "../calc/api";
+import { CalcRecordSection, SourceRangeNote } from "../calc/CalcRecordSection";
 
 /** The four tracing methods, one per row (always behind "Show how this was worked out"). */
 export function MethodTable({ values, currency, caption }: { values: Partial<Record<AttributionMethod, number>>; currency: string; caption: string }) {
@@ -57,12 +61,23 @@ interface Props {
   paths: TracePath[];
   nodes: Map<string, GraphNode>;
   onSelect: (id: string) => void;
+  /** Search settings the figures were worked out with; defaults to the trail map's starting settings. */
+  traceParams?: CalcParams;
 }
 
 const PATHS_SHOWN = 5;
 
-export function AttributionPanel({ att, paths, nodes, onSelect }: Props) {
+export function AttributionPanel({ att, paths, nodes, onSelect, traceParams }: Props) {
   const cur = att.currency;
+  // The calculation record needs the case; outside a case workspace the panel simply omits it.
+  const ws = useContext(WorkspaceCtx);
+  const gp = ws?.ctx?.graph?.params;
+  const calcParams: CalcParams = traceParams ?? {
+    direction: "both",
+    depth: Math.min(gp?.depth || 3, 5),
+    window_hours: gp?.window_hours || 72,
+  };
+  const calc = useCalcRecord(ws?.caseId, calcParams);
   const accounts = Object.entries(att.per_account ?? {});
   const exits = Object.entries(att.exits ?? {});
   const breakdown = att.evaluable ? summariseBuckets(att) : [];
@@ -86,6 +101,8 @@ export function AttributionPanel({ att, paths, nodes, onSelect }: Props) {
       }
       className="money-panel"
     >
+      {calc.data && <SourceRangeNote ranges={calc.data.amount_ranges} />}
+
       {!att.evaluable && (
         <Note tone="warn">
           We could not work out where the money went, because some of the data needed is missing. This is not the same as finding nothing.
@@ -347,6 +364,10 @@ export function AttributionPanel({ att, paths, nodes, onSelect }: Props) {
           </div>
         </div>
       </details>
+
+      {ws?.caseId && (
+        <CalcRecordSection caseId={ws.caseId} params={calcParams} att={att} record={calc.data} loading={calc.isLoading} error={calc.error} />
+      )}
     </Card>
   );
 }

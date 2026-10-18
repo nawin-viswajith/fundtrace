@@ -144,6 +144,61 @@ def graph(case_id: str, direction: str = Query("forward", pattern="^(forward|bac
     return {"graph": g, "attribution": att}
 
 
+# ---------------------------------------------------------------------------- calculation record
+
+def _calc_params(db: Session, case: m.DisputeCase, direction, depth, window_hours, max_nodes, expand: str | None):
+    """Same parameters and validation as the graph view, so the record matches the figures on screen."""
+    exp = tuple(a for a in (expand or "").split(",") if a)[:10]
+    if exp:
+        base, _, _, _ = inv.build_trace(db, case, _graph_params(direction, depth, window_hours, max_nodes))
+        known = {n["id"] for n in base.nodes.values() if n["type"] == "account"}
+        if not set(exp) <= known:
+            raise HTTPException(422, "Only accounts already on the trail can be expanded")
+    return _graph_params(direction, depth, window_hours, max_nodes, exp)
+
+
+@router.get("/cases/{case_id}/calculation")
+def calculation(case_id: str, direction: str = Query("forward", pattern="^(forward|backward|both)$"), depth: int = Query(3, ge=1, le=10),
+                window_hours: int = Query(72, ge=1, le=10000), max_nodes: int = Query(150, ge=10, le=2000),
+                expand: str | None = Query(None, max_length=400), download: bool = False,
+                user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    """The forensic calculation record: inputs, named methods, outputs and arithmetic checks.
+
+    With ?download=1 it is returned as a JSON file attachment and the export is audited, because a
+    downloaded record can leave the system (to a court, an auditor or another bank)."""
+    import json
+
+    from app.services import calc_record
+
+    case = load_case_for(user, db, case_id)
+    rec = calc_record.build_case_record(db, case, _calc_params(db, case, direction, depth, window_hours, max_nodes, expand))
+    if not download:
+        return rec
+    fp = rec["inputs"]["fingerprint"]["value"]
+    audit.record(db, case.id, user.username, user.role, "calculation_exported",
+                 {"fingerprint": fp, "output_fingerprint": rec["outputs"]["fingerprint"]["value"], "calc_version": rec["calc_version"],
+                  "checks": rec["checks_summary"], "trace_parameters": rec["inputs"]["trace_parameters"]})
+    db.commit()
+    return Response(content=json.dumps(rec, indent=2, ensure_ascii=False), media_type="application/json",
+                    headers={"Content-Disposition": f'attachment; filename="{case.id}-calculation-{fp[:12]}.json"',
+                             "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"})
+
+
+@router.get("/cases/{case_id}/calculation/verify")
+def calculation_verify(case_id: str, direction: str = Query("forward", pattern="^(forward|backward|both)$"),
+                       depth: int = Query(3, ge=1, le=10), window_hours: int = Query(72, ge=1, le=10000),
+                       max_nodes: int = Query(150, ge=10, le=2000), expand: str | None = Query(None, max_length=400),
+                       fingerprint: str | None = Query(None, pattern="^[0-9a-f]{64}$"),
+                       user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    """Recompute from the source records (twice, and once from the record alone) and compare.
+
+    Pass the fingerprint of a copy you already hold to learn whether the records changed since."""
+    from app.services import calc_record
+
+    case = load_case_for(user, db, case_id)
+    return calc_record.verify_case(db, case, _calc_params(db, case, direction, depth, window_hours, max_nodes, expand), fingerprint)
+
+
 @router.get("/cases/{case_id}/timeline")
 def timeline(case_id: str, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
     case = load_case_for(user, db, case_id)

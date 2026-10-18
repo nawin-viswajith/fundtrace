@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { useWorkspace } from "./workspace";
 import { useCaseAction } from "../../api/hooks";
 import { EmptyState, InlineError, Money, Note, Time } from "../../components/Primitives";
@@ -11,6 +12,7 @@ import { formatMoney } from "../../lib/format";
 import type { Hold, HoldableAccount } from "../../types/api";
 import { PlainPanel } from "./PlainPanel";
 import { amountRange, displayName } from "./plainSummary";
+import { useSharedAccounts } from "../recovery/api";
 
 // For money still *in* an account the bounds flip: spending clean money first ("min" for onward transfers)
 // leaves the most disputed money behind. So residuals are labelled by convention, not as lower/upper bound.
@@ -44,7 +46,8 @@ function holdName(r: Row): string {
 }
 
 export function HoldsPanel() {
-  const { ctx } = useWorkspace();
+  const { ctx, caseId } = useWorkspace();
+  const shared = useSharedAccounts(caseId).data?.accounts ?? [];
   const holdable = ctx.attribution.holdable ?? [];
   const holds = ctx.holds ?? [];
   const [pending, setPending] = useState<{ hold: Hold; name: string; decision: "request" | "decline" } | null>(null);
@@ -115,6 +118,7 @@ export function HoldsPanel() {
                       Account <IdChip id={account_id} />
                     </span>
                   </div>
+                  {hold && hold.status !== "declined" && <SharedNote others={shared.find((x) => x.account_id === account_id)?.other_cases} />}
                   {hold && hold.status !== "recommended" && (
                     <p className="small">
                       {hold.status === "requested" ? "Hold requested for " : "Suggested hold of "}
@@ -203,6 +207,19 @@ export function HoldsPanel() {
       <Note tone="info">Approving asks for a hold on the recorded balance. It does not prove who controlled the money.</Note>
       {pending && <HoldDialog hold={pending.hold} name={pending.name} decision={pending.decision} onClose={() => setPending(null)} />}
     </PlainPanel>
+  );
+}
+
+/** One plain line when other open cases also suggest holding this account's money (the same money, counted twice). */
+function SharedNote({ others }: { others?: string[] }) {
+  if (!others?.length) return null;
+  const named = others.filter((c) => c !== "restricted");
+  const hidden = others.length - named.length;
+  const parts = [...named, ...(hidden ? [hidden === 1 ? "1 case you can't open" : `${hidden} cases you can't open`] : [])];
+  return (
+    <p className="small recovery-hint">
+      This account's money is also claimed in {parts.join(", ")} — <Link to="/network#recovery">see how it would be split</Link>.
+    </p>
   );
 }
 

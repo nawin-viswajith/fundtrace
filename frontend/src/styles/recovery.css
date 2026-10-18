@@ -1,0 +1,100 @@
+/* recovery styles: "Money recovered from shared accounts" on the Linked cases page, and the hint on the case screen */
+.recovery {
+  margin-top: var(--s-6);
+  scroll-margin-top: calc(var(--topbar-h) + var(--s-4));
+}
+.recovery-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+.recovery-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+.recovery-figure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-1) var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.recovery-figure-label {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  font-weight: 500;
+}
+.recovery-figure-value {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  color: var(--text);
+}
+.recovery-figure .small {
+  flex-basis: 100%;
+}
+.recovery-basis {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.recovery-basis .small {
+  margin: 0;
+}
+.recovery-table {
+  border: 1px solid var(--border);
+}
+.recovery-table tfoot th,
+.recovery-table tfoot td {
+  border-top: 1px solid var(--border-strong);
+  border-bottom: 0;
+}
+.recovery-explain p {
+  margin: 0 0 var(--s-2);
+}
+.recovery-assumptions {
+  margin: 0 0 var(--s-2);
+  padding-left: var(--s-5);
+  color: var(--text-2);
+}
+.recovery-assumptions li + li {
+  margin-top: 2px;
+}
+.recovery-explain code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  word-break: break-word;
+}
+.recovery-history-list,
+.recovery-record-summary {
+  margin: 0;
+  padding-left: var(--s-5);
+}
+.recovery-record-summary {
+  margin-bottom: var(--s-3);
+}
+.recovery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--border);
+}
+.recovery-hint {
+  margin: var(--s-1) 0 0;
+  padding: var(--s-1) var(--s-2);
+  border-left: 3px solid var(--warn);
+  background: var(--warn-soft);
+  color: var(--warn-text);
+}
+.recovery-hint a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}

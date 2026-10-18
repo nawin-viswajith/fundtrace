@@ -1,0 +1,98 @@
+/* quality styles: reviewer agreement and warning-sign burden panels (AI and system health page) */
+.q-panel .kpi-grid {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+.q-panel .kpi {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.q-nodata {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text-3);
+  padding: 2px 0;
+}
+td .q-nodata {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  padding: 0;
+}
+
+/* 2x2 table beside its explanation */
+.q-split {
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  gap: var(--s-5);
+  align-items: start;
+}
+.q-matrix th[scope="row"] {
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.q-matrix td {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.q-matrix .q-agree,
+.q-key {
+  background: var(--good-soft);
+  color: var(--good-text);
+}
+.q-key {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--good);
+  vertical-align: -1px;
+  margin-right: 2px;
+}
+.q-explain {
+  color: var(--text-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin: 0;
+}
+.q-explain p {
+  margin: 0;
+}
+
+/* declined share: small bar + value */
+.q-share {
+  display: grid;
+  grid-template-columns: minmax(60px, 120px) auto;
+  align-items: center;
+  gap: var(--s-2);
+}
+.q-share .meter {
+  height: 6px;
+}
+.q-share .meter-fill {
+  background: var(--chart-2);
+}
+.q-rules td {
+  vertical-align: top;
+}
+
+.q-foot {
+  border-top: 1px solid var(--border);
+  padding-top: var(--s-3);
+}
+.q-foot p {
+  margin: 0 0 var(--s-2);
+}
+.q-foot ul {
+  margin: 0 0 var(--s-2);
+  padding-left: var(--s-5);
+}
+.q-foot li + li {
+  margin-top: 2px;
+}
+
+@media (max-width: 760px) {
+  .q-split {
+    grid-template-columns: 1fr;
+  }
+}

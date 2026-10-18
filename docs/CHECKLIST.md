@@ -10,7 +10,7 @@ Status as of 2026-10-17. Testing items are excluded.
 - [x] Time-ordered trail tracing, forward and backward
   - Labelled stops: other bank or cash ("visibility ends"), merchant, busy hub account, cycle, depth limit, result cap
 - [x] Attribution ranges for each onward transfer (lower bound, FIFO, pro-rata, upper bound), with hold candidates
-- [x] 12 fraud-signal rules; missing data returns "not evaluable", never "clear"
+- [x] 15 fraud-signal rules; missing data returns "not evaluable", never "clear"
 - [x] Separate scores: evidence completeness, consistency, traceability, priority (P1–P4 with reasons), SLA clocks
 - [x] Policy library with eligibility checks
 - [x] Synthetic data: 10 scenarios plus background activity and evidence files
@@ -87,5 +87,10 @@ Status as of 2026-10-17. Testing items are excluded.
       options, plain status tracking, uploads; disputes land in the bank queue mapped to customer, account and payment
 - [x] AI report sections and warning signs as collapsed accordions; plain-language UI across the bank view
 - [x] Fact-check (judge) re-runnable on its own, in parallel batches; case assistant with report drafts
+- [x] Demo data generator for supervisors: count, types, amounts, status, assignment, optional AI statements within a budget; never changes existing cases
+- [x] Shared-account recovery split (pro rata, largest-remainder rounding, recorded splits)
+- [x] Calculation record per case: methods, inputs, arithmetic checks, fingerprint, recalculate, JSON download
+- [x] Reviewer agreement with the AI fact-check (Cohen's kappa) and warning-sign burden on declined cases
+- [x] Warning signs R13 (many payments in a short time), R14 (first payment to this beneficiary), R15 (just below a review limit)
 - [ ] Redeploy with the new infra/deploy.sh (creates the KMS key, Pub/Sub topic/subscription, DLP role); run it once and check the AI Ops security panel
 - [ ] Re-run live evidence analysis with Gemini (prompt evidence-v3 adds relevance/origin labels) and check the scores

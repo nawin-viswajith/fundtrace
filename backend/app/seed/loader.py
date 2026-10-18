@@ -31,7 +31,7 @@ USERS = [
 # CUST-1075 is the customer of CASE-24051, so "My disputes" has something to show.
 CUSTOMER_USERS = [("cust.priya", "CUST-1075"), ("cust.kiran", "CUST-1002"), ("cust.kabir", "CUST-1010")]
 
-_TABLES_IN_DELETE_ORDER = [m.IngestEvent, m.AuditEvent, m.ReportDraft, m.Report, m.AICall, m.AIRun, m.RiskFlag, m.Hold, m.EvidenceRequest, m.EvidenceItem,
+_TABLES_IN_DELETE_ORDER = [m.RecoveryAllocation, m.IngestEvent, m.AuditEvent, m.ReportDraft, m.Report, m.AICall, m.AIRun, m.RiskFlag, m.Hold, m.EvidenceRequest, m.EvidenceItem,
                            m.CaseNote, m.DisputeCase, m.AuthEvent, m.Transaction, m.Device, m.Account, m.Customer,
                            m.Institution, m.Policy, m.EvalRun]
 

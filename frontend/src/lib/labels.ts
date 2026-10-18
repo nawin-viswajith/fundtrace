@@ -165,6 +165,11 @@ const PARAM_INFO: Record<string, { label: string; format: (v: number) => string 
   multiple: { label: "Compared with the usual amount", format: (v) => `${v}× or more` },
   max_age_days: { label: "Account opened within", format: (v) => `${v} days` },
   min_other_accounts: { label: "Other accounts using the device", format: (v) => `at least ${v}` },
+  min_payments: { label: "Payments in the time window", format: (v) => `at least ${v}` },
+  min_amount_rupees: { label: "Smallest payment checked", format: (v) => `₹${v.toLocaleString("en-IN")} or more` },
+  min_below_limit: { label: "Payments just below the limit", format: (v) => `at least ${v}` },
+  review_limit_rupees: { label: "Internal review limit", format: (v) => `₹${v.toLocaleString("en-IN")}` },
+  band_share: { label: "Counts as just below the limit", format: (v) => `within ${Math.round(v * 100)}% under it` },
 };
 
 export function paramLabel(key: string): string {

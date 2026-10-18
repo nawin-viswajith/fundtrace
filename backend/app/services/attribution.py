@@ -32,6 +32,57 @@ METHOD_LABELS = {
 }
 ACTIVITY_LIMIT = 500
 
+# ---- Read-only description of the calculation (used by the calculation record) ----------------------
+# Bump a method's version whenever its arithmetic in `_debit`/`_fifo_take` changes, and
+# ATTRIBUTION_VERSION whenever anything else here changes the figures (what is collected, how
+# reversals or sinks are treated). Recorded figures can then always be tied to the exact rules
+# that produced them. These constants describe the code below; they do not drive it.
+ATTRIBUTION_VERSION = "1.0"
+METHOD_VERSIONS = {"min": "1.0", "fifo": "1.0", "pro_rata": "1.0", "max": "1.0"}
+METHOD_DEFINITIONS = {
+    "min": {
+        "bound": "lower",
+        "definition": "The account spends its other (clean) money before the disputed money, so each payment out carries "
+                      "the least disputed money the balance allows. Also called the lowest-intermediate-balance rule.",
+        "formula": "carried = min(T, max(0, d - max(0, B - T))); 0 when the balance B is unknown",
+    },
+    "fifo": {
+        "bound": "estimate",
+        "definition": "Money leaves the account in the order it arrived. The opening balance is the oldest (clean) money.",
+        "formula": "take d from the oldest lots first; each lot contributes round(taken x lot_disputed / lot_amount); "
+                   "not evaluable when the opening balance is unknown",
+    },
+    "pro_rata": {
+        "bound": "estimate",
+        "definition": "Every payment out carries the same share of disputed money as the account held at that moment.",
+        "formula": "carried = min(T, round(d x T / B)); min(d, T) when B <= 0; not evaluable when B is unknown",
+    },
+    "max": {
+        "bound": "upper",
+        "definition": "The account spends the disputed money before anything else, so each payment out carries the most "
+                      "disputed money possible.",
+        "formula": "carried = min(d, T)",
+    },
+}
+METHOD_SYMBOLS = ("d = payment amount, B = computed balance just before the payment, T = disputed money in the account "
+                  "under that method just before the payment. After each payment: B' = B - d and T' = max(0, min(T - carried, B')).")
+ATTRIBUTION_ASSUMPTIONS = (
+    ("commingling", "Money in an account is mixed: the records cannot say which rupees left, so each method is a convention, "
+                    "not an observation."),
+    ("time_order", "Payments are applied strictly in time order (ties broken by transaction id); a payment can only carry "
+                   "disputed money that had already arrived."),
+    ("balances", "Each account's balance is its recorded opening balance plus all recorded money in and out before the "
+                 "disputed money arrived, then updated payment by payment. If the opening balance is unknown, FIFO and "
+                 "pro-rata are not worked out for that account."),
+    ("external_not_visible", "Accounts at other banks are not visible: money sent there is counted as having left this bank's "
+                             "view, not as spent or kept."),
+    ("excluded_records", "Failed payments moved no money and are ignored. A reversed payment and the payment that reversed "
+                         "it cancel out, so both are left out."),
+    ("limits", "Only accounts reached within the search depth and time window are followed. Merchants and very busy "
+               "accounts stop the trail; accounts past the depth limit are counted as 'went further than this search looked'."),
+    ("activity_cap", f"At most {ACTIVITY_LIMIT} records are read per account; if an account has more, its figures may be incomplete."),
+)
+
 
 @dataclass
 class _AcctState:

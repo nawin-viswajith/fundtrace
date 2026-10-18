@@ -89,6 +89,34 @@ def _onward(ctx: RuleContext, minutes: float) -> list[TxnRec]:
     return [t for t in rows if t.moved_money and t.status != "reversed"]
 
 
+def _ist_day(d: datetime) -> str:
+    return (d + timedelta(hours=5, minutes=30)).strftime("%d %b %H:%M IST")
+
+
+def _minor(major: float) -> int:
+    """Money parameters are stored in rupees (what supervisors type); ledger amounts are in paise."""
+    return int(round(float(major) * 100))
+
+
+def _payer_payments(ctx: RuleContext, around: timedelta, limit: int = 500) -> list[TxnRec]:
+    """The payer's payments within ±``around`` of the disputed payment (bounded), oldest first.
+
+    Failed attempts moved no money and are left out; the disputed payment itself is always kept.
+    """
+    t0 = ctx.root.occurred_at
+    rows = ctx.store.debits_between(ctx.payer.id, t0 - around, t0 + around + timedelta(seconds=1), limit)
+    return [t for t in rows if (t.moved_money or t.id == ctx.root.id) and t.occurred_at <= t0 + around]
+
+
+def _payer_history_unavailable(ctx: RuleContext, r: RuleResult) -> bool:
+    if ctx.payer.external:
+        r.status = NOT_EVALUABLE
+        r.missing_fields = ["payer's payment history (account is at another institution)"]
+        r.suggested_step = "Ask the customer for their statement covering the days around the payment."
+        return True
+    return False
+
+
 # --------------------------------------------------------------------------------------------
 # Rule implementations
 # --------------------------------------------------------------------------------------------
@@ -367,6 +395,121 @@ def r12_record_inconsistency(ctx: RuleContext, p: dict, r: RuleResult) -> None:
     r.suggested_step = "Reconcile the records with the payment switch using amount, time and parties."
 
 
+def r13_velocity(ctx: RuleContext, p: dict, r: RuleResult) -> None:
+    if _payer_history_unavailable(ctx, r):
+        return
+    w = timedelta(minutes=p["window_minutes"])
+    t0 = ctx.root.occurred_at
+    rows = _payer_payments(ctx, w)
+    # Busiest stretch of `window_minutes` that includes the disputed payment (earliest wins a tie).
+    best: list[TxnRec] = []
+    for i, first in enumerate(rows):
+        if first.occurred_at > t0:
+            break
+        group = [t for t in rows[i:] if t.occurred_at - first.occurred_at <= w]
+        if len(group) > len(best):
+            best = group
+    shown = best[:12]
+    r.source_ids = [ctx.root.id] + [t.id for t in best]
+    if len(best) >= p["min_payments"]:
+        r.status = TRIGGERED
+        r.facts.append(_fact(
+            f"{len(best)} payments left {ctx.payer.id} within {p['window_minutes']} min "
+            f"({_ist(best[0].occurred_at)} to {_ist(best[-1].occurred_at)}), including the disputed payment.",
+            *[t.id for t in best]))
+        for t in shown:
+            r.facts.append(_fact(f"{t.id}: {_cur(ctx, t.amount_minor)} to {t.credit_account_id} at {_ist(t.occurred_at)}"
+                                 f"{' (the disputed payment)' if t.id == ctx.root.id else ''}.", t.id))
+        if len(best) > len(shown):
+            r.facts.append(_fact(f"…and {len(best) - len(shown)} more in the same stretch.", *[t.id for t in best[len(shown):]]))
+    else:
+        r.status = NOT_TRIGGERED
+        r.facts.append(_fact(
+            f"At most {len(best)} payment(s) left {ctx.payer.id} in any {p['window_minutes']}-min stretch that includes the "
+            f"disputed payment (threshold: {p['min_payments']}).", ctx.root.id, *[t.id for t in best]))
+    r.limitations.append("Busy business accounts, or a customer paying several bills on salary day, can look the same.")
+    r.suggested_step = "Ask the customer whether they made each of these payments, and check whether they went to new or unrelated accounts."
+
+
+def r14_new_beneficiary(ctx: RuleContext, p: dict, r: RuleResult) -> None:
+    if _payer_history_unavailable(ctx, r):
+        return
+    if ctx.payee.kind == "merchant" or ctx.trace.nodes.get(ctx.payee.id, {}).get("endpoint") == "hub_paused":
+        # A first order at a shop or a busy business account is ordinary; this sign is about paying new people.
+        r.status = NOT_TRIGGERED
+        r.source_ids = [ctx.root.id, ctx.payee.id]
+        r.facts.append(_fact(f"{ctx.payee.id} is a merchant or high-activity business account; a first purchase there is normal, "
+                             "so this check does not apply.", ctx.payee.id))
+        r.suggested_step = "Use the merchant's order and delivery records instead."
+        return
+    limit = 2000
+    t0 = ctx.root.occurred_at
+    rows = ctx.store.debits_between(ctx.payer.id, t0 - timedelta(days=p["lookback_days"]), t0, limit)
+    hist = [t for t in rows if t.moved_money and t.id != ctx.root.id]
+    prior = [t for t in hist if t.credit_account_id == ctx.payee.id]
+    amount, floor = ctx.root.amount_minor, _minor(p["min_amount_rupees"])
+    r.source_ids = [ctx.root.id, ctx.payee.id]
+    r.limitations.append("Customers legitimately pay new people and shops (a new landlord, a first order); this matters in "
+                         "combination with other signals. Only this bank's records are checked.")
+    r.suggested_step = "Ask the customer whether they knew the beneficiary and how they got the account details."
+    if prior:
+        last = prior[-1]
+        r.status = NOT_TRIGGERED
+        r.facts.append(_fact(
+            f"{ctx.payer.id} paid {ctx.payee.id} {len(prior)} time(s) in the {p['lookback_days']} days before, most recently "
+            f"{last.id} ({_cur(ctx, last.amount_minor)}) on {_ist_day(last.occurred_at)}.", *[t.id for t in prior[-3:]]))
+        r.source_ids += [t.id for t in prior[-3:]]
+        return
+    if amount < floor:
+        r.status = NOT_TRIGGERED
+        r.facts.append(_fact(f"Disputed amount {_cur(ctx, amount)} is below the {_cur(ctx, floor)} this check looks at.", ctx.root.id))
+        return
+    if len(rows) >= limit:
+        r.status = NOT_EVALUABLE
+        r.missing_fields = [f"complete payment history (more than {limit} payments in {p['lookback_days']} days; "
+                            "only the oldest could be checked)"]
+        r.suggested_step = "Search the payer's statement for earlier payments to this beneficiary."
+        return
+    if len(hist) < p["min_history"]:
+        r.status = NOT_EVALUABLE
+        r.missing_fields = [f"at least {p['min_history']} earlier payments in {p['lookback_days']} days to compare against "
+                            f"(found {len(hist)})"]
+        r.suggested_step = "Ask the customer whether they had paid this beneficiary before, and check older statements."
+        return
+    r.status = TRIGGERED
+    r.facts.append(_fact(
+        f"No payment from {ctx.payer.id} to {ctx.payee.id} in the {p['lookback_days']} days before this one "
+        f"({len(hist)} other payments checked).", ctx.root.id, ctx.payee.id))
+    r.facts.append(_fact(f"Disputed amount {_cur(ctx, amount)} is at or above the {_cur(ctx, floor)} this check looks at.", ctx.root.id))
+
+
+def r15_below_limit(ctx: RuleContext, p: dict, r: RuleResult) -> None:
+    if _payer_history_unavailable(ctx, r):
+        return
+    limit_minor = _minor(p["review_limit_rupees"])
+    lo = limit_minor * (1 - p["band_share"])
+    rows = _payer_payments(ctx, timedelta(hours=p["window_hours"]))
+    near = [t for t in rows if lo <= t.amount_minor < limit_minor]
+    r.source_ids = [ctx.root.id] + [t.id for t in near]
+    band = f"between {_cur(ctx, int(round(lo)))} and just under {_cur(ctx, limit_minor)}"
+    if len(near) >= p["min_below_limit"]:
+        r.status = TRIGGERED
+        total = sum(t.amount_minor for t in near)
+        r.facts.append(_fact(
+            f"{len(near)} payments from {ctx.payer.id} within ±{p['window_hours']} h of the disputed payment were {band} "
+            f"(the internal review limit); together {_cur(ctx, total)}.", *[t.id for t in near]))
+        for t in near[:12]:
+            r.facts.append(_fact(f"{t.id}: {_cur(ctx, t.amount_minor)} to {t.credit_account_id} on {_ist_day(t.occurred_at)}"
+                                 f"{' (the disputed payment)' if t.id == ctx.root.id else ''}.", t.id))
+    else:
+        r.status = NOT_TRIGGERED
+        r.facts.append(_fact(
+            f"{len(near)} payment(s) from {ctx.payer.id} within ±{p['window_hours']} h were {band} "
+            f"(threshold: {p['min_below_limit']}).", ctx.root.id, *[t.id for t in near]))
+    r.limitations.append("The review limit is an internal configured value, and payments near round amounts are common.")
+    r.suggested_step = "Check whether these payments together pass the review limit, and ask the customer why the amount was split."
+
+
 CATALOGUE: list[RuleDef] = [
     RuleDef("R1", "Rapid onward movement", "Most of the received amount leaves the beneficiary quickly.", "high",
             {"window_minutes": 60, "min_share": 0.8}, ["beneficiary outgoing transfers"], r1_rapid_onward),
@@ -392,6 +535,13 @@ CATALOGUE: list[RuleDef] = [
             {"min_share": 0.1}, ["attribution"], r11_external_exit),
     RuleDef("R12", "Record inconsistency", "Missing or conflicting payment references on the trail.", "low",
             {}, ["transaction references"], r12_record_inconsistency),
+    RuleDef("R13", "Many payments in a short time", "The payer made many payments in a short time around the disputed payment.",
+            "medium", {"window_minutes": 30, "min_payments": 5}, ["payer debit history"], r13_velocity),
+    RuleDef("R14", "First payment to this beneficiary", "A large payment to an account the payer had not paid before.", "medium",
+            {"lookback_days": 180, "min_history": 5, "min_amount_rupees": 10000}, ["payer debit history"], r14_new_beneficiary),
+    RuleDef("R15", "Payments just below a review limit", "Several payments just under an internal review limit.", "low",
+            {"window_hours": 24, "min_below_limit": 2, "review_limit_rupees": 50000, "band_share": 0.1},
+            ["payer debit history"], r15_below_limit),
 ]
 CATALOGUE_BY_ID = {r.rule_id: r for r in CATALOGUE}
 
