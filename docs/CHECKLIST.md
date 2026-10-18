@@ -75,6 +75,13 @@ Status as of 2026-10-17. Testing items are excluded.
 - [ ] Make the GitHub repo **public**
 - [ ] Submit on Hack2skill: deployed link, video, repo, deck PDF, theme
 
-### In the plan but not built (optional)
-- [ ] Firebase sign-in button in the UI (the backend endpoint exists)
-- [ ] Pub/Sub ingest (only the adapter interface exists; otherwise deck-only)
+### Built on 2026-10-18
+- [x] "Sign in with Google" button (Firebase Auth, loaded on demand; shown when FIREBASE_PROJECT_ID and FIREBASE_API_KEY are set)
+- [x] MFA: authenticator app (TOTP) + recovery codes, per-role requirement (MFA_REQUIRED_ROLES), admin reset, Account security dialog
+- [x] Field-level encryption (AES-256-GCM, Cloud KMS-wrapped data key, key rotation, start-up backfill)
+- [x] DLP: built-in detectors + Cloud DLP for images/PDFs; masking in notes and LLM input; scan results on evidence
+- [x] Ledger ingest: Pub/Sub push (OIDC-verified, dead-letter topic) + admin statement upload; ISO 20022 camt.053, CSV, JSON adapters
+- [x] Evidence strength score per evidence item, with a sub-score per category and reasons
+- [x] UI: light theme by default, square/flat design, decluttered screens
+- [ ] Redeploy with the new infra/deploy.sh (creates the KMS key, Pub/Sub topic/subscription, DLP role); run it once and check the AI Ops security panel
+- [ ] Re-run live evidence analysis with Gemini (prompt evidence-v3 adds relevance/origin labels) and check the scores

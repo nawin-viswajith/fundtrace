@@ -206,6 +206,54 @@ def retention_run(dry_run: bool = True, user: m.User = Depends(require_role("adm
     return out
 
 
+# ---------------------------------------------------------------------------- users, MFA and security status
+
+@router.get("/admin/users")
+def admin_users(user: m.User = Depends(require_role("admin")), db: Session = Depends(get_db)):
+    from app.services.mfa import required_for
+
+    rows = db.scalars(select(m.User).order_by(m.User.username)).all()
+    return {"users": [{"id": u.id, "username": u.username, "full_name": u.full_name, "role": u.role, "is_active": u.is_active,
+                       "mfa_enabled": bool(u.mfa_enabled), "mfa_required": required_for(u),
+                       "recovery_codes_left": len(u.mfa_recovery or []) if u.mfa_enabled else None} for u in rows]}
+
+
+class MfaResetIn(BaseModel):
+    reason: str = Field(min_length=10, max_length=255)
+
+
+@router.post("/admin/users/{user_id}/mfa/reset")
+def admin_mfa_reset(user_id: int, body: MfaResetIn, user: m.User = Depends(require_role("admin")), db: Session = Depends(get_db)):
+    """For a lost authenticator: removes the user's MFA so they can enrol again at next sign-in. Audited."""
+    from app.services.mfa import reset
+
+    target = db.get(m.User, user_id)
+    if target is None:
+        raise HTTPException(404, "User not found")
+    if target.id == user.id:
+        raise HTTPException(403, "Ask another admin to reset your own MFA")
+    reset(target)
+    audit.record(db, None, user.username, user.role, "mfa_reset_by_admin", {"user": target.username, "reason": body.reason})
+    db.commit()
+    return {"ok": True}
+
+
+@router.get("/admin/security")
+def security_status(user: m.User = Depends(require_role("supervisor", "admin")), db: Session = Depends(get_db)):
+    from app import crypto
+    from app.services.dlp import LABELS, MASK_TYPES, backend
+
+    s = get_settings()
+    users = db.scalars(select(m.User)).all()
+    return {
+        "encryption": crypto.status(),
+        "dlp": {"backend": backend(), "detects": [LABELS[k] for k in LABELS], "masked_in_notes_and_llm_input": sorted(LABELS[k] for k in MASK_TYPES)},
+        "mfa": {"required_roles": sorted(s.mfa_roles), "enrolled": sum(1 for u in users if u.mfa_enabled), "users": len(users)},
+        "firebase_sign_in": bool(s.firebase_project_id and s.firebase_api_key),
+        "pubsub_ingest": bool(s.pubsub_push_audience),
+    }
+
+
 @router.get("/healthz")
 def healthz(db: Session = Depends(get_db)):
     db.execute(select(1))

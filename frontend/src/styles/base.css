@@ -27,17 +27,17 @@ p {
   margin: 0;
 }
 h1 {
-  font-size: 22px;
-  font-weight: 650;
+  font-size: var(--fs-xl);
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 h2 {
-  font-size: 18px;
-  font-weight: 650;
+  font-size: var(--fs-lg);
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 h3 {
-  font-size: 15px;
+  font-size: var(--fs-md);
   font-weight: 600;
 }
 h4 {
@@ -86,7 +86,7 @@ legend {
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .num {
@@ -99,7 +99,7 @@ legend {
   color: var(--text-3);
 }
 .small {
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
 }
 .break {
   word-break: break-all;
@@ -137,8 +137,7 @@ legend {
   z-index: 100;
   background: var(--surface);
   padding: 8px 12px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-strong);
 }
 .skip-link:focus {
   left: 8px;
@@ -152,12 +151,12 @@ legend {
 .stack-lg {
   display: flex;
   flex-direction: column;
-  gap: var(--s-5);
+  gap: var(--s-4);
 }
 .two-col {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s-5);
+  gap: var(--s-4);
   align-items: start;
 }
 .plain-list {
@@ -187,12 +186,26 @@ legend {
   justify-content: center;
   gap: 6px;
   min-height: var(--banner-h);
-  padding: 4px var(--s-4);
-  font-size: 12px;
-  color: var(--warn-text);
-  background: var(--warn-soft);
-  border-bottom: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+  padding: 3px var(--s-4);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
   text-align: center;
+}
+.synthetic-banner::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  background: var(--warn);
+}
+.synthetic-banner svg {
+  display: none;
+}
+.synthetic-banner strong {
+  font-weight: 600;
+  color: var(--text);
 }
 .shell {
   min-height: 100vh;
@@ -206,7 +219,7 @@ legend {
   height: var(--topbar-h);
   display: flex;
   align-items: center;
-  gap: var(--s-2);
+  gap: var(--s-1);
   padding: 0 var(--s-4);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -218,9 +231,13 @@ legend {
   text-decoration: none;
   color: var(--text);
 }
+.brand .logo {
+  width: 22px;
+  height: 22px;
+}
 .brand-name {
-  font-weight: 700;
-  font-size: 16px;
+  font-weight: 650;
+  font-size: var(--fs-md);
   letter-spacing: -0.01em;
 }
 .topbar-spacer {
@@ -233,21 +250,20 @@ legend {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 10px 4px 4px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  padding: 0 var(--s-3) 0 0;
   margin-right: var(--s-1);
+  border-right: 1px solid var(--border);
+  height: 28px;
 }
 .avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  width: 26px;
+  height: 26px;
   display: grid;
   place-items: center;
   font-weight: 600;
-  font-size: 13px;
-  background: var(--accent-soft);
-  color: var(--accent-text);
+  font-size: 12px;
+  background: var(--surface-3);
+  color: var(--text);
 }
 .user-meta {
   display: flex;
@@ -260,21 +276,19 @@ legend {
 }
 .role-tag {
   display: inline-block;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: var(--surface-3);
+  letter-spacing: 0.05em;
+  padding: 1px 5px;
+  border: 1px solid var(--border-strong);
   color: var(--text-2);
+  background: transparent;
+  line-height: 1.4;
 }
-.role-supervisor {
-  background: var(--prov-derived-soft);
-  color: var(--prov-derived-text);
-}
+.role-supervisor,
 .role-admin {
-  background: var(--accent-soft);
+  border-color: var(--accent);
   color: var(--accent-text);
 }
 
@@ -282,13 +296,13 @@ legend {
   flex: 1;
   display: flex;
   min-height: 0;
-  /* nav column background runs the full page height */
+  /* paint the nav column (and its hairline) down the full page height */
   background: linear-gradient(to right, var(--surface) calc(var(--nav-w) - 1px), var(--border) calc(var(--nav-w) - 1px), var(--border) var(--nav-w), transparent var(--nav-w));
 }
 .sidenav {
   width: var(--nav-w);
   flex-shrink: 0;
-  padding: var(--s-4) var(--s-3);
+  padding: var(--s-3) 0;
   background: var(--surface);
   border-right: 1px solid var(--border);
   position: sticky;
@@ -303,30 +317,45 @@ legend {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 2px;
 }
 .navlink {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  border-radius: var(--radius);
+  height: 36px;
+  padding: 0 var(--s-4);
+  border-left: 2px solid transparent;
   color: var(--text-2);
   text-decoration: none;
   font-weight: 500;
+  font-size: 13.5px;
+}
+.navlink svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-3);
+  flex-shrink: 0;
 }
 .navlink:hover {
   background: var(--surface-2);
   color: var(--text);
 }
 .navlink.is-active {
-  background: var(--accent-soft);
+  background: var(--surface-2);
+  border-left-color: var(--accent);
+  color: var(--text);
+  font-weight: 600;
+}
+.navlink.is-active svg {
   color: var(--accent-text);
 }
 .sidenav-foot {
-  font-size: 12px;
+  font-size: var(--fs-xs);
+  line-height: 1.45;
   color: var(--text-3);
-  padding: 0 var(--s-2);
+  padding: var(--s-3) var(--s-4) 0;
+  border-top: 1px solid var(--border);
+  margin: 0 0 var(--s-1);
 }
 .nav-scrim {
   display: none;
@@ -345,11 +374,12 @@ legend {
   gap: var(--s-4);
 }
 .page-wide {
-  max-width: 1480px;
+  max-width: 1440px;
 }
 .page-lede {
-  color: var(--text-2);
-  margin-top: -8px;
+  color: var(--text-3);
+  font-size: 13px;
+  margin-top: calc(-1 * var(--s-3));
 }
 .section-title {
   display: flex;
@@ -358,17 +388,17 @@ legend {
   gap: var(--s-3);
 }
 .section-title h2 {
-  font-size: 22px;
+  font-size: var(--fs-xl);
 }
 .h-section {
-  font-size: 15px;
+  font-size: var(--fs-md);
   margin-bottom: var(--s-3);
 }
 .h-sub {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--text-3);
   margin: var(--s-2) 0 6px;
   display: flex;
@@ -377,21 +407,21 @@ legend {
 }
 .footnote {
   margin-top: var(--s-3);
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
-  font-style: italic;
 }
 .back-link {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
-  color: var(--text-2);
+  font-size: var(--fs-sm);
+  color: var(--text-3);
   text-decoration: none;
   width: fit-content;
 }
 .back-link:hover {
   color: var(--accent-text);
+  text-decoration: underline;
 }
 
 @media (max-width: 900px) {
@@ -408,7 +438,6 @@ legend {
     z-index: 35;
     transform: translateX(-105%);
     transition: transform 0.18s ease;
-    box-shadow: var(--shadow-lg);
   }
   .sidenav.is-open {
     transform: none;
@@ -431,15 +460,12 @@ legend {
   .user-meta .user-name {
     display: none;
   }
-  .brand-name {
-    font-size: 15px;
-  }
   .topbar {
-    padding: 0 var(--s-3);
-    gap: 4px;
+    padding: 0 var(--s-2);
+    gap: 2px;
   }
   :root {
-    --banner-h: 36px;
+    --banner-h: 34px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -455,7 +481,7 @@ legend {
     display: none;
   }
   .user-chip {
-    padding: 2px;
+    padding: 0 var(--s-2) 0 0;
     margin-right: 0;
   }
 }

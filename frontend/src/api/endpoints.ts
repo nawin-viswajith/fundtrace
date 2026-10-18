@@ -26,6 +26,16 @@ import type {
   RuleVersion,
   SearchResponse,
   TimelineResponse,
+  AdminUser,
+  AssistantReply,
+  DraftOpResult,
+  ReportDraft,
+  IngestEvent,
+  IngestEventsResponse,
+  LoginResult,
+  MfaSetup,
+  SecurityStatus,
+  User,
 } from "../types/api";
 
 const enc = encodeURIComponent;
@@ -61,7 +71,19 @@ export const api = {
   authConfig: () => request<AuthConfig>("/api/auth/config", { quiet401: true }),
   me: () => request<MeResponse>("/api/auth/me", { quiet401: true }),
   login: (username: string, password: string) =>
-    request<MeResponse>("/api/auth/login", { method: "POST", body: { username, password }, quiet401: true }),
+    request<LoginResult>("/api/auth/login", { method: "POST", body: { username, password }, quiet401: true }),
+  firebaseLogin: (idToken: string) => request<LoginResult>("/api/auth/firebase", { method: "POST", body: { id_token: idToken }, quiet401: true }),
+  mfaVerify: (mfaToken: string, code: string) =>
+    request<{ user: User; recovery_codes_left: number | null }>("/api/auth/mfa/verify", {
+      method: "POST",
+      body: { mfa_token: mfaToken, code },
+      quiet401: true,
+    }),
+  mfaSetup: (mfaToken?: string) => request<MfaSetup>("/api/auth/mfa/setup", { method: "POST", body: { mfa_token: mfaToken ?? null } }),
+  mfaEnable: (code: string, mfaToken?: string) =>
+    request<{ user: User; recovery_codes: string[] }>("/api/auth/mfa/enable", { method: "POST", body: { code, mfa_token: mfaToken ?? null } }),
+  mfaDisable: (password: string, code: string) => request<{ user: User }>("/api/auth/mfa/disable", { method: "POST", body: { password, code } }),
+  mfaNewRecoveryCodes: (code: string) => request<{ recovery_codes: string[] }>("/api/auth/mfa/recovery-codes", { method: "POST", body: { code } }),
   logout: () => request<{ ok: boolean }>("/api/auth/logout", { method: "POST", quiet401: true }),
   meta: () => request<Meta>("/api/meta"),
 
@@ -101,6 +123,18 @@ export const api = {
     request<{ ok: boolean }>(`/api/reports/${enc(rid)}/review`, { method: "POST", body }),
   ask: (id: string, question: string) =>
     request<AskResponse>(`/api/cases/${enc(id)}/ask`, { method: "POST", body: { question } }),
+  assistant: (id: string, message: string, history: { role: string; text: string }[]) =>
+    request<AssistantReply>(`/api/cases/${enc(id)}/assistant`, { method: "POST", body: { message, history } }),
+  reportDraft: (rid: string) => request<{ draft: ReportDraft | null }>(`/api/reports/${enc(rid)}/draft`),
+  draftOp: (rid: string, op: string, sectionKey?: string | null, claimIds?: string[]) =>
+    request<DraftOpResult>(`/api/reports/${enc(rid)}/draft/ops`, {
+      method: "POST",
+      body: { op, section_key: sectionKey ?? null, claim_ids: claimIds ?? [] },
+    }),
+  saveDraft: (rid: string) => request<Report>(`/api/reports/${enc(rid)}/draft/save`, { method: "POST" }),
+  discardDraft: (rid: string) => request<{ ok: boolean }>(`/api/reports/${enc(rid)}/draft/discard`, { method: "POST" }),
+  rejudge: (rid: string) =>
+    request<{ result: { ok: boolean; message: string; judged: number }; report: Report }>(`/api/reports/${enc(rid)}/judge`, { method: "POST" }),
   classify: (id: string) => request<ClassifyResponse>(`/api/cases/${enc(id)}/classify`, { method: "POST" }),
 
   rules: () => request<{ rules: RuleCatalogueEntry[] }>("/api/rules"),
@@ -110,6 +144,18 @@ export const api = {
   rings: () => request<RingsResponse>("/api/network/rings"),
 
   opsMetrics: () => request<OpsMetrics>("/api/ops/metrics"),
+  adminUsers: () => request<{ users: AdminUser[] }>("/api/admin/users"),
+  adminResetMfa: (userId: number, reason: string) =>
+    request<{ ok: boolean }>(`/api/admin/users/${userId}/mfa/reset`, { method: "POST", body: { reason } }),
+  securityStatus: () => request<SecurityStatus>("/api/admin/security"),
+  ingestEvents: () => request<IngestEventsResponse>("/api/ingest/events"),
+  ingestFile: (file: File, format: string, sourceSystem: string) => {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("format", format);
+    form.append("source_system", sourceSystem);
+    return request<{ event: IngestEvent; already_processed: boolean }>("/api/ingest/file", { method: "POST", form });
+  },
   opsCalls: () => request<{ calls: OpsCall[] }>("/api/ops/calls?limit=50"),
   opsEvals: () => request<{ runs: EvalRun[] }>("/api/ops/evals"),
   runEval: () => request<EvalRun>("/api/ops/evals/run", { method: "POST" }),

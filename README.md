@@ -32,6 +32,7 @@ The investigator stays in charge. The AI never decides liability.
 | **Agentic, bounded AI** | A LangGraph agent with Gemini chooses which trail branches to explore using **fixed, parameter-checked tools**. It can never run free-form queries. | Real agency without open-ended data access. |
 | **Hallucination defence** | 1. A deterministic validator checks the report: cited IDs exist, every ₹ amount and time matches the cited record, no "proves fraud" or "customer is liable" language, and flow-through claims are never marked verified.<br>2. One redraft with feedback.<br>3. A Gemini judge checks each claim against its cited records.<br>4. A **hallucination rate** and **confidence** are recorded on every report. | Measured trust instead of claimed trust. |
 | **Evidence reconciled, not trusted** | Gemini reads receipts and screenshots (multimodal). **Code** then compares the amount, UTR and time with the ledger. Instructions embedded in documents are detected and ignored. | Catches the customer screenshot that shows ₹45,000 when the ledger says ₹50,000, and the prompt-injection attempt hidden in it. |
+| **Evidence strength scores** | Every analysed item gets a 0–100 score with a sub-score per category: ledger match, integrity, relevance, provenance, completeness, legibility. Gemini only labels what it sees; fixed weights in code turn the labels into numbers, and a contradiction with the ledger caps the score. Each sub-score lists its reasons. | Investigators see *why* a document is weak, and the score never doubles as a judgement of the customer. |
 | **Golden-hour holds** | Visible downstream accounts that may still hold disputed funds become hold recommendations with an amount range. An investigator must approve each one. | Recovery depends on speed; the decision stays human. |
 | **Hash-chained audit** | Every action is chained: `hash = sha256(prev_hash + event)`. The UI verifies the chain. | Tamper-evident accountability. |
 | **AI Ops** | Tokens, cost, latency, error rate, hallucination rate and judge verdicts are tracked per call, node, case and day. The page also shows evaluation against ground truth and links to Cloud Trace. | Running AI responsibly in a bank. |
@@ -77,12 +78,14 @@ Each case's subgraph stays small even at bank scale, because traces are bounded 
 
 ```
 backend/app/
-  services/   graph_store · trace · attribution · rules · ledger · scoring · policy · workflow · network · storage
+  crypto.py   field-level encryption (AES-256-GCM, Cloud KMS-wrapped key, rotation, backfill)
+  services/   graph_store · trace · attribution · rules · ledger · ledger_sources (camt.053/CSV/JSON) · ingest · scoring
+              evidence_scoring · policy · workflow · network · storage · mfa · dlp · retention
   ai/         llm (Gemini gateway) · investigator (LangGraph) · tools · validator · facts_report · evidence · copilot · prompts · schemas · snapshot · pricing
-  api/        auth · cases · ops
+  api/        auth (password, Firebase, MFA) · cases · ops · ingest (Pub/Sub push, statement upload)
   seed/       synthetic world S1–S10 + evidence files · loader
   eval/       evaluation harness (ground truth)
-backend/tests/   71 tests: trace, attribution, rules, ledger, scenarios, validator, investigator, gateway, API
+backend/tests/   94 tests: trace, attribution, rules, ledger, scenarios, validator, investigator, gateway, API, security/ingest
 frontend/        React app
 infra/           deploy.sh (one command) · monitoring-dashboard.json
 docs/            api-samples · PROGRESS.md
@@ -98,7 +101,7 @@ Requirements: Python 3.11+ and Node 20+.
 # backend
 cd backend
 pip install -r requirements-dev.txt
-python -m pytest                      # 71 tests
+python -m pytest                      # 94 tests
 python -m uvicorn app.main:app --port 8000      # seeds synthetic data on first start (SQLite)
 
 # frontend (second terminal)
@@ -190,6 +193,24 @@ The script is idempotent. It does the following:
 
 ---
 
+## Ledger ingest
+
+Ledger records arrive in two ways:
+- **Pub/Sub push:** the `fundtrace-ledger` topic pushes to `/api/ingest/pubsub`. The push is signed with an OIDC token from a dedicated service account, and there is a dead-letter topic.
+- **File upload:** an admin uploads a statement on the AI Ops page.
+
+Supported formats: ISO 20022 **camt.053** bank statements, CSV, and FundTrace JSON. Every delivery is logged (new, merged, duplicate, rejected, cases re-assessed).
+
+- **Duplicates are harmless.** A redelivered message changes nothing.
+- **Reports from several systems become one payment.** The same payment reported by another source system is merged into the existing transaction, and any disagreement between the systems is kept.
+- **Unknown counterparties never fail a delivery.** They become external placeholder accounts, and full account numbers are not stored.
+- **Holds update at once.** Open cases whose trail window covers the new records are re-assessed immediately, so hold recommendations reflect onward transfers as they arrive.
+
+```bash
+cd backend
+python -m scripts.publish_ledger --project P --format iso20022.camt.053 ../docs/samples/statement-camt053.xml
+```
+
 ## Data schema (core tables)
 
 | Table | Contents |
@@ -200,12 +221,22 @@ The script is idempotent. It does the following:
 | `risk_flags`, `rule_versions` | Signals and versioned rule parameters |
 | `ai_runs`, `ai_calls`, `reports` | Every AI run and call: tokens, cost, latency, snapshot hash, prompt and rule versions, claims and verdicts |
 | `audit_events` | Hash-chained audit per case |
+| `ingest_events` | One row per ledger delivery (Pub/Sub message or uploaded file) and its outcome |
 | `policies`, `eval_runs` | Synthetic policy library, ground truth and evaluation results |
 
 ## Security and privacy
 
 **Implemented:**
 - bcrypt password hashes; JWT in an httpOnly, SameSite=Strict, Secure cookie; login lockout
+- **MFA**: authenticator-app codes (TOTP, RFC 6238) with replay protection and 10 single-use recovery codes.
+  `MFA_REQUIRED_ROLES` makes it mandatory per role (those users enrol at sign-in). Admins can reset a lost device (audited).
+- **Google sign-in** through Firebase Auth (optional). A verified email maps only to an existing user; roles are never granted automatically.
+- **Field-level encryption**: customer names, account holder names, customer statements, notes, decision rationales and
+  AI-extracted evidence values are encrypted (AES-256-GCM, bound to their column). On GCP the data key is wrapped by
+  Cloud KMS (90-day key rotation); several data keys can be configured for rotation. Older plaintext rows are encrypted at start-up.
+- **DLP scanning**: card numbers (Luhn), Aadhaar (Verhoeff), written-down OTPs/PINs, PAN, IFSC, email, phone and UPI ids.
+  Card/Aadhaar/OTP values are masked in case notes before storage and in customer text before it reaches Gemini.
+  Uploaded files are scanned (Cloud DLP reads images and PDFs when `DLP_BACKEND=gcp`); findings record types and counts, never values.
 - Role-based and **case-level** authorisation. Another investigator's case returns 404, so case IDs cannot be probed.
 - Validated inputs and server-side limits on trace depth, time window and node cap. ORM-only queries. No free-form query reaches the UI or the LLM.
 - Uploads are type-sniffed against an allow-list, capped at 5 MB, hashed and stored write-once. Downloads go through an access-checked, audited route.
@@ -214,11 +245,10 @@ The script is idempotent. It does the following:
 - Linked cases expose only ID, status and category, never another customer's statement.
 
 **Not implemented (prototype):**
-- MFA
-- KMS field-level encryption
-- DLP scanning
-- real bank integrations (the `LedgerSource` adapter interface is defined)
-- automated evidence deletion (only the retention setting exists)
+- live connections to a real bank's systems. The ingest path is built for them: ISO 20022 camt.053, CSV and JSON
+  adapters, Pub/Sub push with signed-token checks, idempotent redelivery, cross-source merging and placeholder
+  accounts for unknown counterparties. A bank would publish its statement or switch feed to the ledger topic.
+- scheduled evidence-retention runs (the retention flow exists; an admin runs it on demand)
 
 ## Limitations
 
@@ -234,4 +264,4 @@ The script is idempotent. It does the following:
 2. Cross-bank trail and hold requests through the national cyber-fraud reporting process.
 3. Supervised models trained on investigator-labelled outcomes. The rules stay as explanations.
 4. Investigator feedback loop on claim reviews, to tune prompts and the judge.
-5. MFA, field-level encryption and retention automation.
+5. Scheduled retention runs (an admin can run retention on demand today) and live bank connections on the ingest path.

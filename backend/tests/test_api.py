@@ -238,3 +238,17 @@ def test_overview_search_and_outcomes(client):
     # investigators never find other investigators' cases through search
     assert all(r["id"] != "CASE-24031" for r in client.get("/api/search", params={"q": "CASE-240"}).json()["results"])
     assert client.get("/api/search", params={"q": "x"}).status_code == 422
+
+
+def test_app_shell_is_revalidated_and_hashed_assets_are_cached(client):
+    """After a deploy, browsers must fetch the new app shell (otherwise they keep showing the old release)."""
+    from app.main import FRONTEND_DIST
+
+    if not (FRONTEND_DIST / "index.html").exists():
+        pytest.skip("frontend not built")
+    r = client.get("/cases/CASE-24051")
+    assert r.status_code == 200 and r.headers["cache-control"] == "no-cache"
+    asset = next((FRONTEND_DIST / "assets").glob("*.js"))
+    r = client.get(f"/assets/{asset.name}")
+    assert r.status_code == 200 and "immutable" in r.headers["cache-control"]
+    assert client.get("/api/healthz").headers["cache-control"] == "no-store"

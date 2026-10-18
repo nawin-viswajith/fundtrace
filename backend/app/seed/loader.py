@@ -14,6 +14,7 @@ from app.config import get_settings
 from app.security import hash_password
 from app.seed import evidence_files
 from app.seed.synthetic import build
+from app.services import dlp
 from app.services.ledger import normalise
 from app.services.policy import load_policies
 from app.services.storage import get_storage, sha256
@@ -27,7 +28,7 @@ USERS = [
     ("admin", "Platform Admin (synthetic)", "admin"),
 ]
 
-_TABLES_IN_DELETE_ORDER = [m.AuditEvent, m.Report, m.AICall, m.AIRun, m.RiskFlag, m.Hold, m.EvidenceRequest, m.EvidenceItem,
+_TABLES_IN_DELETE_ORDER = [m.IngestEvent, m.AuditEvent, m.ReportDraft, m.Report, m.AICall, m.AIRun, m.RiskFlag, m.Hold, m.EvidenceRequest, m.EvidenceItem,
                            m.CaseNote, m.DisputeCase, m.AuthEvent, m.Transaction, m.Device, m.Account, m.Customer,
                            m.Institution, m.Policy, m.EvalRun]
 
@@ -95,7 +96,8 @@ def seed(db: Session, anchor: datetime | None = None) -> dict:
         eid = "EV-" + uuid.uuid4().hex[:8].upper()
         db.add(m.EvidenceItem(id=eid, case_id=ev["case_id"], kind=ev["kind"], checklist_key=ev["checklist_key"], filename=ev["filename"],
                               mime=mime, sha256=sha256(data), storage_uri=uri, size=len(data), uploaded_by="customer (synthetic)",
-                              uploaded_at=_case_reported(ds, ev["case_id"]), analysis_status="not_analysed", is_synthetic=True))
+                              uploaded_at=_case_reported(ds, ev["case_id"]), analysis_status="not_analysed", is_synthetic=True,
+                              dlp=dlp.scan_file(data, mime)))
         db.flush()
         audit.record(db, ev["case_id"], "system", "system", "evidence_received", {"evidence_id": eid, "filename": ev["filename"], "sha256": sha256(data)})
     db.flush()
@@ -145,4 +147,9 @@ def refresh_case_assessments(db: Session, case_ids: list[str] | None = None) -> 
 
 def reset_demo(db: Session) -> dict:
     wipe(db)
+    from app.services.mfa import reset as reset_mfa
+
+    # Demo accounts are shared: a reset also removes any authenticator someone enrolled on them.
+    for u in db.scalars(select(m.User).where(m.User.username.in_([x[0] for x in USERS]))).all():
+        reset_mfa(u)
     return seed(db)

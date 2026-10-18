@@ -1,0 +1,342 @@
+/* Plain-language layer for "Where the money went" (trail graph), Timeline and Evidence.
+   Same visual language as the rest of the app: square corners, 1px borders, one accent. */
+
+/* ------------------------------------------------------------ shared */
+.plain-sub {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--text);
+  margin: var(--s-3) 0 var(--s-2);
+}
+h5.plain-sub {
+  font-size: var(--fs-sm);
+}
+.name-btn {
+  font-size: inherit;
+  font-weight: 600;
+  text-align: left;
+  padding: 0;
+}
+.name-link {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.id-list-quiet .id-chip {
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+.card .disclosure {
+  margin-top: var(--s-3);
+}
+
+/* ------------------------------------------------------------ intro + lead sentence */
+.plain-intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  padding: var(--s-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+}
+.plain-intro-title {
+  font-size: var(--fs-lg);
+  font-weight: 650;
+  margin: 0;
+}
+.plain-lead {
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  color: var(--text);
+  max-width: 75ch;
+}
+
+/* ------------------------------------------------------------ filters */
+.more-filters-help {
+  flex: 1 1 100%;
+}
+
+/* ------------------------------------------------------------ node cards: sentence case, not shouting */
+.gnode .role-badge,
+.gnode .endpoint-badge,
+.gnode .disputed-tag {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 10.5px;
+}
+.gnode-ext,
+.gnode-kind {
+  color: var(--text-3);
+  margin-left: 3px;
+}
+.gnode-kind {
+  margin-left: 0;
+  margin-right: 3px;
+}
+
+/* ------------------------------------------------------------ legend */
+.trail-legend {
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.trail-legend-title {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  margin: 0;
+}
+.trail-legend-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 6px 24px;
+  font-size: var(--fs-sm);
+}
+.trail-legend-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.trail-legend-list .legend-line,
+.trail-legend-list .legend-box {
+  flex-shrink: 0;
+}
+
+/* ------------------------------------------------------------ money panel */
+.money-breakdown {
+  list-style: none;
+  margin: 0 0 var(--s-2);
+  padding: 0;
+  border: 1px solid var(--border);
+}
+.money-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);
+  gap: var(--s-3);
+  align-items: baseline;
+  padding: var(--s-2) var(--s-3);
+}
+.money-row + .money-row {
+  border-top: 1px solid var(--border);
+}
+.money-amount {
+  font-size: var(--fs-md);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.money-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.money-section {
+  margin-top: var(--s-3);
+}
+.plain-table th[scope="row"] {
+  font-weight: 500;
+}
+.method-explained {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.method-dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--s-2) var(--s-4);
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+.method-dl dt {
+  font-weight: 600;
+}
+.method-dl dd {
+  margin: 2px 0 0;
+  color: var(--text-2);
+}
+.method-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+/* ------------------------------------------------------------ routes the money took */
+.route-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.route {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.route:last-child {
+  border-bottom: 0;
+}
+.route-steps,
+.route-step {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.route-name,
+.route-amount {
+  background: none;
+  border: 1px solid transparent;
+  padding: 1px 4px;
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  color: var(--text);
+}
+.route-name {
+  font-weight: 600;
+  color: var(--accent-text);
+}
+.route-amount {
+  border-color: var(--border);
+  background: var(--surface-2);
+  font-variant-numeric: tabular-nums;
+}
+.route-name:hover,
+.route-amount:hover {
+  text-decoration: underline;
+}
+.route-name:focus-visible,
+.route-amount:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.route-arrow {
+  color: var(--text-3);
+}
+.followed-name {
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.money-panel .table thead th,
+.timeline-table thead th,
+.drawer .mini-table th {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.how-we-know {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.gnode .txn-status {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+@media (max-width: 640px) {
+  .graph-filters .seg-btn {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+  .plain-table thead {
+    display: none;
+  }
+  .plain-table tr {
+    display: block;
+    padding: var(--s-2) 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .plain-table th[scope="row"],
+  .plain-table td {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-3);
+    border: 0;
+    padding: 2px 0;
+    text-align: left;
+  }
+  .plain-table th[scope="row"] {
+    flex-direction: column;
+  }
+  .plain-table td::before {
+    content: attr(data-label);
+    color: var(--text-3);
+    font-family: var(--font-sans);
+  }
+  .money-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .trail-legend-list {
+    grid-template-columns: 1fr;
+  }
+  .plain-intro {
+    padding: var(--s-3);
+  }
+}
+
+/* ------------------------------------------------------------ timeline */
+.timeline-table .tl-what {
+  min-width: 220px;
+}
+.tl-kind {
+  display: flex;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  margin-bottom: 2px;
+}
+.tl-source {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.tl-source .id-chip {
+  font-size: 10.5px;
+}
+.timeline-table .txn-status {
+  text-transform: none;
+  letter-spacing: 0;
+}
+.method-table-v {
+  width: 100%;
+  max-width: 420px;
+}
+.method-table-v th,
+.method-table-v td {
+  padding: 4px 8px 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.method-table-v th[scope="row"] {
+  font-weight: 500;
+  white-space: normal;
+}
+.tl-what-body {
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 760px) {
+  .timeline-table td.tl-empty {
+    display: none;
+  }
+  .timeline-table td::before {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 12px;
+  }
+}

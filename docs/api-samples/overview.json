@@ -37,7 +37,7 @@
     "Beneficiary appears in other disputes"
    ],
    "next_action": {
-    "label": "Review 2 hold recommendations",
+    "label": "Decide on 2 suggested holds",
     "tab": "overview"
    }
   },
@@ -56,7 +56,7 @@
     "Beneficiary appears in other disputes"
    ],
    "next_action": {
-    "label": "Review 2 hold recommendations",
+    "label": "Decide on 2 suggested holds",
     "tab": "overview"
    }
   },
@@ -75,7 +75,7 @@
     "SLA pressure: Hold request to beneficiary bank in -24.0 h"
    ],
    "next_action": {
-    "label": "Review 1 hold recommendation",
+    "label": "Decide on 1 suggested hold",
     "tab": "overview"
    }
   },
@@ -94,7 +94,7 @@
     "Beneficiary appears in other disputes"
    ],
    "next_action": {
-    "label": "Triage: check the trail and claim the case",
+    "label": "Check the money trail and take the case",
     "tab": "graph"
    }
   },
@@ -111,7 +111,7 @@
     "Golden hour: up to ₹2,000 may still be in visible accounts"
    ],
    "next_action": {
-    "label": "Review 2 hold recommendations",
+    "label": "Decide on 2 suggested holds",
     "tab": "overview"
    }
   },
@@ -148,7 +148,7 @@
     "Beneficiary appears in other disputes"
    ],
    "next_action": {
-    "label": "Review 2 hold recommendations",
+    "label": "Decide on 2 suggested holds",
     "tab": "overview"
    }
   },
@@ -167,7 +167,7 @@
     "Beneficiary appears in other disputes"
    ],
    "next_action": {
-    "label": "Review 2 hold recommendations",
+    "label": "Decide on 2 suggested holds",
     "tab": "overview"
    }
   },
@@ -186,7 +186,7 @@
     "Beneficiary appears in other disputes"
    ],
    "next_action": {
-    "label": "Triage: check the trail and claim the case",
+    "label": "Check the money trail and take the case",
     "tab": "graph"
    }
   },
@@ -205,7 +205,7 @@
     "SLA pressure: Hold request to beneficiary bank in -24.0 h"
    ],
    "next_action": {
-    "label": "Review 1 hold recommendation",
+    "label": "Decide on 1 suggested hold",
     "tab": "overview"
    }
   },
@@ -222,7 +222,7 @@
     "Golden hour: up to ₹2,000 may still be in visible accounts"
    ],
    "next_action": {
-    "label": "Review 2 hold recommendations",
+    "label": "Decide on 2 suggested holds",
     "tab": "overview"
    }
   }

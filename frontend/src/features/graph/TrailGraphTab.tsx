@@ -16,7 +16,7 @@ import { useGraph, useMeta } from "../../api/hooks";
 import { useWorkspace } from "../case/workspace";
 import { useToast } from "../../components/Toast";
 import { ErrorState, Note, Skeleton, Spinner } from "../../components/Primitives";
-import { ProvenanceLegend, IdChip } from "../../components/Domain";
+import { IdChip } from "../../components/Domain";
 import { Drawer } from "../../components/Overlay";
 import { errorMessage } from "../../api/client";
 import type { GraphEdge, GraphNode, GraphQueryParams } from "../../types/api";
@@ -25,8 +25,14 @@ import { toFlow, type FlowNode } from "./flow";
 import { GraphFilters } from "./GraphFilters";
 import { NodeDetails, EdgeDetails } from "./DetailsPanel";
 import { AttributionPanel } from "./AttributionPanel";
-import { humanize } from "../../lib/format";
+import { formatMoney, humanize } from "../../lib/format";
+import { TrailLegend } from "./TrailLegend";
+import { leadSentence } from "./moneySummary";
+import { cleanName, directionLabel, relationLabel, windowLabel } from "./plainText";
 import { useCssVars } from "../../lib/cssVars";
+
+/** Smallest zoom on phones, so box text stays readable (people drag to see the rest). */
+const NARROW_MIN_ZOOM = 0.85;
 
 type Selection = { kind: "node"; id: string } | { kind: "edge"; id: string } | null;
 
@@ -109,7 +115,8 @@ function TrailGraph() {
             .map((n) => ({ id: n.id }))
         : [];
       const target = hl.length ? hl : start.length ? start : undefined;
-      rf.fitView({ nodes: target, padding: hl.length ? 0.5 : 0.06, duration: 300, maxZoom: 1.1 });
+      // On a phone, never shrink below a readable size: centre on the start of the trail and let people drag.
+      rf.fitView({ nodes: target, padding: hl.length ? 0.5 : 0.06, duration: 300, maxZoom: 1.1, minZoom: narrow ? NARROW_MIN_ZOOM : undefined });
     }, 180);
     return () => window.clearTimeout(t);
   }, [signature, highlight.join("|"), rf]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -118,6 +125,14 @@ function TrailGraph() {
   const edgeById = useMemo(() => new Map<string, GraphEdge>((q.data?.graph.edges ?? []).map((e) => [e.id, e])), [q.data]);
   const selectId = (id: string) => {
     if (nodeById.has(id)) setSel({ kind: "node", id });
+  };
+  // From the money panel below the map: open the details and bring the map into view.
+  const selectFromPanel = (id: string) => {
+    if (!nodeById.has(id)) return;
+    setSel({ kind: "node", id });
+    frameRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const narrow = (frameRef.current?.clientWidth ?? 1000) < 640;
+    rf.fitView({ nodes: [{ id }], padding: 0.8, duration: 300, maxZoom: 1.1, minZoom: narrow ? NARROW_MIN_ZOOM : undefined });
   };
 
   const onExpand = (id: string) => {
@@ -133,7 +148,7 @@ function TrailGraph() {
         <Skeleton height={520} />
       </div>
     );
-  if (q.error && !q.data) return <ErrorState error={q.error} onRetry={() => q.refetch()} title="Couldn't load the trail" />;
+  if (q.error && !q.data) return <ErrorState error={q.error} onRetry={() => q.refetch()} title="Couldn't load where the money went" />;
   if (!q.data) return null;
 
   const g = q.data.graph;
@@ -141,27 +156,43 @@ function TrailGraph() {
   const selNode = sel?.kind === "node" ? nodeById.get(sel.id) : undefined;
   const selEdge = sel?.kind === "edge" ? edgeById.get(sel.id) : undefined;
 
+  const stops = g.stats.endpoints;
   return (
     <div className="stack-lg">
+      <header className="plain-intro">
+        <h2 className="plain-intro-title">Where the money went</h2>
+        <p className="plain-lead">{leadSentence(q.data.attribution)}</p>
+        <p className="muted small">
+          The map follows the disputed payment of <strong className="num">{formatMoney(q.data.attribution.disputed_amount_minor, currency)}</strong> from account
+          to account. Click any box or line to see its details. The full breakdown is below the map.
+        </p>
+      </header>
+
       <GraphFilters value={params} onChange={(p) => setParams({ ...p, expand: p.direction === params.direction ? p.expand : [] })} relations={meta.data?.graph_relations} maxDepth={meta.data?.limits.max_depth ?? 5} />
 
       <div className="graph-status" aria-live="polite">
         <span className="muted small">
-          <span className="num">{g.stats.accounts}</span> accounts · <span className="num">{g.stats.transactions}</span> transactions ·{" "}
-          <span className="num">{g.stats.endpoints}</span> endpoints · window {humanize(g.params.direction)} {g.params.window_hours} h
+          Showing <span className="num">{g.stats.accounts}</span> account{g.stats.accounts === 1 ? "" : "s"} and{" "}
+          <span className="num">{g.stats.transactions}</span> payment{g.stats.transactions === 1 ? "" : "s"} — {directionLabel(g.params.direction)}, over{" "}
+          {windowLabel(g.params.window_hours)}. The trail stops at <span className="num">{stops}</span> place{stops === 1 ? "" : "s"}.
         </span>
-        {q.isFetching && <Spinner size={14} label="Updating trail" />}
+        {q.isFetching && <Spinner size={14} label="Updating the map" />}
         {params.expand.length > 0 && (
           <span className="small">
-            Expanded: {params.expand.map((id) => <IdChip key={id} id={id} />)}{" "}
+            Followed further from:{" "}
+            {params.expand.map((id) => (
+              <span key={id} className="followed-name">
+                {cleanName(nodeById.get(id)?.label) || <IdChip id={id} />}
+              </span>
+            ))}{" "}
             <button type="button" className="link-btn" onClick={() => setParams((p) => ({ ...p, expand: [] }))}>
-              Clear
+              Undo
             </button>
           </span>
         )}
         {highlight.length > 0 && (
           <span className="hl-bar">
-            <Eye size={14} aria-hidden="true" /> Highlighting {highlight.length} record{highlight.length > 1 ? "s" : ""}
+            <Eye size={14} aria-hidden="true" /> Highlighting {highlight.length} item{highlight.length > 1 ? "s" : ""} from another tab
             <button type="button" className="icon-btn icon-btn-sm" onClick={clearHighlight} aria-label="Clear highlight">
               <X size={13} />
             </button>
@@ -171,7 +202,7 @@ function TrailGraph() {
 
       {(g.truncated || g.warnings.length > 0) && (
         <Note tone="warn" icon={<AlertTriangle size={15} />}>
-          {g.truncated && <p>Trace limits were reached — not all activity is shown. Expand an account or narrow the filters.</p>}
+          {g.truncated && <p>Not everything is shown — the trail was too big. Use “Follow further” on an account, or show fewer steps.</p>}
           {g.warnings.map((w, i) => (
             <p key={i}>{w}</p>
           ))}
@@ -180,20 +211,21 @@ function TrailGraph() {
       {onlyRoot && (
         <Note tone="neutral" icon={<Layers size={15} />}>
           <p>
-            <strong>No onward trail visible.</strong> Only the disputed transaction is on the trail with these filters.
+            <strong>We can't see the money move on from here.</strong> With these settings, only the disputed payment is on the map.
           </p>
           {g.nodes
             .filter((n) => n.type === "account" && n.endpoint)
             .map((n) => (
               <p key={n.id}>
-                <IdChip id={n.id} /> {n.endpoint_reason ?? humanize(n.endpoint ?? "")}
-                {n.expandable ? " — use Expand on the node to follow it." : ""}
+                <strong>{cleanName(n.label) || n.id}</strong> <span className="muted small mono">{n.id}</span> — {n.endpoint_reason ?? humanize(n.endpoint ?? "")}
+                {n.expandable ? " Use “Follow further” on its box to keep going." : ""}
               </p>
             ))}
-          <p className="muted">Try “Both” directions or a longer window. Unknown beyond this point is not the same as absent.</p>
+          <p className="muted">Try “Both” or a longer time period. Not seeing it here does not mean it didn't happen.</p>
         </Note>
       )}
 
+      <p className="graph-phone-hint small muted">Drag the map with one finger to follow the money, or see “Routes the money took” below for the same trail as a list.</p>
       <div className="graph-frame" ref={frameRef}>
         <GraphActionsCtx.Provider value={{ onExpand, expanding, currency }}>
           <ReactFlow
@@ -211,7 +243,7 @@ function TrailGraph() {
             maxZoom={2}
             nodesConnectable={false}
             elementsSelectable
-            aria-label="Transaction trail graph"
+            aria-label="Map of where the money went"
           >
             <Background variant={BackgroundVariant.Dots} gap={18} size={1.2} color={colors.dot} />
             <Controls showInteractive={false} position="bottom-left" />
@@ -221,41 +253,30 @@ function TrailGraph() {
         <Drawer
           open={!!(selNode || selEdge)}
           onClose={() => setSel(null)}
-          title={selNode ? (selNode.type === "transaction" ? `Transaction ${selNode.id}` : selNode.type === "evidence" ? `Evidence ${selNode.id}` : selNode.label) : selEdge ? humanize(selEdge.type) : ""}
-          subtitle={selNode && selNode.type === "account" ? <span className="mono">{selNode.id}</span> : selEdge ? <span className="mono small">{selEdge.id}</span> : undefined}
+          title={
+            selNode
+              ? selNode.type === "transaction"
+                ? `${selNode.roles?.includes("disputed") ? "Disputed payment" : "Payment"} of ${formatMoney(selNode.data.amount_minor, selNode.data.currency)}`
+                : selNode.type === "evidence"
+                  ? `Evidence: ${selNode.label}`
+                  : cleanName(selNode.label)
+              : selEdge
+                ? relationLabel(selEdge.type)
+                : ""
+          }
+          subtitle={selNode ? <span className="mono small">{selNode.id}</span> : undefined}
         >
-          {selNode && <NodeDetails node={selNode} att={q.data.attribution} onSelect={selectId} />}
-          {selEdge && <EdgeDetails edge={selEdge} currency={currency} onSelect={selectId} />}
+          {selNode && <NodeDetails node={selNode} att={q.data.attribution} nodes={nodeById} onSelect={selectId} />}
+          {selEdge && <EdgeDetails edge={selEdge} currency={currency} nodes={nodeById} onSelect={selectId} />}
         </Drawer>
       </div>
-      <div className="legend-strip" aria-label="Graph legend">
-        <ProvenanceLegend compact />
-        <ul className="legend-extra">
-          <li>
-            <svg width="34" height="10" aria-hidden="true">
-              <line x1="1" y1="5" x2="33" y2="5" stroke="var(--prov-derived)" strokeWidth="1.75" strokeDasharray="6 5" />
-            </svg>
-            <span>
-              <strong>Possible onward funding</strong> <span className="muted">(range from balance arithmetic)</span>
-            </span>
-          </li>
-          <li>
-            <span className="legend-box legend-disputed" aria-hidden="true" />
-            <span>Disputed transaction</span>
-          </li>
-          <li>
-            <span className="legend-box legend-muted" aria-hidden="true" />
-            <span>Failed / reversed</span>
-          </li>
-          <li className="muted">Line width grows with the amount</li>
-        </ul>
-      </div>
+      <TrailLegend />
 
       <p className="muted small graph-hint">
-        Click a node or line for its records. Drag to pan, scroll or pinch to zoom. The Timeline tab lists the same trail as an accessible table.
+        Click a box or line to see its details. Drag to move the map; scroll or pinch to zoom. Prefer a list? The Timeline tab shows the same payments in time order.
       </p>
 
-      <AttributionPanel att={q.data.attribution} paths={g.paths} onSelect={selectId} />
+      <AttributionPanel att={q.data.attribution} paths={g.paths} nodes={nodeById} onSelect={selectFromPanel} />
     </div>
   );
 }

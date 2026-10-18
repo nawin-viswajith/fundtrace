@@ -12,6 +12,7 @@ from app.ai import prompts, validator
 from app.ai.llm import get_gateway
 from app.ai.schemas import Classification, CopilotAnswer
 from app.ai.snapshot import build_snapshot, referenced_records, snapshot_json
+from app.services.dlp import redact_for_llm
 from app.services.investigation import build_context
 from app.services.scoring import CATEGORIES
 
@@ -42,7 +43,7 @@ def ask(db: Session, case: m.DisputeCase, question: str, user: m.User) -> dict:
 def classify_statement(db: Session, case: m.DisputeCase, gateway=None, node: str = "classify"):
     """One Gemini classification call on the (untrusted) customer statement. Returns the LLMResult."""
     gw = gateway or get_gateway()
-    contents = [f"{prompts.CLASSIFY_INSTRUCTIONS}\n\nCUSTOMER STATEMENT: {prompts.fence(case.allegation)}"]
+    contents = [f"{prompts.CLASSIFY_INSTRUCTIONS}\n\nCUSTOMER STATEMENT: {prompts.fence(redact_for_llm(case.allegation))}"]
     return gw.generate(node=node, prompt_version=prompts.CLASSIFY_V, contents=contents, schema=Classification, tier="fast",
                        system=prompts.GROUND_RULES, case_id=case.id, run_id=None, temperature=0.0, db=db)
 

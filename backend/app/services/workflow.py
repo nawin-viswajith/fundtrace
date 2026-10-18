@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app import audit
 from app import models as m
+from app.services import dlp
 from app.services.scoring import CATEGORIES
 
 STATUSES = ["new", "triage", "investigating", "awaiting_evidence", "ready_for_review", "escalated", "resolved"]
@@ -36,11 +37,13 @@ def apply_action(db: Session, case: m.DisputeCase, user: m.User, body: dict) -> 
         text = (body.get("body") or "").strip()
         if not 2 <= len(text) <= 5000:
             _err(422, "Note must be 2–5000 characters")
+        text, masked = dlp.mask(text)  # card / Aadhaar numbers and OTPs never reach the database
         note = m.CaseNote(case_id=case.id, author_id=user.id, body=text)
         db.add(note)
         db.flush()
-        audit.record(db, case.id, actor, role, "note_added", {"note_id": note.id, "length": len(text)})
-        return {"ok": True, "note_id": note.id}
+        audit.record(db, case.id, actor, role, "note_added", {"note_id": note.id, "length": len(text),
+                                                               "dlp_masked": [{"type": f["type"], "count": f["count"]} for f in masked]})
+        return {"ok": True, "note_id": note.id, "masked": masked}
 
     if kind == "assign":
         target = body.get("user_id")

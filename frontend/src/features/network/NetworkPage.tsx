@@ -95,8 +95,8 @@ export default function NetworkPage() {
   const q = useRings();
   return (
     <div className="page">
-      <SectionTitle>Network signals</SectionTitle>
-      <p className="page-lede">Accounts that connect several disputes, by transfers or shared devices. Use these to coordinate review across cases.</p>
+      <SectionTitle>Linked cases</SectionTitle>
+      <p className="page-lede">Groups of disputes connected through the same receiving accounts or the same phone/device. One person may be behind several of them, so review them together.</p>
       {q.isLoading ? (
         <LoadingBlock label="Scanning trails" lines={6} />
       ) : q.error ? (

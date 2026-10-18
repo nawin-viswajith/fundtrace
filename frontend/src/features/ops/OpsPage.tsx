@@ -13,6 +13,7 @@ import { useToast } from "../../components/Toast";
 import { formatInt, formatMs, formatPct, formatUsd, humanize } from "../../lib/format";
 import type { EvalRun, OpsMetrics } from "../../types/api";
 import { CostPerDayChart, QualityTrendChart, VerdictChart } from "./charts";
+import { IngestCard, SecurityCard, UsersCard } from "./AdminPanels";
 
 function Kpi({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -31,8 +32,8 @@ export default function OpsPage() {
   const evals = useOpsEvals();
   return (
     <div className="page">
-      <SectionTitle>AI Ops</SectionTitle>
-      <p className="page-lede">Cost, quality, latency and evaluation for every AI call. Last {m.data?.window_days ?? 14} days.</p>
+      <SectionTitle>AI and system health</SectionTitle>
+      <p className="page-lede">How well the AI is working (accuracy, speed, cost), ledger deliveries and security settings. Last {m.data?.window_days ?? 14} days.</p>
       {m.isLoading ? (
         <LoadingBlock label="Loading AI metrics" lines={8} />
       ) : m.error ? (
@@ -92,6 +93,9 @@ export default function OpsPage() {
       </Card>
 
       <EvalSection runs={evals.data?.runs} loading={evals.isLoading} error={evals.error} retry={() => evals.refetch()} canRun={canSupervise(user)} />
+      {canSupervise(user) && <IngestCard canUpload={user?.role === "admin"} />}
+      {canSupervise(user) && <SecurityCard />}
+      {user?.role === "admin" && <UsersCard />}
       {user?.role === "admin" && <AdminCard />}
       {user?.role === "admin" && <RetentionCard />}
     </div>

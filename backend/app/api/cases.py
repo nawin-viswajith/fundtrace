@@ -12,6 +12,7 @@ from app import models as m
 from app.config import get_settings
 from app.db import get_db
 from app.security import can_access_case, current_user, load_case_for
+from app.services import dlp
 from app.services import investigation as inv
 from app.services.storage import StorageError, get_storage, sha256, sniff_mime
 from app.services.trace import fmt_amount
@@ -222,13 +223,17 @@ async def upload_evidence(case_id: str, file: UploadFile = File(...), checklist_
     uri = get_storage().put(data, case.id, mime)
     eid = "EV-" + uuid.uuid4().hex[:8].upper()
     name = (file.filename or "upload").replace("/", "_").replace("\\", "_")[:200]
+    scan = dlp.scan_file(data, mime)
     db.add(m.EvidenceItem(id=eid, case_id=case.id, kind=kind, checklist_key=checklist_key, filename=name, mime=mime, sha256=sha256(data),
-                          storage_uri=uri, size=len(data), uploaded_by=user.username, analysis_status="not_analysed", is_synthetic=False))
+                          storage_uri=uri, size=len(data), uploaded_by=user.username, analysis_status="not_analysed", is_synthetic=False,
+                          dlp=scan))
     db.flush()
     audit.record(db, case.id, user.username, user.role, "evidence_uploaded", {"evidence_id": eid, "filename": name, "sha256": sha256(data),
-                                                                               "size": len(data), "mime": mime})
+                                                                               "size": len(data), "mime": mime, "dlp_status": scan["status"],
+                                                                               "dlp_findings": [{"type": f["type"], "count": f["count"]}
+                                                                                                for f in scan["findings"]]})
     db.commit()
-    return {"id": eid, "analysis_status": "not_analysed"}
+    return {"id": eid, "analysis_status": "not_analysed", "dlp": scan}
 
 
 @router.post("/cases/{case_id}/evidence/{evidence_id}/analyse")
@@ -356,6 +361,87 @@ def ask(case_id: str, body: AskIn, user: m.User = Depends(current_user), db: Ses
     out = copilot_ask(db, case, body.question, user)
     db.commit()
     return out
+
+
+class AssistantIn(BaseModel):
+    message: str = Field(min_length=1, max_length=1000)
+    history: list[dict] = Field(default_factory=list, max_length=20)
+
+
+@router.post("/cases/{case_id}/assistant")
+def assistant(case_id: str, body: AssistantIn, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    """The case assistant (chat bubble): answers about the case and edits the AI report draft on request."""
+    from app.ai.assistant import chat
+
+    case = load_case_for(user, db, case_id)
+    out = chat(db, case, user, body.message, body.history)
+    db.commit()
+    return out
+
+
+def _report_for(user: m.User, db: Session, report_id: str) -> m.Report:
+    rep = db.get(m.Report, report_id)
+    if rep is None:
+        raise HTTPException(404, "Report not found")
+    load_case_for(user, db, rep.case_id)
+    return rep
+
+
+@router.get("/reports/{report_id}/draft")
+def get_draft(report_id: str, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    from app.services.report_drafts import draft_dict, open_draft
+
+    rep = _report_for(user, db, report_id)
+    return {"draft": draft_dict(open_draft(db, rep), rep)}
+
+
+class DraftOpIn(BaseModel):
+    op: str = Field(max_length=32)
+    section_key: str | None = Field(default=None, max_length=48)
+    claim_ids: list[str] = Field(default_factory=list, max_length=200)
+
+
+@router.post("/reports/{report_id}/draft/ops")
+def draft_op(report_id: str, body: DraftOpIn, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    from app.services.report_drafts import apply_op
+
+    rep = _report_for(user, db, report_id)
+    out = apply_op(db, rep, user, body.op, section_key=body.section_key, claim_ids=body.claim_ids, via="manual")
+    db.commit()
+    return out
+
+
+@router.post("/reports/{report_id}/draft/save")
+def draft_save(report_id: str, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    from app.services.report_drafts import save_draft
+
+    rep = _report_for(user, db, report_id)
+    new = save_draft(db, rep, user)
+    db.commit()
+    return report_full(db, new)
+
+
+@router.post("/reports/{report_id}/draft/discard")
+def draft_discard(report_id: str, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    from app.services.report_drafts import discard_draft
+
+    rep = _report_for(user, db, report_id)
+    discard_draft(db, rep, user)
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/reports/{report_id}/judge")
+def rejudge(report_id: str, all_claims: bool = False, user: m.User = Depends(current_user), db: Session = Depends(get_db)):
+    """Re-run only the fact-check (judge) for this report — by default just the claims it could not judge."""
+    from app.ai.investigator import rejudge_report
+
+    rep = _report_for(user, db, report_id)
+    result = rejudge_report(db, rep, user.username, user.role, only_unjudged=not all_claims)
+    if not result["ok"]:
+        raise HTTPException(409, result["message"])
+    db.commit()
+    return {"result": result, "report": report_full(db, rep)}
 
 
 @router.post("/cases/{case_id}/classify")

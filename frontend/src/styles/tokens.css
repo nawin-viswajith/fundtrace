@@ -1,18 +1,24 @@
 /* ==========================================================================
-   Design tokens — "Financial Intelligence".
-   Dark navy with a restrained teal accent is the default. The light theme
-   (off-white / slate, darker teal) applies when the user picks it
-   (data-theme="light" on <html>) and inside .theme-light (the print view).
+   Design tokens: light, flat and square.
+   Light (white surfaces, neutral greys, one ink-blue accent) is the default on
+   :root and inside .theme-light (the print view). The dark theme applies only
+   when the user picks it (data-theme="dark" on <html>).
+   Corners are square (radius tokens are 0) and surfaces are separated by 1px
+   hairlines rather than shadows. Colour is reserved for status: red / amber /
+   green, plus the provenance hues the trail graph needs.
    Soft tints are opaque so graph nodes never show edges through them.
-   Every text/background pair used by chips, badges and buttons is checked
-   for WCAG AA (4.5:1) in both themes.
+   Every text/background pair used by chips, badges and buttons meets WCAG AA
+   (4.5:1) in both themes.
+   Token names are a stable contract for other stylesheets: change values, not
+   names (add an alias if a name ever has to go).
    ========================================================================== */
-:root {
-  color-scheme: dark;
+:root,
+.theme-light {
+  color-scheme: light;
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* spacing: 8px grid */
+  /* spacing: 4px base */
   --s-1: 4px;
   --s-2: 8px;
   --s-3: 12px;
@@ -21,164 +27,175 @@
   --s-6: 32px;
   --s-7: 48px;
 
-  --radius-sm: 6px;
-  --radius: 8px;
-  --radius-lg: 10px;
-  --nav-w: 220px;
-  --topbar-h: 56px;
-  --banner-h: 28px;
+  /* type scale */
+  --fs-xs: 11.5px;
+  --fs-sm: 12.5px;
+  --fs-base: 13.5px;
+  --fs-md: 15px;
+  --fs-lg: 18px;
+  --fs-xl: 22px;
 
-  /* neutrals: deep navy */
-  --bg: #0f1626;
-  --surface: #162133;
-  --surface-2: #1b283d;
-  --surface-3: #233149;
-  --border: #26334a;
-  --border-strong: #3b4b67;
-  --text: #e6eaf2;
-  --text-2: #a9b3c6;
-  --text-3: #8f9bb0;
-  --shadow-sm: 0 1px 2px rgba(3, 7, 15, 0.35);
-  --shadow: 0 1px 3px rgba(3, 7, 15, 0.45), 0 1px 2px rgba(3, 7, 15, 0.3);
-  --shadow-lg: 0 12px 32px rgba(3, 7, 15, 0.55), 0 2px 6px rgba(3, 7, 15, 0.35);
-  --overlay: rgba(5, 9, 18, 0.62);
-  --minimap-mask: rgba(5, 9, 18, 0.55);
+  /* square corners everywhere */
+  --radius-sm: 0;
+  --radius: 0;
+  --radius-lg: 0;
+  --nav-w: 208px;
+  --topbar-h: 52px;
+  --banner-h: 26px;
+  --control-h: 32px;
+  --control-h-sm: 28px;
 
-  /* accent: restrained teal */
-  --accent: #2dd4bf;
-  --accent-hover: #5eead4;
-  --accent-soft: #193a47;
-  --accent-text: #5eead4;
-  --on-accent: #0f1626;
-  --focus: #2dd4bf;
+  /* neutrals */
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f4f5f7;
+  --surface-3: #e9ebef;
+  --border: #e2e5ea;
+  --border-strong: #c3c8d0;
+  --text: #14181f;
+  --text-2: #3b424d;
+  --text-3: #5f6673;
+  /* flat: cards carry no shadow; floating layers get one faint lift */
+  --shadow-sm: none;
+  --shadow: none;
+  --shadow-lg: 0 6px 16px rgba(20, 24, 31, 0.08);
+  --overlay: rgba(20, 24, 31, 0.32);
+  --minimap-mask: rgba(20, 24, 31, 0.1);
 
-  /* semantic tones */
-  --good: #4ade80;
-  --good-soft: #1c3a35;
-  --good-text: #86efac;
-  --on-good: #0f1626;
-  --warn: #fbbf24;
-  --warn-soft: #36362c;
-  --warn-text: #fcd34d;
-  --bad: #f87171;
-  --bad-soft: #382c3b;
-  --bad-text: #fca5a5;
-  --on-bad: #0f1626;
-  --neutral-soft: #233149;
-  --neutral-text: #c3cad8;
+  /* accent: ink blue (AA as text and as a button background) */
+  --accent: #1f3a7a;
+  --accent-hover: #172d60;
+  --accent-soft: #eef1f8;
+  --accent-text: #1f3a7a;
+  --on-accent: #ffffff;
+  --focus: #1f3a7a;
+
+  /* semantic tones (status only) */
+  --good: #15803d;
+  --good-soft: #edf7f0;
+  --good-text: #166534;
+  --on-good: #ffffff;
+  --warn: #b45309;
+  --warn-soft: #fcf4e6;
+  --warn-text: #8a4300;
+  --bad: #b91c1c;
+  --bad-soft: #fcefef;
+  --bad-text: #a11d1d;
+  --on-bad: #ffffff;
+  --neutral-soft: #f0f1f4;
+  --neutral-text: #3d4450;
 
   /* provenance: confirmed green, derived blue, inferred amber (dashed),
      unknown grey (dotted), contradictory red */
-  --prov-confirmed: #4ade80;
-  --prov-confirmed-soft: #1c3a35;
-  --prov-confirmed-text: #86efac;
-  --prov-derived: #60a5fa;
-  --prov-derived-soft: #20334f;
-  --prov-derived-text: #93c5fd;
-  --prov-inferred: #fbbf24;
-  --prov-inferred-soft: #36362c;
-  --prov-inferred-text: #fcd34d;
-  --prov-unknown: #8f9bb0;
-  --prov-unknown-soft: #233149;
-  --prov-unknown-text: #c3cad8;
-  --prov-contradictory: #f87171;
-  --prov-contradictory-soft: #382c3b;
-  --prov-contradictory-text: #fca5a5;
+  --prov-confirmed: #15803d;
+  --prov-confirmed-soft: #edf7f0;
+  --prov-confirmed-text: #166534;
+  --prov-derived: #2557c7;
+  --prov-derived-soft: #eef2fb;
+  --prov-derived-text: #1e48a8;
+  --prov-inferred: #b26b00;
+  --prov-inferred-soft: #fcf4e6;
+  --prov-inferred-text: #8a4300;
+  --prov-unknown: #7a818c;
+  --prov-unknown-soft: #f0f1f4;
+  --prov-unknown-text: #48505c;
+  --prov-contradictory: #b91c1c;
+  --prov-contradictory-soft: #fcefef;
+  --prov-contradictory-text: #a11d1d;
 
   /* severity */
-  --sev-high: #f87171;
-  --sev-high-soft: #382c3b;
-  --sev-high-text: #fca5a5;
-  --sev-medium: #fbbf24;
-  --sev-medium-soft: #36362c;
-  --sev-medium-text: #fcd34d;
-  --sev-low: #8f9bb0;
-  --sev-low-soft: #233149;
-  --sev-low-text: #c3cad8;
+  --sev-high: #b91c1c;
+  --sev-high-soft: #fcefef;
+  --sev-high-text: #a11d1d;
+  --sev-medium: #b45309;
+  --sev-medium-soft: #fcf4e6;
+  --sev-medium-text: #8a4300;
+  --sev-low: #5f6673;
+  --sev-low-soft: #f0f1f4;
+  --sev-low-text: #3d4450;
 
   /* graph canvas */
-  --canvas: #111a2b;
-  --canvas-dot: #2a3850;
-  --disputed: #2dd4bf;
+  --canvas: #fbfbfc;
+  --canvas-dot: #d9dde3;
+  --disputed: #1f3a7a;
   /* charts */
-  --chart-1: #2dd4bf;
-  --chart-2: #fbbf24;
-  --chart-grid: #26334a;
-  --chart-axis: #a9b3c6;
+  --chart-1: #1f3a7a;
+  --chart-2: #b45309;
+  --chart-grid: #e9ebef;
+  --chart-axis: #5f6673;
 }
 
-:root[data-theme="light"],
-.theme-light {
-  color-scheme: light;
-  /* neutrals: off-white / slate */
-  --bg: #f4f6f9;
-  --surface: #ffffff;
-  --surface-2: #f1f4f8;
-  --surface-3: #e5eaf0;
-  --border: #dde3ea;
-  --border-strong: #b9c3d0;
-  --text: #0f1a2a;
-  --text-2: #3d495c;
-  --text-3: #5a6578;
-  --shadow-sm: 0 1px 2px rgba(15, 26, 42, 0.05);
-  --shadow: 0 1px 3px rgba(15, 26, 42, 0.08), 0 1px 2px rgba(15, 26, 42, 0.04);
-  --shadow-lg: 0 12px 32px rgba(15, 26, 42, 0.14), 0 2px 6px rgba(15, 26, 42, 0.06);
-  --overlay: rgba(15, 22, 38, 0.38);
-  --minimap-mask: rgba(15, 22, 38, 0.14);
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  /* neutrals: graphite */
+  --bg: #121417;
+  --surface: #181a1e;
+  --surface-2: #1e2125;
+  --surface-3: #272a30;
+  --border: #2d3137;
+  --border-strong: #454b54;
+  --text: #e6e8eb;
+  --text-2: #b4b9c1;
+  --text-3: #959ba4;
+  --shadow-sm: none;
+  --shadow: none;
+  --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.4);
+  --overlay: rgba(0, 0, 0, 0.55);
+  --minimap-mask: rgba(0, 0, 0, 0.45);
 
-  /* accent: darker teal (AA as text and as button background) */
-  --accent: #0f766e;
-  --accent-hover: #115e59;
-  --accent-soft: #e3f3f1;
-  --accent-text: #0d6b64;
-  --on-accent: #ffffff;
-  --focus: #0f766e;
+  /* accent: light ink blue */
+  --accent: #9fb6ee;
+  --accent-hover: #b8c9f3;
+  --accent-soft: #1f2636;
+  --accent-text: #aec2f2;
+  --on-accent: #111318;
+  --focus: #9fb6ee;
 
-  --good: #2e7d32;
-  --good-soft: #e8f4e9;
-  --good-text: #1f6224;
-  --on-good: #ffffff;
-  --warn: #b26b00;
-  --warn-soft: #fdf1dc;
-  --warn-text: #7f4c00;
-  --bad: #c3342b;
-  --bad-soft: #fdecea;
-  --bad-text: #9a241c;
-  --on-bad: #ffffff;
-  --neutral-soft: #edf0f4;
-  --neutral-text: #434d5e;
+  --good: #5cc287;
+  --good-soft: #17261d;
+  --good-text: #8ad7a7;
+  --on-good: #111318;
+  --warn: #e0a43a;
+  --warn-soft: #2a2316;
+  --warn-text: #ecc277;
+  --bad: #ef7575;
+  --bad-soft: #2d1b1c;
+  --bad-text: #f4a6a6;
+  --on-bad: #111318;
+  --neutral-soft: #24272c;
+  --neutral-text: #c4c8cf;
 
-  --prov-confirmed: #2e7d32;
-  --prov-confirmed-soft: #e8f4e9;
-  --prov-confirmed-text: #1f6224;
-  --prov-derived: #2563eb;
-  --prov-derived-soft: #e8effc;
-  --prov-derived-text: #1d4ed8;
-  --prov-inferred: #b8740f;
-  --prov-inferred-soft: #fcf1de;
-  --prov-inferred-text: #85520a;
-  --prov-unknown: #7d8798;
-  --prov-unknown-soft: #edf0f4;
-  --prov-unknown-text: #4a5466;
-  --prov-contradictory: #c8372d;
-  --prov-contradictory-soft: #fdeceb;
-  --prov-contradictory-text: #9c261e;
+  --prov-confirmed: #5cc287;
+  --prov-confirmed-soft: #17261d;
+  --prov-confirmed-text: #8ad7a7;
+  --prov-derived: #7ea2ee;
+  --prov-derived-soft: #1c2436;
+  --prov-derived-text: #a8c0f3;
+  --prov-inferred: #e0a43a;
+  --prov-inferred-soft: #2a2316;
+  --prov-inferred-text: #ecc277;
+  --prov-unknown: #959ba4;
+  --prov-unknown-soft: #24272c;
+  --prov-unknown-text: #c4c8cf;
+  --prov-contradictory: #ef7575;
+  --prov-contradictory-soft: #2d1b1c;
+  --prov-contradictory-text: #f4a6a6;
 
-  --sev-high: #c3342b;
-  --sev-high-soft: #fdecea;
-  --sev-high-text: #9a241c;
-  --sev-medium: #b26b00;
-  --sev-medium-soft: #fdf1dc;
-  --sev-medium-text: #7f4c00;
-  --sev-low: #5b6577;
-  --sev-low-soft: #edf0f4;
-  --sev-low-text: #434d5e;
+  --sev-high: #ef7575;
+  --sev-high-soft: #2d1b1c;
+  --sev-high-text: #f4a6a6;
+  --sev-medium: #e0a43a;
+  --sev-medium-soft: #2a2316;
+  --sev-medium-text: #ecc277;
+  --sev-low: #959ba4;
+  --sev-low-soft: #24272c;
+  --sev-low-text: #c4c8cf;
 
-  --canvas: #f9fafc;
-  --canvas-dot: #d3d9e1;
-  --disputed: #0f766e;
-  --chart-1: #0f766e;
-  --chart-2: #b8740f;
-  --chart-grid: #e5eaf0;
-  --chart-axis: #5a6578;
+  --canvas: #15171a;
+  --canvas-dot: #30343a;
+  --disputed: #9fb6ee;
+  --chart-1: #9fb6ee;
+  --chart-2: #e0a43a;
+  --chart-grid: #2d3137;
+  --chart-axis: #b4b9c1;
 }

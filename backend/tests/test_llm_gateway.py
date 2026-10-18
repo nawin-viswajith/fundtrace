@@ -99,3 +99,33 @@ def test_slow_pro_model_falls_back_to_next_in_chain(gw, db):
     r = gw.generate(node="draft_report", prompt_version="t", contents=["x"], schema=Classification, tier="pro", db=db)
     assert r.ok and r.model == "gemini-3.8-flash" and fm.seen == ["gemini-3.1-pro-preview", "gemini-3.8-flash"]
     db.rollback()
+
+
+def test_parallel_calls_share_one_client(monkeypatch):
+    """Parallel fact-check batches on a fresh instance must not each build (and close) their own client."""
+    import sys
+    import threading
+    import time
+    import types
+
+    made = []
+
+    class Client:
+        def __init__(self, **kw):
+            time.sleep(0.05)  # widen the race window
+            made.append(self)
+
+    fake = types.ModuleType("google.genai")
+    fake.Client = Client
+    import google
+
+    monkeypatch.setitem(sys.modules, "google.genai", fake)
+    monkeypatch.setattr(google, "genai", fake, raising=False)
+    from app.ai.llm import GeminiGateway
+
+    gw = GeminiGateway()
+    got = []
+    threads = [threading.Thread(target=lambda: got.append(gw.client())) for _ in range(8)]
+    [t.start() for t in threads]
+    [t.join() for t in threads]
+    assert len(made) == 1 and all(c is made[0] for c in got)

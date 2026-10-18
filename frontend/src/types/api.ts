@@ -26,15 +26,34 @@ export interface User {
   username: string;
   full_name: string;
   role: Role;
+  mfa_enabled?: boolean;
+  mfa_required?: boolean;
 }
 export interface MeResponse {
   user: User;
+}
+/** Sign-in result: a session, or a second step (MFA code / MFA enrolment) carried by a short-lived token. */
+export type LoginResult =
+  | { user: User }
+  | { mfa_required: true; mfa_token: string }
+  | { mfa_enrollment_required: true; mfa_token: string };
+export interface MfaSetup {
+  secret: string;
+  otpauth_uri: string;
+  qr_svg: string | null;
+}
+export interface FirebaseWebConfig {
+  apiKey: string;
+  authDomain: string;
+  projectId: string;
 }
 export interface AuthConfig {
   demo: boolean;
   demo_users: { username: string; role: Role }[];
   demo_password: string | null;
   firebase_enabled: boolean;
+  firebase?: FirebaseWebConfig | null;
+  mfa_required_roles?: Role[];
   synthetic_data: boolean;
 }
 
@@ -400,6 +419,40 @@ export interface EvidenceItem {
   retention_status?: "active" | "deletion_requested" | "deleted";
   retention_note?: string | null;
   deleted_at?: string | null;
+  dlp?: DlpResult | null;
+  score?: EvidenceScore | null;
+}
+export interface DlpFinding {
+  type: string;
+  label: string;
+  count: number;
+  likelihood: string;
+  masked_in_notes: boolean;
+}
+export interface DlpResult {
+  backend: string;
+  status: "scanned" | "not_scanned";
+  findings: DlpFinding[];
+  note?: string;
+  scanned_at?: string;
+}
+export interface EvidenceScoreCategory {
+  key: string;
+  label: string;
+  weight: number;
+  score: number | null;
+  basis: string;
+  about: string;
+  reasons: string[];
+}
+export interface EvidenceScore {
+  version: string;
+  overall: number;
+  uncapped: number;
+  band: "strong" | "moderate" | "weak" | "very_weak";
+  caps: { cap: number; reason: string }[];
+  categories: EvidenceScoreCategory[];
+  note: string;
 }
 export interface EvidenceRequest {
   id: number;
@@ -538,6 +591,48 @@ export interface ReportSection {
   key: string;
   title: string;
   claims: Claim[];
+  /** Set on a draft (and a version saved from it) when the section was cleared. */
+  cleared?: boolean;
+}
+export interface DraftChange {
+  op: "clear_section" | "restore_section" | "remove_claims";
+  section_key: string | null;
+  claim_ids: string[];
+  by: string;
+  via: "assistant" | "manual" | string;
+  at: string;
+}
+export interface ReportDraft {
+  id: number;
+  report_id: string;
+  base_version: number;
+  sections: ReportSection[];
+  changes: DraftChange[];
+  claims_before: number;
+  claims_after: number;
+  created_by: string;
+  updated_at: string | null;
+}
+export interface DraftOpResult {
+  draft: ReportDraft | null;
+  summary: string;
+  changed: boolean;
+}
+export type AssistantTab = "overview" | "graph" | "timeline" | "risk" | "evidence" | "report" | "audit";
+export interface AssistantReply {
+  status: "ok" | "not_analysed" | "invalid" | string;
+  text?: string;
+  claims: Claim[];
+  records: Record<string, SnapshotRecord>;
+  insufficient_data?: boolean;
+  follow_up_questions: string[];
+  action?: { kind: string; section_key: string | null; claim_ids: string[]; changed: boolean };
+  ignored_action?: string;
+  navigate?: { tab: AssistantTab; section?: string | null };
+  draft?: ReportDraft | null;
+  flagged?: number;
+  model?: string;
+  cost_usd?: number;
 }
 export interface RecommendedAction {
   action_type: string;
@@ -924,4 +1019,46 @@ export interface GraphQueryParams {
   status: TxnStatus[];
   rel: string[];
   expand: string[];
+}
+
+// ------------------------------------------------------------------ admin: users, security, ledger ingest
+export interface AdminUser {
+  id: number;
+  username: string;
+  full_name: string;
+  role: Role;
+  is_active: boolean;
+  mfa_enabled: boolean;
+  mfa_required: boolean;
+  recovery_codes_left: number | null;
+}
+export interface SecurityStatus {
+  encryption: { algorithm: string; active_key: string; keys: number; key_source: string; fields: string[] };
+  dlp: { backend: string; detects: string[]; masked_in_notes_and_llm_input: string[] };
+  mfa: { required_roles: string[]; enrolled: number; users: number };
+  firebase_sign_in: boolean;
+  pubsub_ingest: boolean;
+}
+export interface IngestEvent {
+  id: number;
+  message_id: string;
+  channel: "pubsub" | "upload" | string;
+  source_system: string;
+  format: string;
+  status: "processed" | "partial" | "rejected" | string;
+  records_in: number;
+  created: number;
+  merged: number;
+  duplicates: number;
+  rejected: { source: string; reason: string }[];
+  placeholder_accounts: number;
+  cases_refreshed: string[];
+  error: string | null;
+  received_by: string;
+  received_at: string | null;
+}
+export interface IngestEventsResponse {
+  events: IngestEvent[];
+  formats: Record<string, string>;
+  pubsub_enabled: boolean;
 }

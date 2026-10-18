@@ -1,14 +1,13 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { AlarmClock, ArrowRight, Briefcase, CircleAlert, History, Hourglass, IndianRupee, Info, UserX } from "lucide-react";
 import { useOverview } from "../../api/hooks";
 import type { CaseBrief, Measurement, MeasurementKey, OverviewResponse, RecentActivity } from "../../types/api";
 import { Card, EmptyState, ErrorState, Skeleton, Time } from "../../components/Primitives";
 import { PriorityChip, SectionTitle, SlaRemaining, StatusBadge } from "../../components/Domain";
 import { Chip } from "../../components/Chip";
-import { caseActionHref } from "../../lib/outcomes";
+import { activityLabel } from "../../lib/labels";
 import {
-  activityLabel,
+  caseActionHref,
   formatMeasurement,
   MEASUREMENT_GROUPS,
   MEASUREMENT_INFO,
@@ -24,7 +23,7 @@ export default function OverviewPage() {
   return (
     <div className="page page-wide overview">
       <SectionTitle>Overview</SectionTitle>
-      <p className="page-lede">What needs attention now, and how investigations in this deployment are going.</p>
+      <p className="page-lede">What needs your attention today. Start with the cases at the top of “Needs attention”.</p>
       {q.isLoading ? (
         <OverviewSkeleton />
       ) : q.error || !q.data ? (
@@ -62,7 +61,7 @@ export function OverviewBody({ data }: { data: OverviewResponse }) {
         <NeedsAttention focus={data.focus} atRisk={data.at_risk} />
         <GoldenHourPanel cases={data.golden_hour} />
       </div>
-      <OutcomesSection outcomes={data.outcomes} />
+      <OutcomesSection outcomes={data.outcomes} collapsible />
       <RecentActivityCard items={data.recent_activity} />
     </div>
   );
@@ -73,21 +72,15 @@ interface TileProps {
   label: string;
   value: ReactNode;
   sub?: ReactNode;
-  icon: ReactNode;
   to?: string;
   tone?: "default" | "warn" | "bad";
   children?: ReactNode;
 }
 
-function KpiTile({ label, value, sub, icon, to, tone = "default", children }: TileProps) {
+function KpiTile({ label, value, sub, to, tone = "default", children }: TileProps) {
   const body = (
     <>
-      <span className="ov-kpi-label">
-        <span className="ov-kpi-icon" aria-hidden="true">
-          {icon}
-        </span>
-        {label}
-      </span>
+      <span className="ov-kpi-label">{label}</span>
       <span className="ov-kpi-value num">{value}</span>
       {sub && <span className="ov-kpi-sub">{sub}</span>}
     </>
@@ -116,7 +109,7 @@ function KpiRow({ data }: { data: OverviewResponse }) {
   const c = data.counts;
   return (
     <section aria-label="Key figures" className="ov-kpis">
-      <KpiTile label="Open cases" value={c.open} icon={<Briefcase size={15} />} to="/cases">
+      <KpiTile label="Open cases" value={c.open} to="/cases" sub="P1 is the most urgent">
         <ul className="ov-prio-breakdown" aria-label="Open cases by priority">
           {PRIORITIES.map((p) => (
             <li key={p}>
@@ -129,29 +122,26 @@ function KpiRow({ data }: { data: OverviewResponse }) {
         </ul>
       </KpiTile>
       <KpiTile
-        label="Golden-hour cases"
+        label="Money may be recoverable"
         value={c.golden_hour}
-        icon={<Hourglass size={15} />}
-        sub="Hold recommendations awaiting approval"
+        sub="Cases with a suggested hold waiting for approval"
         to="#golden-hour"
         tone={c.golden_hour > 0 ? "warn" : "default"}
       />
       <KpiTile
-        label="SLA at risk"
+        label="Deadline in the next 3 days"
         value={c.sla_at_risk_72h}
-        icon={<AlarmClock size={15} />}
-        sub={"Resolution due within 72\u00a0h"}
+        sub="Must be resolved within 72 hours (SLA)"
         tone={c.sla_at_risk_72h > 0 ? "warn" : "default"}
       />
       <KpiTile
-        label="SLA breached"
+        label="Past the deadline"
         value={c.sla_breached}
-        icon={<CircleAlert size={15} />}
-        sub="Open and past the due date"
+        sub="Open cases that missed their deadline (SLA)"
         tone={c.sla_breached > 0 ? "bad" : "default"}
       />
-      <KpiTile label="Unassigned" value={c.unassigned} icon={<UserX size={15} />} sub="Open cases with no owner" to="/cases?owner=unassigned" />
-      <KpiTile label="Open disputed amount" value={c.disputed_open_amount_label} icon={<IndianRupee size={15} />} sub="Across all open cases" />
+      <KpiTile label="Nobody assigned" value={c.unassigned} sub="Open cases with no owner yet" to="/cases?owner=unassigned" />
+      <KpiTile label="Money in dispute" value={c.disputed_open_amount_label} sub="Total of all open cases" />
     </section>
   );
 }
@@ -160,9 +150,8 @@ function KpiRow({ data }: { data: OverviewResponse }) {
 function NextActionLink({ c }: { c: CaseBrief }) {
   if (!c.next_action) return <span className="muted">—</span>;
   return (
-    <Link to={caseActionHref(c)} className="btn btn-secondary btn-sm ov-next">
+    <Link to={caseActionHref(c)} className="next-action-link ov-next">
       {c.next_action.label}
-      <ArrowRight size={14} aria-hidden="true" />
     </Link>
   );
 }
@@ -181,7 +170,12 @@ function CaseRow({ c }: { c: CaseBrief }) {
         <div className="ov-case-meta">
           <span className="num strong">{c.amount_label}</span>
           <StatusBadge status={c.status} />
-          <SlaRemaining hours={c.sla_remaining_hours} label="Resolution due" />
+          {c.sla_remaining_hours !== null && c.sla_remaining_hours !== undefined && (
+            <span className="ov-deadline">
+              <span className="ov-deadline-label">Deadline:</span>
+              <SlaRemaining hours={c.sla_remaining_hours} label="Time left to resolve the case (SLA)" />
+            </span>
+          )}
         </div>
       </div>
       <NextActionLink c={c} />
@@ -193,9 +187,12 @@ export function NeedsAttention({ focus, atRisk }: { focus: CaseBrief[]; atRisk: 
   const focusIds = new Set(focus.map((c) => c.id));
   const extraRisk = atRisk.filter((c) => !focusIds.has(c.id));
   return (
-    <Card title="Needs attention" subtitle="Highest priority first, then the earliest due date" actions={<Link to="/cases" className="link small">All cases <ArrowRight size={13} aria-hidden="true" /></Link>}>
+    <Card
+      title="Needs attention"
+      subtitle="Most urgent first, then the nearest deadline. The blue link on each case is the next thing to do."
+      actions={<Link to="/cases" className="link small">All cases</Link>}>
       {focus.length === 0 ? (
-        <EmptyState title="Nothing needs attention">There are no open cases you can access.</EmptyState>
+        <EmptyState title="Nothing needs attention">There are no open cases for you right now.</EmptyState>
       ) : (
         <ul className="ov-case-list">
           {focus.map((c) => (
@@ -205,7 +202,7 @@ export function NeedsAttention({ focus, atRisk }: { focus: CaseBrief[]; atRisk: 
       )}
       {extraRisk.length > 0 && (
         <>
-          <h4 className="h-sub">Also due within 72 h</h4>
+          <h4 className="h-sub">Also due in the next 3 days</h4>
           <ul className="ov-case-list">
             {extraRisk.map((c) => (
               <CaseRow key={c.id} c={c} />
@@ -217,24 +214,24 @@ export function NeedsAttention({ focus, atRisk }: { focus: CaseBrief[]; atRisk: 
   );
 }
 
-const goldenReason = (c: CaseBrief) => c.priority_reasons.find((r) => r.toLowerCase().startsWith("golden hour"))?.replace(/^golden hour:\s*/i, "");
+const goldenReason = (c: CaseBrief) =>
+  c.priority_reasons
+    .find((r) => r.toLowerCase().startsWith("golden hour"))
+    ?.replace(/^golden hour:\s*/i, "")
+    .replace(/in visible accounts/i, "in accounts at this bank");
 
 export function GoldenHourPanel({ cases }: { cases: CaseBrief[] }) {
   return (
     <Card
       id="golden-hour"
       className="ov-golden"
-      title={
-        <span className="ov-title-icon">
-          <Hourglass size={16} aria-hidden="true" /> Golden hour
-        </span>
-      }
-      subtitle="Funds that may still be recoverable. Holds are recommendations; an investigator must approve each one."
+      title="Money may still be recoverable"
+      subtitle="Some of the customer's money may still be in accounts at this bank. Act quickly: each suggested hold needs an investigator to approve it."
     >
       {cases.length === 0 ? (
-        <EmptyState title="No holds waiting for approval" icon={<Hourglass size={22} />}>
-          When a trail shows disputed money may still sit in accounts this bank can see, FundTrace recommends a hold. Those cases appear here until an
-          investigator approves or declines the hold.
+        <EmptyState title="No holds waiting for approval">
+          When some of a customer's money may still be in an account at this bank, FundTrace suggests a hold. The case appears here until an
+          investigator approves or declines it.
         </EmptyState>
       ) : (
         <ul className="ov-case-list ov-golden-list">
@@ -253,7 +250,6 @@ export function GoldenHourPanel({ cases }: { cases: CaseBrief[] }) {
                 {c.next_action && (
                   <Link to={caseActionHref(c)} className="next-action-link">
                     {c.next_action.label}
-                    <ArrowRight size={13} aria-hidden="true" />
                   </Link>
                 )}
               </li>
@@ -291,21 +287,51 @@ export function MeasurementCard({ mkey, m }: { mkey: MeasurementKey; m: Measurem
   );
 }
 
-export function OutcomesSection({ outcomes }: { outcomes: OverviewResponse["outcomes"] }) {
+/** Team measurements. On the home page they sit behind a disclosure: useful for supervisors, not needed for daily case work. */
+export function OutcomesSection({ outcomes, collapsible = false }: { outcomes: OverviewResponse["outcomes"]; collapsible?: boolean }) {
+  const basis = (
+    <>
+      Measured from what was recorded in FundTrace · <span className="num">{outcomes.cases.decided}</span> of{" "}
+      <span className="num">{outcomes.cases.total}</span> cases decided so far
+    </>
+  );
+  if (collapsible)
+    return (
+      <details className="disclosure ov-team card">
+        <summary>
+          <h2 id="ov-outcomes-title" className="ov-section-title">
+            How the team is doing
+          </h2>
+          <span className="ov-team-hint">Speed, quality and safety checks for the whole team (for supervisors)</span>
+        </summary>
+        <p className="muted small">{basis}.</p>
+        <OutcomesBody outcomes={outcomes} explain />
+      </details>
+    );
   return (
     <section className="ov-outcomes" aria-labelledby="ov-outcomes-title">
       <div className="ov-section-head">
         <h3 id="ov-outcomes-title" className="ov-section-title">
-          Outcome measurements
+          How the team is doing
         </h3>
-        <p className="muted small">
-          Measured from recorded activity in this deployment · <span className="num">{outcomes.cases.decided}</span> decided of{" "}
-          <span className="num">{outcomes.cases.total}</span> cases
-        </p>
+        <p className="muted small">{basis}</p>
       </div>
+      <OutcomesBody outcomes={outcomes} />
+    </section>
+  );
+}
+
+function OutcomesBody({ outcomes, explain = false }: { outcomes: OverviewResponse["outcomes"]; explain?: boolean }) {
+  return (
+    <div className="ov-outcomes" aria-label="Team measurements">
+      {explain && (
+        <p className="muted small">
+          “Median” is the middle value: half of the cases were quicker and half slower. “SLA” is the deadline the bank must meet for each case.
+        </p>
+      )}
       {MEASUREMENT_GROUPS.map((g) => (
         <div key={g.title} className="ov-measure-group">
-          <h4 className="h-sub">{g.title}</h4>
+          <h3 className="h-sub">{g.title}</h3>
           {g.hint && <p className="muted small ov-group-hint">{g.hint}</p>}
           <div className="ov-measure-grid">
             {g.keys.map((k) => (
@@ -315,28 +341,18 @@ export function OutcomesSection({ outcomes }: { outcomes: OverviewResponse["outc
         </div>
       ))}
       <p className="ov-footnote">
-        <Info size={13} aria-hidden="true" />
-        <span>
-          {outcomes.note} Updated <Time iso={outcomes.generated_at} />.
-        </span>
+        {outcomes.note} Updated <Time iso={outcomes.generated_at} />.
       </p>
-    </section>
+    </div>
   );
 }
 
 /* ------------------------------------------------------------------ activity */
 export function RecentActivityCard({ items }: { items: RecentActivity[] }) {
   return (
-    <Card
-      title={
-        <span className="ov-title-icon">
-          <History size={16} aria-hidden="true" /> Recent activity
-        </span>
-      }
-      subtitle="Investigator actions on cases you can access"
-    >
+    <Card title="Recent activity" subtitle="What people did on the cases you can see, newest first">
       {items.length === 0 ? (
-        <EmptyState title="No activity recorded yet" icon={<History size={22} />}>
+        <EmptyState title="No activity recorded yet">
           Notes, assignments, reviews and decisions will be listed here as they happen.
         </EmptyState>
       ) : (
@@ -345,7 +361,7 @@ export function RecentActivityCard({ items }: { items: RecentActivity[] }) {
             <li key={e.id}>
               <Time iso={e.created_at} className="ov-activity-time" />
               <span className="ov-activity-what">
-                <span className="mono ov-activity-actor">{e.actor}</span> {activityLabel(e.action).toLowerCase()}
+                <span className="mono ov-activity-actor">{e.actor}</span> {activityLabel(e.action)}
               </span>
               {e.case_id ? (
                 <Link to={`/cases/${e.case_id}`} className="case-link ov-activity-case">

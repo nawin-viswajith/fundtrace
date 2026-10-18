@@ -21,9 +21,9 @@ export function RecordView({ id, record, strict = true }: { id: string; record: 
       <div className="record-view">
         <p className="popover-heading mono">{id}</p>
         {strict ? (
-          <p className="small bad-text">This ID is not in the evidence snapshot. A claim citing it is flagged as a possible hallucination.</p>
+          <p className="small bad-text">This record is not in the case records, so the sentence that links to it is flagged as possibly wrong.</p>
         ) : (
-          <p className="small muted">The record is in the case snapshot but its details were not included with this answer. Find it on the graph or timeline.</p>
+          <p className="small muted">This record is part of the case, but its details were not included with this answer. Find it on the money trail or timeline.</p>
         )}
       </div>
     );
@@ -76,7 +76,7 @@ export function Citation({ id, record, onShowOnGraph, strict = true }: CitationP
                 onShowOnGraph(id);
               }}
             >
-              <Eye size={14} aria-hidden="true" /> Show on graph
+              <Eye size={14} aria-hidden="true" /> Show on the money trail
             </button>
           )}
         </>

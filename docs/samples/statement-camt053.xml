@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic ISO 20022 camt.053 statement for trying ledger ingest (AI Ops > Ledger ingest, or scripts/publish_ledger.py). -->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
+ <BkToCstmrStmt>
+  <GrpHdr><MsgId>STMT-1</MsgId><CreDtTm>2020-03-02T09:00:00+05:30</CreDtTm></GrpHdr>
+  <Stmt>
+   <Id>S-2020-03-01</Id>
+   <Acct><Id><Othr><Id>SYNTH-CORE-ACCT-001</Id></Othr></Id><Ccy>INR</Ccy></Acct>
+   <Ntry>
+    <Amt Ccy="INR">12500.00</Amt><CdtDbtInd>DBIT</CdtDbtInd><Sts><Cd>BOOK</Cd></Sts>
+    <BookgDt><DtTm>2020-03-01T10:15:00+05:30</DtTm></BookgDt><AcctSvcrRef>CAMT-0001</AcctSvcrRef>
+    <BkTxCd><Prtry><Cd>IMPS</Cd></Prtry></BkTxCd>
+    <NtryDtls><TxDtls><Refs><ClrSysRef>006011223344</ClrSysRef></Refs>
+     <RltdPties><Cdtr><Nm>Beneficiary One</Nm></Cdtr><CdtrAcct><Id><Othr><Id>50100123456789</Id></Othr></Id></CdtrAcct></RltdPties>
+     <RmtInf><Ustrd>rent march</Ustrd></RmtInf></TxDtls></NtryDtls>
+   </Ntry>
+   <Ntry>
+    <Amt Ccy="INR">800</Amt><CdtDbtInd>CRDT</CdtDbtInd><Sts><Cd>PDNG</Cd></Sts>
+    <BookgDt><Dt>2020-03-01</Dt></BookgDt><NtryRef>N-2</NtryRef>
+    <NtryDtls><TxDtls><Refs><EndToEndId>E2E-77</EndToEndId></Refs>
+     <RltdPties><Dbtr><Nm>Payer Two</Nm></Dbtr><DbtrAcct><Id><IBAN>GB33BUKB20201555555555</IBAN></Id></DbtrAcct></RltdPties></TxDtls></NtryDtls>
+   </Ntry>
+  </Stmt>
+ </BkToCstmrStmt>
+</Document>

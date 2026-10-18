@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useCases } from "../../api/hooks";
 import type { CaseFilters } from "../../api/endpoints";
 import type { CaseStatus, CaseSummary } from "../../types/api";
@@ -49,7 +49,10 @@ export default function CaseQueue() {
   return (
     <div className="page page-wide">
       <SectionTitle>Case queue</SectionTitle>
-      <p className="page-lede">Sorted by priority and due time. Priority orders the work; it is not a judgement on the claim.</p>
+      <p className="page-lede">
+        Most urgent cases first, then the nearest deadline. Priority (P1 is the most urgent) only sets the order of work; it does not say whether
+        the customer is right.
+      </p>
 
       <div className="pill-row" role="group" aria-label="Filter by status">
         <button type="button" className={`pill ${!status ? "is-active" : ""}`} aria-pressed={!status} onClick={() => set("status", "")}>
@@ -70,17 +73,6 @@ export default function CaseQueue() {
 
       <div className="filter-bar">
         <label className="field field-inline">
-          <span className="field-label">Status</span>
-          <select className="select" value={status} onChange={(e) => set("status", e.target.value)}>
-            <option value="">All statuses</option>
-            {STATUS_ORDER.map((s) => (
-              <option key={s} value={s}>
-                {labels[s] ?? s}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field field-inline">
           <span className="field-label">Priority</span>
           <select className="select" value={priority} onChange={(e) => set("priority", e.target.value)}>
             <option value="">All priorities</option>
@@ -92,11 +84,11 @@ export default function CaseQueue() {
           </select>
         </label>
         <label className="field field-inline">
-          <span className="field-label">Owner</span>
+          <span className="field-label">Assigned to</span>
           <select className="select" value={owner} onChange={(e) => set("owner", e.target.value)}>
             <option value="all">Everyone</option>
             <option value="me">Assigned to me</option>
-            <option value="unassigned">Unassigned</option>
+            <option value="unassigned">Nobody yet</option>
           </select>
         </label>
         <label className="field field-inline field-grow">
@@ -106,7 +98,7 @@ export default function CaseQueue() {
             <input
               className="input"
               type="search"
-              placeholder="Case ID or transaction ID"
+              placeholder="Case number or transaction ID"
               value={qDraft}
               maxLength={64}
               onChange={(e) => setQDraft(e.target.value)}
@@ -114,8 +106,8 @@ export default function CaseQueue() {
           </span>
         </label>
         {filtersActive && (
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setSp(new URLSearchParams(), { replace: true })}>
-            <X size={14} aria-hidden="true" /> Clear filters
+          <button type="button" className="btn btn-ghost" onClick={() => setSp(new URLSearchParams(), { replace: true })}>
+            Clear filters
           </button>
         )}
       </div>
@@ -154,7 +146,7 @@ export function QueueBody({ loading, error, retry, cases, labels, filtersActive 
     return (
       <EmptyState title={filtersActive ? "No cases match these filters" : "No cases in your queue"}>
         {filtersActive
-          ? "Try clearing a filter or searching for a different case or transaction ID."
+          ? "Try clearing a filter, or search for a different case number or transaction ID."
           : "New disputes you can access will appear here."}
       </EmptyState>
     );
@@ -168,16 +160,28 @@ export function QueueBody({ loading, error, retry, cases, labels, filtersActive 
           <thead>
             <tr>
               <th scope="col">Case</th>
-              <th scope="col">Category</th>
+              <th scope="col">Type of dispute</th>
               <th scope="col" className="ta-r">
                 Amount
               </th>
-              <th scope="col">Priority</th>
+              <th scope="col">
+                <span className="th-help" title="How urgent the case is. P1 is the most urgent, P4 the least.">
+                  Priority
+                </span>
+              </th>
               <th scope="col">Status</th>
-              <th scope="col">Owner</th>
-              <th scope="col">SLA</th>
-              <th scope="col">Age</th>
-              <th scope="col">Next action</th>
+              <th scope="col">Assigned to</th>
+              <th scope="col">
+                <span className="th-help" title="Time left before the bank's deadline (SLA) for this case">
+                  Deadline (SLA)
+                </span>
+              </th>
+              <th scope="col">
+                <span className="th-help" title="How long ago the customer reported the dispute">
+                  Reported
+                </span>
+              </th>
+              <th scope="col">Next step</th>
             </tr>
           </thead>
           <tbody>
@@ -189,7 +193,7 @@ export function QueueBody({ loading, error, retry, cases, labels, filtersActive 
                   </Link>
                   <div className="cell-sub mono">{c.disputed_txn_id}</div>
                 </td>
-                <td data-label="Category">{c.category_label}</td>
+                <td data-label="Type of dispute">{c.category_label}</td>
                 <td data-label="Amount" className="ta-r">
                   <Money minor={c.amount_minor} currency={c.currency} className="strong" />
                 </td>
@@ -199,30 +203,32 @@ export function QueueBody({ loading, error, retry, cases, labels, filtersActive 
                 <td data-label="Status">
                   <StatusBadge status={c.status} label={labels[c.status]} />
                 </td>
-                <td data-label="Owner">{c.owner ? c.owner.full_name.replace(" (synthetic)", "") : <span className="muted">Unassigned</span>}</td>
-                <td data-label="SLA">
+                <td data-label="Assigned to">{c.owner ? c.owner.full_name.replace(" (synthetic)", "") : <span className="muted">Nobody yet</span>}</td>
+                <td data-label="Deadline (SLA)">
                   {c.status === "resolved" ? (
                     <span className="muted">Closed</span>
                   ) : (
                     <span className="sla-cell">
-                      <SlaRemaining hours={c.sla_remaining_hours} />
+                      <SlaRemaining hours={c.sla_remaining_hours} label="Time left before the deadline (SLA)" />
                       {c.sla_next_label && <span className="muted small sla-next">{c.sla_next_label}</span>}
                     </span>
                   )}
                 </td>
-                <td data-label="Age">
+                <td data-label="Reported">
                   <span className="age-cell">
-                    <span className="num">{formatAge(c.age_hours)}</span>
+                    <span>
+                      <span className="num">{formatAge(c.age_hours)}</span>
+                      {c.age_hours !== null && c.age_hours !== undefined && " ago"}
+                    </span>
                     <span className="cell-sub">
                       <Time iso={c.reported_at} dateOnly />
                     </span>
                   </span>
                 </td>
-                <td data-label="Next action">
+                <td data-label="Next step">
                   {c.next_action && c.status !== "resolved" ? (
                     <Link to={caseActionHref(c)} className="next-action-link" onClick={(e) => e.stopPropagation()}>
                       {c.next_action.label}
-                      <ArrowRight size={13} aria-hidden="true" />
                     </Link>
                   ) : (
                     <span className="muted">—</span>

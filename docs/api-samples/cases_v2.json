@@ -40,7 +40,7 @@
    "sla_next_label": "Shadow credit due",
    "age_hours": 139.0,
    "next_action": {
-    "label": "Review 2 hold recommendations",
+    "label": "Decide on 2 suggested holds",
     "tab": "overview"
    },
    "amount_label": "₹15,000"
@@ -82,7 +82,7 @@
    "sla_next_label": "Resolution due",
    "age_hours": 70.0,
    "next_action": {
-    "label": "Review 2 hold recommendations",
+    "label": "Decide on 2 suggested holds",
     "tab": "overview"
    },
    "amount_label": "₹22,000"
@@ -128,7 +128,7 @@
    "sla_next_label": "Resolution due",
    "age_hours": 48.0,
    "next_action": {
-    "label": "Review 1 hold recommendation",
+    "label": "Decide on 1 suggested hold",
     "tab": "overview"
    },
    "amount_label": "₹40,000"
@@ -174,7 +174,7 @@
    "sla_next_label": "Shadow credit due",
    "age_hours": 1.0,
    "next_action": {
-    "label": "Triage: check the trail and claim the case",
+    "label": "Check the money trail and take the case",
     "tab": "graph"
    },
    "amount_label": "₹50,000"
@@ -218,7 +218,7 @@
    "sla_next_label": "Shadow credit due",
    "age_hours": 96.0,
    "next_action": {
-    "label": "Review 2 hold recommendations",
+    "label": "Decide on 2 suggested holds",
     "tab": "overview"
    },
    "amount_label": "₹8,000"
@@ -385,7 +385,7 @@
    "sla_next_label": "Resolution due",
    "age_hours": 42.0,
    "next_action": {
-    "label": "Triage: check the trail and claim the case",
+    "label": "Check the money trail and take the case",
     "tab": "graph"
    },
    "amount_label": "₹9,999"
@@ -424,7 +424,7 @@
    "sla_next_label": "Resolution due",
    "age_hours": 40.0,
    "next_action": {
-    "label": "Triage: check the trail and claim the case",
+    "label": "Check the money trail and take the case",
     "tab": "graph"
    },
    "amount_label": "₹12,500"

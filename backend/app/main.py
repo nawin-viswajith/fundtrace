@@ -13,7 +13,8 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app import telemetry
-from app.api import auth, cases, ops, overview
+from app import crypto
+from app.api import auth, cases, ingest, ops, overview
 from app.config import get_settings
 from app.db import create_all, init_engine, session_scope
 
@@ -25,6 +26,7 @@ CODES = {400: "bad_request", 401: "unauthenticated", 403: "forbidden", 404: "not
 
 def bootstrap() -> None:
     s = get_settings()
+    crypto.keyring()  # fail fast if field-encryption keys are missing or wrong
     init_engine(s.database_url)
     create_all()
     from app.seed.loader import ensure_users, is_seeded, seed
@@ -40,6 +42,7 @@ def bootstrap() -> None:
             if s.seed_on_start and not is_seeded(db):
                 info = seed(db)
                 log.info("synthetic demo data seeded: %s cases", info["cases"])
+            crypto.backfill(db)  # rows written before field encryption was enabled
             db.commit()
         finally:
             if mysql:
@@ -70,6 +73,9 @@ def create_app() -> FastAPI:
         resp.headers.setdefault("Referrer-Policy", "same-origin")
         if request.url.path.startswith("/api/"):
             resp.headers.setdefault("Cache-Control", "no-store")
+        elif request.url.path.startswith("/assets/"):
+            # file names carry a content hash, so they never change: cache them for a year
+            resp.headers.setdefault("Cache-Control", "public, max-age=31536000, immutable")
         return resp
 
     @app.exception_handler(StarletteHTTPException)
@@ -90,6 +96,7 @@ def create_app() -> FastAPI:
     app.include_router(cases.router)
     app.include_router(ops.router)
     app.include_router(overview.router)
+    app.include_router(ingest.router)
 
     try:
         from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -108,7 +115,8 @@ def create_app() -> FastAPI:
             f = FRONTEND_DIST / path
             if path and f.is_file() and FRONTEND_DIST in f.resolve().parents:
                 return FileResponse(f)
-            return FileResponse(FRONTEND_DIST / "index.html")
+            # The app shell must always be revalidated, or a browser keeps showing an old release after a deploy.
+            return FileResponse(FRONTEND_DIST / "index.html", headers={"Cache-Control": "no-cache"})
 
     return app
 

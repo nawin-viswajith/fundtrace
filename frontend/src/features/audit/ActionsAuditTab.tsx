@@ -7,6 +7,7 @@ import { Chip } from "../../components/Chip";
 import { IdChip } from "../../components/Domain";
 import { useToast } from "../../components/Toast";
 import { formatUTC, humanize, shortHash } from "../../lib/format";
+import { activityLabel } from "../../lib/labels";
 
 export function summarizeDetails(d: Record<string, unknown>): string {
   const parts: string[] = [];
@@ -29,6 +30,7 @@ export function ActionsAuditTab() {
   const action = useCaseAction(caseId);
   const toast = useToast();
   const [note, setNote] = useState("");
+  const [showTech, setShowTech] = useState(false);
   const c = ctx.case;
   const decided = ctx.holds.filter((h) => h.status !== "recommended");
 
@@ -49,7 +51,7 @@ export function ActionsAuditTab() {
   return (
     <div className="stack-lg">
       <div className="two-col">
-        <Card title="Notes" subtitle="Investigator notes are untrusted text: they are fenced as data if the AI reads them.">
+        <Card title="Notes" subtitle="Notes for the team. Card numbers, Aadhaar numbers and OTPs are hidden automatically before saving.">
           {ctx.notes.length === 0 ? (
             <p className="muted small">No notes yet.</p>
           ) : (
@@ -111,7 +113,7 @@ export function ActionsAuditTab() {
           </Card>
           <Card title="Hold decisions">
             {decided.length === 0 ? (
-              <p className="muted small">No hold recommendations decided yet. See Overview → Hold recommendations.</p>
+              <p className="muted small">No holds decided yet. Suggested holds are on the Overview tab, under “Money that could be held”.</p>
             ) : (
               <ul className="plain-list">
                 {decided.map((h) => (
@@ -128,13 +130,13 @@ export function ActionsAuditTab() {
       </div>
 
       <Card
-        title="Audit trail"
-        subtitle="Every consequential action, hash-chained: each event's hash covers the previous one, so any edit breaks the chain."
+        title="Everything that happened on this case"
+        subtitle="Every action is recorded and sealed: if anyone changed or deleted an old entry, the check below would fail."
         actions={
           audit.data ? (
             audit.data.verification.valid ? (
               <span className="verify-badge verify-ok">
-                <ShieldCheck size={15} aria-hidden="true" /> Audit chain verified — {audit.data.verification.events} events
+                <ShieldCheck size={15} aria-hidden="true" /> Nothing has been altered — {audit.data.verification.events} entries checked
               </span>
             ) : (
               <span className="verify-badge verify-bad">
@@ -154,16 +156,20 @@ export function ActionsAuditTab() {
           <EmptyState title="No audit events">Nothing has been recorded for this case yet.</EmptyState>
         ) : (
           <div className="table-wrap">
+            <label className="switch small">
+              <input type="checkbox" checked={showTech} onChange={(e) => setShowTech(e.target.checked)} />
+              <span>Show technical columns (trace and seal)</span>
+            </label>
             <table className="table table-compact audit-table">
               <caption className="sr-only">Audit events</caption>
               <thead>
                 <tr>
-                  <th scope="col">Time</th>
-                  <th scope="col">Actor</th>
-                  <th scope="col">Action</th>
+                  <th scope="col">When</th>
+                  <th scope="col">Who</th>
+                  <th scope="col">What happened</th>
                   <th scope="col">Details</th>
-                  <th scope="col">Trace</th>
-                  <th scope="col">Hash</th>
+                  {showTech && <th scope="col">Trace</th>}
+                  {showTech && <th scope="col">Seal (hash)</th>}
                 </tr>
               </thead>
               <tbody>
@@ -175,18 +181,22 @@ export function ActionsAuditTab() {
                     <td data-label="Actor">
                       {e.actor} <span className={`role-tag role-${e.actor_role}`}>{e.actor_role}</span>
                     </td>
-                    <td data-label="Action">
-                      <strong>{humanize(e.action)}</strong>
+                    <td data-label="What happened">
+                      <strong title={e.action}>{activityLabel(e.action).replace(/^\w/, (c) => c.toUpperCase())}</strong>
                     </td>
                     <td data-label="Details" className="small details-cell">
                       {summarizeDetails(e.details) || <span className="muted">—</span>}
                     </td>
-                    <td data-label="Trace" className="mono small">
-                      {e.trace_id ? shortHash(e.trace_id, 10) : <span className="muted">—</span>}
-                    </td>
-                    <td data-label="Hash" className="mono small" title={`hash ${e.hash}\nprev ${e.prev_hash}\n${formatUTC(e.created_at)}`}>
-                      <Link2 size={11} aria-hidden="true" /> {shortHash(e.hash, 10)}
-                    </td>
+                    {showTech && (
+                      <td data-label="Trace" className="mono small">
+                        {e.trace_id ? shortHash(e.trace_id, 10) : <span className="muted">—</span>}
+                      </td>
+                    )}
+                    {showTech && (
+                      <td data-label="Seal (hash)" className="mono small" title={`hash ${e.hash}\nprev ${e.prev_hash}\n${formatUTC(e.created_at)}`}>
+                        <Link2 size={11} aria-hidden="true" /> {shortHash(e.hash, 10)}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

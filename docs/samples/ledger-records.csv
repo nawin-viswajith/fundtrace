@@ -1,0 +1,3 @@
+source_record_id,debit_account_id,credit_account_id,amount,currency,status,channel,reference,occurred_at,narrative
+SAMPLE-CSV-1,SYNTH-CORE-ACCT-001,SYNTH-EXT-ACCT-900,2500.00,INR,posted,UPI,SAMPLEUTR0001,2020-03-02T09:30:00+05:30,synthetic sample
+SAMPLE-CSV-2,SYNTH-EXT-ACCT-901,SYNTH-CORE-ACCT-001,1200.00,INR,posted,IMPS,SAMPLEUTR0002,2020-03-02T11:05:00+05:30,synthetic sample

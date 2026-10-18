@@ -1,0 +1,220 @@
+/* Plain-language case Overview, home Overview and queue additions.
+   Reuses the Risk-signals accordion look (.risk-acc / .risk-row / .risk-head) for the six checks. */
+
+/* ---------------------------------------------------------------- panels */
+.plain-panel-title {
+  font-size: var(--fs-md);
+}
+.plain-panel-title:focus {
+  outline: none;
+}
+.plain-panel-title:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.plain-panel-sub {
+  font-size: var(--fs-base);
+  color: var(--text-2);
+  max-width: 78ch;
+}
+.plain-h2 {
+  margin-bottom: var(--s-1);
+}
+.plain-lede {
+  color: var(--text-2);
+  max-width: 82ch;
+  margin-bottom: var(--s-3);
+}
+
+/* ---------------------------------------------------------------- at a glance */
+.glance {
+  margin: 0;
+  border-top: 1px solid var(--border);
+}
+.glance-row {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+.glance-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.glance-row dt {
+  font-weight: 600;
+  color: var(--text);
+}
+.glance-row dd {
+  margin: 0;
+  line-height: 1.55;
+  max-width: 90ch;
+}
+.glance-list,
+.glance-steps {
+  margin: 0;
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.glance-list {
+  list-style: disc;
+}
+.glance-steps {
+  list-style: decimal;
+}
+.glance-next dt {
+  color: var(--accent-text, var(--accent));
+}
+.plain-step-link {
+  white-space: nowrap;
+  margin-left: 4px;
+}
+
+/* ---------------------------------------------------------------- six checks (accordion) */
+.dim-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--s-2);
+}
+.dim-acc .dim-head {
+  grid-template-columns: 20px minmax(170px, 1fr) minmax(0, 2.8fr) 190px;
+}
+.dim-row.dim-row-bad {
+  border-left-color: var(--bad);
+}
+.dim-row.dim-row-warn {
+  border-left-color: var(--warn);
+}
+.dim-row.dim-row-good {
+  border-left-color: var(--good);
+}
+.dim-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  max-width: 980px;
+}
+.dim-body > p {
+  line-height: 1.55;
+}
+.dim-body .h-sub {
+  margin-top: var(--s-2);
+}
+.dim-body .meter {
+  max-width: 420px;
+}
+.dim-plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dim-plain-list li {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: var(--s-2);
+}
+.dim-sev {
+  font-size: var(--fs-sm);
+}
+.dim-go {
+  align-self: flex-start;
+  margin-top: var(--s-1);
+}
+.dim-how .disclosure-body {
+  padding: var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  margin-top: var(--s-2);
+}
+.dim-method-table {
+  min-width: 460px;
+}
+.dim-aka {
+  margin-top: var(--s-1);
+}
+
+@media (max-width: 900px) {
+  .dim-acc .dim-head {
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+    grid-template-areas: "chev name status" "chev line line";
+  }
+}
+
+/* ---------------------------------------------------------------- holds */
+.plain-holds .hold-sentence {
+  font-size: var(--fs-md);
+  line-height: 1.5;
+}
+.hold-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px var(--s-3);
+}
+.hold-method-table th {
+  font-weight: 500;
+}
+.hold-method-help {
+  font-weight: 400;
+}
+
+/* ---------------------------------------------------------------- home overview */
+.ov-team > summary {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text);
+}
+.ov-team > summary {
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.ov-team-hint {
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  font-weight: 400;
+}
+.ov-team[open] .ov-outcomes {
+  margin-top: var(--s-3);
+}
+.ov-deadline {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.ov-deadline-label {
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
+
+/* ---------------------------------------------------------------- queue */
+.queue-legend {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+  margin-top: calc(-1 * var(--s-2));
+}
+th abbr[title],
+th .th-help {
+  text-decoration: none;
+  border-bottom: 1px dotted var(--text-3);
+  cursor: help;
+}
+
+@media (max-width: 680px) {
+  .glance-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+  .dim-plain-list li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .hold-actions {
+    width: 100%;
+  }
+}

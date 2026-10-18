@@ -25,10 +25,10 @@ describe("overview", () => {
     expect(screen.getByText("₹3,07,499")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "4 P1 cases" })).toHaveAttribute("href", "/cases?priority=P1");
     const attention = screen.getByRole("region", { name: "Needs attention" });
-    const triage = within(attention).getByRole("link", { name: /Triage: check the trail and claim the case/ });
+    const triage = within(attention).getByRole("link", { name: /Check the money trail and take the case/ });
     expect(triage).toHaveAttribute("href", "/cases/CASE-24051?tab=graph");
     expect(within(attention).getByRole("link", { name: /Record the decision/ })).toHaveAttribute("href", "/cases/CASE-24042?tab=audit");
-    expect(screen.getAllByText(/recorded a decision/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/recorded the decision/).length).toBeGreaterThan(0);
   });
 
   it("shows friendly empty states when nothing needs attention", () => {
@@ -48,7 +48,7 @@ describe("overview", () => {
     renderBody(empty);
     expect(screen.getByText("Nothing needs attention")).toBeInTheDocument();
     expect(screen.getByText("No holds waiting for approval")).toBeInTheDocument();
-    expect(screen.getByText(/recommends a hold/)).toBeInTheDocument();
+    expect(screen.getByText(/suggests a hold/)).toBeInTheDocument();
     expect(screen.getByText("No activity recorded yet")).toBeInTheDocument();
     expect(screen.getAllByText("Not enough data yet")).toHaveLength(Object.keys(measurements).length);
   });

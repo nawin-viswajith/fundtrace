@@ -8,6 +8,7 @@ import { Card, InlineError } from "../../components/Primitives";
 import { useToast } from "../../components/Toast";
 import { formatBytes } from "../../lib/format";
 import type { ChecklistItem } from "../../types/api";
+import { checklistLabel } from "./plainEvidence";
 
 export const MAX_UPLOAD = 5 * 1024 * 1024;
 const ACCEPT = ["image/png", "image/jpeg", "application/pdf", "text/plain"];
@@ -21,9 +22,9 @@ export function validateUpload(f: File): string | null {
 }
 
 const KINDS = [
-  { v: "customer_upload", label: "Customer upload" },
+  { v: "customer_upload", label: "From the customer" },
   { v: "bank_record", label: "Bank record" },
-  { v: "merchant_response", label: "Merchant response" },
+  { v: "merchant_response", label: "Merchant's reply" },
   { v: "complaint_ack", label: "Complaint acknowledgement" },
 ];
 
@@ -41,7 +42,7 @@ export function UploadBox({ checklist }: { checklist: ChecklistItem[] }) {
   const upload = useMutation({
     mutationFn: () => api.uploadEvidence(caseId, file as File, key || null, kind),
     onSuccess: async (r) => {
-      toast.show(`Uploaded as ${r.id}. Use Analyse to read it and compare with the ledger.`);
+      toast.show(`File uploaded (${r.id}). Press Analyse to have it read and compared with the bank's record.`);
       setFile(null);
       if (input.current) input.current.value = "";
       await invalidate();
@@ -66,7 +67,7 @@ export function UploadBox({ checklist }: { checklist: ChecklistItem[] }) {
   };
 
   return (
-    <Card title="Upload evidence" subtitle="PNG, JPG, PDF or TXT, up to 5 MB. Files are hashed (SHA-256) and the upload is audited.">
+    <Card title="Upload evidence" subtitle="PNG, JPG, PDF or TXT, up to 5 MB. Every upload is recorded in the audit trail.">
       <form onSubmit={submit} className="stack">
         <div
           className={`dropzone ${drag ? "is-drag" : ""}`}
@@ -114,18 +115,18 @@ export function UploadBox({ checklist }: { checklist: ChecklistItem[] }) {
         )}
         <div className="form-row">
           <label className="field">
-            <span className="field-label">Checklist item</span>
+            <span className="field-label">Which checklist item is it for?</span>
             <select className="select" value={key} onChange={(e) => setKey(e.target.value)}>
               <option value="">Not linked to a checklist item</option>
               {checklist.map((c) => (
                 <option key={c.key} value={c.key}>
-                  {c.label}
+                  {checklistLabel(c)}
                 </option>
               ))}
             </select>
           </label>
           <label className="field">
-            <span className="field-label">Kind</span>
+            <span className="field-label">Type of document</span>
             <select className="select" value={kind} onChange={(e) => setKind(e.target.value)}>
               {KINDS.map((k) => (
                 <option key={k.v} value={k.v}>
@@ -137,7 +138,7 @@ export function UploadBox({ checklist }: { checklist: ChecklistItem[] }) {
         </div>
         <InlineError error={upload.error} />
         <button type="submit" className="btn btn-primary" disabled={!file || upload.isPending || !ctx.can_edit}>
-          {upload.isPending ? "Uploading…" : "Upload"}
+          {upload.isPending ? "Uploading…" : "Upload file"}
         </button>
       </form>
     </Card>

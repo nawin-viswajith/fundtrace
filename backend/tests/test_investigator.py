@@ -38,7 +38,8 @@ class Script:
         if node == "analyse_evidence":
             return {"document_type": "payment receipt", "is_payment_record": True, "amount": "50,000.00", "currency": "INR",
                     "reference": self.ref, "date_text": None, "time_text": None, "payee": "Rahul K", "payer": None, "app_or_bank": "PayFast",
-                    "tamper_indicators": [], "embedded_instructions_detected": False, "legibility": "good", "summary": "receipt"}
+                    "tamper_indicators": [], "embedded_instructions_detected": False, "legibility": "good",
+                    "relevance": "direct", "relevance_reason": "a payment receipt", "origin": "system_generated", "summary": "receipt"}
         if node == "draft_report":
             self.drafts += 1
             d = _good_draft(self.root, self.payee, self.amount)
@@ -103,6 +104,12 @@ def test_hallucinated_draft_is_caught_retried_and_judged(db, seeded):
     assert ev[0].analysis_status == "analysed"
     checks = {c["field"]: c["result"] for c in ev[0].reconciliation["checks"]}
     assert checks["amount"] == "matches" and checks["reference"] == "matches"
+    from app.services.investigation import evidence_to_dict
+
+    sc = evidence_to_dict(ev[0])["score"]  # per-category evidence strength, computed by code from the AI's labels
+    cats = {c["key"]: c["score"] for c in sc["categories"]}
+    assert cats["ledger_match"] == 100 and cats["integrity"] == 100 and cats["relevance"] == 100 and cats["legibility"] == 100
+    assert sc["band"] == "strong" and not sc["caps"]
     holds = db.scalars(select(m.Hold).where(m.Hold.case_id == case.id)).all()
     assert holds and all(h.status == "recommended" for h in holds)
     calls = db.scalars(select(m.AICall).where(m.AICall.run_id == rep.run_id)).all()
@@ -135,7 +142,9 @@ def test_evidence_contradiction_and_injection(db, seeded):
         if node == "analyse_evidence":
             return {"document_type": "payment receipt", "is_payment_record": True, "amount": "45,000.00", "currency": "INR",
                     "reference": "628977001234", "date_text": None, "time_text": None, "payee": None, "payer": None, "app_or_bank": None,
-                    "tamper_indicators": [], "embedded_instructions_detected": True, "legibility": "good", "summary": "receipt"}
+                    "tamper_indicators": ["digits in the amount are misaligned"], "embedded_instructions_detected": True,
+                        "legibility": "good", "relevance": "direct", "relevance_reason": "payment receipt", "origin": "system_generated",
+                        "summary": "receipt"}
         return Script(root.id, root.credit_account_id, "₹50,000", root.reference, first_bad=False)(node, contents)
 
     run_investigation(db, case, actor="inv.asha", gateway=FakeGateway(resp))
@@ -143,7 +152,12 @@ def test_evidence_contradiction_and_injection(db, seeded):
     checks = {c["field"]: c["result"] for c in ev.reconciliation["checks"]}
     assert checks["amount"] == "contradicts" and checks["reference"] == "contradicts"
     assert ev.reconciliation["embedded_instructions_detected"]
-    from app.services.investigation import build_context
+    from app.services.investigation import build_context, evidence_to_dict
+
+    sc = evidence_to_dict(ev)["score"]
+    cats = {c["key"]: c["score"] for c in sc["categories"]}
+    assert cats["ledger_match"] < 50 and cats["integrity"] == 20  # 100 - 30 (editing sign) - 50 (embedded instructions)
+    assert sc["overall"] <= 40 and {c["cap"] for c in sc["caps"]} == {40, 50}  # contradiction caps the overall score
 
     ctx = build_context(db, case)
     assert {r["rule_id"]: r["status"] for r in ctx["rules"]}["R9"] == "triggered"

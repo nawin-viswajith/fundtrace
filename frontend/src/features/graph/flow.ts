@@ -3,6 +3,7 @@ import type { GraphEdge, GraphNode, TraceGraph } from "../../types/api";
 import { provenanceStyle } from "../../lib/labels";
 import { formatMoney } from "../../lib/format";
 import { layoutGraph } from "./layout";
+import { relationLabel } from "./plainText";
 import type { AccountFlowNode, EvidenceFlowNode, TxnFlowNode } from "./nodes";
 
 export type FlowNode = AccountFlowNode | TxnFlowNode | EvidenceFlowNode;
@@ -29,13 +30,13 @@ function shortEdgeLabel(e: GraphEdge, currency: string): string | undefined {
   if (e.type === "possible_onward_funding") {
     const min = typeof e.data.min === "number" ? e.data.min : null;
     const max = typeof e.data.max === "number" ? e.data.max : null;
-    if (min !== null && min > 0) return `possible onward funding · ≥ ${formatMoney(min, currency)}`;
-    if (max !== null) return `possible onward funding · ≤ ${formatMoney(max, currency)}`;
-    return "possible onward funding";
+    if (min !== null && min > 0) return `at least ${formatMoney(min, currency)} moved on`;
+    if (max !== null) return `up to ${formatMoney(max, currency)} may have moved on`;
+    return "money may have moved on";
   }
-  if (e.type === "reversal_of") return "reversal of";
+  if (e.type === "reversal_of") return "reverses";
   if (e.type === "supports" || e.type === "contradicts") return e.type;
-  if (e.type === "relates_to") return e.label ?? "relates to";
+  if (e.type === "relates_to") return e.label === "not analysed" ? "evidence, not analysed yet" : (e.label ?? "evidence");
   return undefined;
 }
 
@@ -76,7 +77,7 @@ export function toFlow(g: TraceGraph, highlight: string[], currency: string, dis
       const ps = pos.get(e.source);
       const pt = pos.get(e.target);
       const backward = (e.type === "sent" || e.type === "received_by") && !!ps && !!pt && pt.x <= ps.x;
-      const label = backward ? "returns to an account already on the path" : shortEdgeLabel(e, currency);
+      const label = backward ? "money comes back to an earlier account" : shortEdgeLabel(e, currency);
       return {
         id: e.id,
         source: e.source,
@@ -84,12 +85,12 @@ export function toFlow(g: TraceGraph, highlight: string[], currency: string, dis
         ...handlesFor(e, byId, backward),
         type: "smoothstep",
         // Edges routed under the nodes drop by a fixed offset so they don't run flat along node bottoms.
-        pathOptions: backward ? { offset: 70, borderRadius: 14 } : onward || TXN_TXN.has(e.type) ? { offset: 26, borderRadius: 10 } : { borderRadius: 8 },
+        pathOptions: backward ? { offset: 70, borderRadius: 0 } : onward || TXN_TXN.has(e.type) ? { offset: 26, borderRadius: 0 } : { borderRadius: 0 },
         label,
         labelStyle: { fill: "var(--text-2)", fontSize: 11, fontWeight: 500 },
         labelBgStyle: { fill: "var(--surface)", fillOpacity: 0.92 },
         labelBgPadding: [6, 3] as [number, number],
-        labelBgBorderRadius: 4,
+        labelBgBorderRadius: 0,
         markerEnd: { type: MarkerType.ArrowClosed, color, width: 14, height: 14 },
         style: {
           stroke: color,
@@ -99,7 +100,7 @@ export function toFlow(g: TraceGraph, highlight: string[], currency: string, dis
         },
         className: `gedge gedge-${e.type} ${highlighted ? "is-highlighted" : ""}`,
         data: { edge: e },
-        ariaLabel: `${e.type.replace(/_/g, " ")} from ${e.source} to ${e.target}, ${s.label}`,
+        ariaLabel: `${relationLabel(e.type)}: from ${e.source} to ${e.target}, ${s.label}`,
       } satisfies BuiltInEdge;
     });
   return { nodes, edges };

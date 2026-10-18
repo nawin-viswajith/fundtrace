@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Clock, Info, ShieldAlert } from "lucide-react";
 import { PROVENANCE, PROVENANCE_ORDER, STATUS_LABELS_FALLBACK } from "../lib/labels";
 import { formatHours, slaTone } from "../lib/format";
 import { Popover } from "./Overlay";
@@ -7,7 +6,6 @@ import { Popover } from "./Overlay";
 export function SyntheticBanner() {
   return (
     <div className="synthetic-banner" role="note">
-      <ShieldAlert size={14} aria-hidden="true" />
       <span>
         <strong>Synthetic demo data</strong> — not real customers or bank records
       </span>
@@ -18,7 +16,7 @@ export function SyntheticBanner() {
 /** Plain-language legend for the five provenance labels, shared by graph, report and chips. */
 export function ProvenanceLegend({ compact = false, showLines = true }: { compact?: boolean; showLines?: boolean }) {
   return (
-    <ul className={`prov-legend ${compact ? "is-compact" : ""}`} aria-label="Provenance legend">
+    <ul className={`prov-legend ${compact ? "is-compact" : ""}`} aria-label="What the lines and labels mean">
       {PROVENANCE_ORDER.map((p) => {
         const s = PROVENANCE[p];
         return (
@@ -53,7 +51,6 @@ export function PriorityChip({ priority, reasons }: { priority: string; reasons?
   const chip = (props: Record<string, unknown> = {}) => (
     <button type="button" className={`chip chip-btn prio prio-${priority}`} {...props} aria-label={`Priority ${priority}. Show reasons`}>
       {priority}
-      {reasons?.length ? <Info size={12} aria-hidden="true" /> : null}
     </button>
   );
   if (!reasons?.length) return <span className={`chip prio prio-${priority}`}>{priority}</span>;
@@ -81,7 +78,6 @@ export function SlaRemaining({ hours, label }: { hours: number | null | undefine
   if (tone === "none") return <span className="muted">—</span>;
   return (
     <span className={`sla sla-${tone}`} title={label}>
-      <Clock size={13} aria-hidden="true" />
       <span className="num">{tone === "breached" ? formatHours(hours) : `${formatHours(hours)} left`}</span>
     </span>
   );

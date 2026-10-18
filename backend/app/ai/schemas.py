@@ -114,6 +114,19 @@ class Legibility(str, Enum):
     poor = "poor"
 
 
+class Relevance(str, Enum):
+    direct = "direct"
+    related = "related"
+    unrelated = "unrelated"
+
+
+class Origin(str, Enum):
+    system_generated = "system_generated"
+    third_party = "third_party"
+    customer_authored = "customer_authored"
+    unknown = "unknown"
+
+
 class EvidenceExtraction(BaseModel):
     document_type: str = Field(description="e.g. payment receipt, bank SMS, chat export, order confirmation, statement")
     is_payment_record: bool
@@ -128,6 +141,11 @@ class EvidenceExtraction(BaseModel):
     tamper_indicators: list[str] = Field(default_factory=list)
     embedded_instructions_detected: bool = Field(description="True if the document contains text addressed to an AI or reviewer")
     legibility: Legibility
+    relevance: Relevance = Field(description="direct: the document is a record of a payment (receipt, bank SMS, statement line); "
+                                             "related: it describes surrounding events (chat, order, complaint); unrelated: neither")
+    relevance_reason: str = Field(description="One short sentence explaining the relevance label")
+    origin: Origin = Field(description="Who produced it: system_generated (bank/payment app screen, SMS, statement), "
+                                       "third_party (merchant, marketplace), customer_authored (typed or compiled by the customer), unknown")
     summary: str
 
 
@@ -151,3 +169,35 @@ class CopilotAnswer(BaseModel):
     claims: list[Claim]
     insufficient_data: bool
     follow_up_questions: list[str]
+
+
+class AssistantActionKind(str, Enum):
+    none = "none"
+    clear_section = "clear_section"
+    restore_section = "restore_section"
+    remove_claims = "remove_claims"
+    open_tab = "open_tab"
+
+
+class AssistantTab(str, Enum):
+    overview = "overview"
+    graph = "graph"
+    timeline = "timeline"
+    risk = "risk"
+    evidence = "evidence"
+    report = "report"
+    audit = "audit"
+
+
+class AssistantAction(BaseModel):
+    kind: AssistantActionKind = Field(description="none unless the user explicitly asked to change the AI report or open a tab")
+    section_key: SectionKey | None = Field(default=None, description="Report section for clear_section / restore_section")
+    claim_ids: list[str] = Field(default_factory=list, description="Report statement ids (e.g. C07) for remove_claims")
+    tab: AssistantTab | None = Field(default=None, description="Tab to open for open_tab")
+
+
+class AssistantTurn(BaseModel):
+    claims: list[Claim] = Field(description="The answer as short plain-English sentences, each citing its records. Empty if only acting.")
+    insufficient_data: bool
+    action: AssistantAction
+    follow_up_questions: list[str] = Field(description="Up to 3 short questions the user may want to ask next")

@@ -15,6 +15,7 @@ export const keys = {
   reports: (id: string) => ["case", id, "reports"] as const,
   audit: (id: string) => ["case", id, "audit"] as const,
   report: (rid: string) => ["report", rid] as const,
+  draft: (rid: string) => ["report", rid, "draft"] as const,
 };
 
 export const useAuthConfig = () => useQuery({ queryKey: ["auth-config"], queryFn: api.authConfig, staleTime: Infinity });
@@ -40,6 +41,8 @@ export const useEvidence = (id: string) => useQuery({ queryKey: keys.evidence(id
 export const useReports = (id: string) => useQuery({ queryKey: keys.reports(id), queryFn: () => api.reports(id) });
 export const useReport = (rid: string | null | undefined) =>
   useQuery({ queryKey: keys.report(rid ?? "none"), queryFn: () => api.report(rid as string), enabled: !!rid });
+export const useReportDraft = (rid: string | null | undefined) =>
+  useQuery({ queryKey: keys.draft(rid ?? "none"), queryFn: () => api.reportDraft(rid as string), enabled: !!rid });
 export const useAudit = (id: string) => useQuery({ queryKey: keys.audit(id), queryFn: () => api.audit(id) });
 
 export const useRules = () => useQuery({ queryKey: ["rules"], queryFn: api.rules });
@@ -49,6 +52,9 @@ export const useRings = () => useQuery({ queryKey: ["rings"], queryFn: api.rings
 export const useOpsMetrics = () => useQuery({ queryKey: ["ops", "metrics"], queryFn: api.opsMetrics });
 export const useOpsCalls = () => useQuery({ queryKey: ["ops", "calls"], queryFn: api.opsCalls });
 export const useOpsEvals = () => useQuery({ queryKey: ["ops", "evals"], queryFn: api.opsEvals });
+export const useAdminUsers = (enabled = true) => useQuery({ queryKey: ["admin", "users"], queryFn: api.adminUsers, enabled });
+export const useSecurityStatus = (enabled = true) => useQuery({ queryKey: ["admin", "security"], queryFn: api.securityStatus, enabled });
+export const useIngestEvents = (enabled = true) => useQuery({ queryKey: ["ingest", "events"], queryFn: api.ingestEvents, enabled });
 
 /** Invalidate everything that depends on one case (all tabs + the queue). */
 export function useInvalidateCase(id: string) {

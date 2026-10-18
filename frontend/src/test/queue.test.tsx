@@ -53,7 +53,7 @@ describe("case queue: age, next action and pagination", () => {
   it("links the next action to the right workspace tab and shows a dash once resolved", () => {
     renderBody({ cases: v2.cases });
     const row = screen.getByRole("link", { name: "CASE-24051" }).closest("tr") as HTMLElement;
-    expect(within(row).getByRole("link", { name: /Triage: check the trail and claim the case/ })).toHaveAttribute(
+    expect(within(row).getByRole("link", { name: /Check the money trail and take the case/ })).toHaveAttribute(
       "href",
       "/cases/CASE-24051?tab=graph",
     );

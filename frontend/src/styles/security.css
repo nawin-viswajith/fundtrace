@@ -1,0 +1,259 @@
+/* Sign-in steps, account security, evidence strength scores, DLP notes and admin panels.
+   Uses the shared tokens only: square corners, 1px hairlines, colour for status. */
+
+/* ---------------------------------------------------------------- top bar: user chip opens Account security */
+button.user-chip {
+  background: none;
+  border-top: 0;
+  border-bottom: 0;
+  border-left: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+button.user-chip:hover .user-name {
+  text-decoration: underline;
+}
+button.user-chip:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.mfa-tag {
+  color: var(--good-text);
+}
+
+/* ---------------------------------------------------------------- sign-in: second step, Google, enrolment */
+.input-code {
+  font-size: var(--fs-lg);
+  letter-spacing: 0.25em;
+  text-align: center;
+}
+.login-alt {
+  margin-top: var(--s-3);
+}
+.divider-text {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: var(--s-3) 0;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
+.divider-text::before,
+.divider-text::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--border);
+}
+.login-card .btn-block + .btn-block {
+  margin-top: var(--s-2);
+}
+.mfa-steps {
+  margin: 0 0 var(--s-4);
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  font-size: var(--fs-base);
+}
+.mfa-steps li > * {
+  display: block;
+  margin-top: var(--s-2);
+}
+.mfa-qr {
+  border: 1px solid var(--border);
+  background: #ffffff; /* QR codes need a light quiet zone in both themes */
+  padding: var(--s-1);
+}
+.mfa-key {
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  word-break: break-all;
+}
+.recovery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.recovery .inline-actions {
+  margin-left: 0;
+}
+.recovery-codes {
+  list-style: none;
+  margin: 0;
+  padding: var(--s-3);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-1) var(--s-4);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: var(--fs-md);
+}
+
+/* ---------------------------------------------------------------- evidence strength */
+.tone-good { --tone: var(--good); --tone-text: var(--good-text); }
+.tone-accent { --tone: var(--accent); --tone-text: var(--accent-text); }
+.tone-warn { --tone: var(--warn); --tone-text: var(--warn-text); }
+.tone-bad { --tone: var(--bad); --tone-text: var(--bad-text); }
+.tone-none { --tone: var(--border-strong); --tone-text: var(--text-3); }
+
+.score-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s-1);
+  padding: 1px var(--s-2);
+  border: 1px solid var(--tone);
+  color: var(--tone-text);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.score-badge .num {
+  font-weight: 600;
+}
+.score-badge-band {
+  font-size: var(--fs-xs);
+}
+
+.ev-score {
+  margin-top: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--border);
+}
+.ev-score-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  margin-bottom: var(--s-2);
+}
+.ev-score-title {
+  font-weight: 600;
+  font-size: var(--fs-base);
+}
+.ev-score-total {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  color: var(--tone-text);
+  line-height: 1;
+}
+.ev-score-of {
+  font-size: var(--fs-sm);
+  font-weight: 400;
+  color: var(--text-3);
+}
+.ev-score-band {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.ev-score-cap {
+  margin: 0 0 var(--s-2);
+  padding: var(--s-1) var(--s-2);
+  border-left: 2px solid var(--bad);
+  background: var(--bad-soft);
+  color: var(--bad-text);
+}
+.ev-score-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.ev-score-table th,
+.ev-score-table td {
+  padding: 5px var(--s-2) 5px 0;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  font-weight: 400;
+}
+.ev-score-table thead th {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.ev-score-table tbody th {
+  color: var(--text);
+  white-space: nowrap;
+}
+.ev-score-table .ta-r {
+  text-align: right;
+  width: 56px;
+}
+.ev-score-table td:last-child {
+  width: 55%;
+  padding-right: 0;
+}
+.ev-bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.ev-bar {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  background: var(--surface-3);
+}
+.ev-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--tone);
+}
+.ev-bar-value {
+  width: 2.5em;
+  text-align: right;
+}
+.ev-reasons {
+  margin: var(--s-2) 0 0;
+  display: grid;
+  gap: var(--s-2);
+  font-size: var(--fs-sm);
+}
+.ev-reasons dt {
+  font-weight: 600;
+}
+.ev-reasons dd {
+  margin: 2px 0 0;
+  color: var(--text-2);
+}
+
+/* ---------------------------------------------------------------- DLP */
+.dlp-line {
+  margin: var(--s-1) 0;
+  padding-left: var(--s-2);
+  border-left: 2px solid var(--warn);
+  color: var(--text-2);
+}
+.dlp-line.dlp-restricted {
+  border-left-color: var(--bad);
+}
+
+/* ---------------------------------------------------------------- admin: ledger ingest upload */
+.ingest-upload {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1fr) auto;
+  gap: var(--s-3);
+  align-items: end;
+  padding-bottom: var(--s-4);
+  margin-bottom: var(--s-4);
+  border-bottom: 1px solid var(--border);
+}
+.ingest-upload .field {
+  margin: 0;
+}
+.ingest-upload .inline-error {
+  grid-column: 1 / -1;
+}
+@media (max-width: 760px) {
+  .ingest-upload {
+    grid-template-columns: 1fr;
+  }
+  .recovery-codes {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The login card's synthetic-data notice has no icon column here. */
+.login-card p.synthetic-notice {
+  display: block;
+}

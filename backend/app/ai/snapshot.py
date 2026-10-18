@@ -10,6 +10,7 @@ import json
 from datetime import datetime, timedelta
 
 from app.ai.prompts import fence
+from app.services.dlp import redact_for_llm
 from app.services.trace import fmt_amount
 
 
@@ -33,8 +34,8 @@ def build_snapshot(ctx: dict, extra: dict | None = None) -> dict:
     recs[case["id"]] = {
         "type": "case", "category": case["category_label"], "status": case["status"], "priority": ctx["computed_priority"]["priority"],
         "priority_reasons": ctx["computed_priority"]["reasons"], "reported": _t(case["reported_at"]).get("time_utc"),
-        "customer_statement": fence(case["allegation"]),
-        "statement_translation_ai": fence(case["allegation_translation"]) if case.get("allegation_translation") else None,
+        "customer_statement": fence(redact_for_llm(case["allegation"])),
+        "statement_translation_ai": fence(redact_for_llm(case["allegation_translation"])) if case.get("allegation_translation") else None,
     }
     att = ctx["attribution"]
     for n in ctx["graph"]["nodes"]:
@@ -85,7 +86,8 @@ def build_snapshot(ctx: dict, extra: dict | None = None) -> dict:
         recs[e["id"]] = {"type": "evidence", "filename": e["filename"], "kind": e["kind"], "checklist_item": e["checklist_key"],
                          "analysis_status": e["analysis_status"], "sha256": e["sha256"][:16] + "…",
                          "extracted_by_ai": fence(json.dumps(e["extracted"], ensure_ascii=False)) if e.get("extracted") else None,
-                         "reconciliation": (e.get("reconciliation") or {}).get("checks")}
+                         "reconciliation": (e.get("reconciliation") or {}).get("checks"),
+                         "strength_score": _strength(e.get("score"))}
     for i in ctx["completeness"]["items"]:
         recs[f"CHK-{i['key']}"] = {"type": "checklist_item", "label": i["label"], "required": i["required"], "status": i["status"],
                                    "why_it_matters": i["why_it_matters"], "source_ids": i["source_ids"]}
@@ -163,3 +165,11 @@ def referenced_records(db, ctx: dict) -> dict:
                             "to_account": t.credit_account_id, **_t(t.occurred_at.isoformat() + "Z"), "role": "referenced",
                             "source_record": f"{t.source_system}:{t.source_record_id}"}
     return out
+
+
+def _strength(sc: dict | None) -> dict | None:
+    """Evidence strength for the report: overall and per category, computed by code (basis: derived)."""
+    if not sc:
+        return None
+    return {"basis": "derived", "overall": sc["overall"], "band": sc["band"], "caps": [c["reason"] for c in sc["caps"]],
+            "categories": {c["label"]: c["score"] for c in sc["categories"]}, "note": sc["note"]}

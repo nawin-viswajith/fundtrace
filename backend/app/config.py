@@ -23,6 +23,25 @@ class Settings(BaseSettings):
     demo_password: str = "Investigate@2026"
     show_demo_credentials: bool = True  # synthetic public demo: judges need to log in
     firebase_project_id: str | None = None  # enables Firebase ID-token login when set
+    firebase_api_key: str | None = None  # public web config for the sign-in button (not a secret)
+    firebase_auth_domain: str | None = None  # defaults to <project>.firebaseapp.com
+    # MFA (TOTP). Roles listed here must enrol before they can use the app; others may opt in.
+    mfa_required_roles: str = ""
+    mfa_issuer: str = "FundTrace"
+
+    # Field-level encryption (AES-256-GCM). Keys: comma-separated "kid:base64key" pairs, first one encrypts.
+    # On GCP, FIELD_KEY_KMS_NAME + FIELD_KEY_WRAPPED (base64 ciphertext of the key from Cloud KMS) are used instead.
+    field_encryption_keys: str | None = None
+    field_key_kms_name: str | None = None
+    field_key_wrapped: str | None = None
+
+    # DLP: "local" (built-in detectors), "gcp" (Cloud DLP, falls back to local on error) or "off"
+    dlp_backend: str = "local"
+
+    # Ledger ingest (Pub/Sub push). The push endpoint is enabled only when the audience is set.
+    pubsub_push_audience: str | None = None  # usually the full URL of /api/ingest/pubsub
+    pubsub_push_service_account: str | None = None  # the subscription's push-auth service account email
+    ingest_max_records: int = 5000
 
     # Evidence storage: "local" (./uploads) or "gcs"
     storage_backend: str = "local"
@@ -41,6 +60,7 @@ class Settings(BaseSettings):
     gemini_pro_models: str = "gemini-3.1-pro-preview,gemini-3.8-flash"
     llm_timeout_seconds: float = 60.0  # fast tier (explore, evidence, judge, copilot)
     llm_pro_timeout_seconds: float = 150.0  # report drafting; on timeout falls back to the next model in the chain
+    llm_judge_timeout_seconds: float = 90.0  # one fact-check batch; the model may reason at length on hard claims
     llm_daily_budget_usd: float = 20.0
     llm_case_budget_usd: float = 1.0
     # Optional JSON override of the price table: {"model": {"input": usd_per_1m, "output": usd_per_1m}}
@@ -69,6 +89,10 @@ class Settings(BaseSettings):
     @property
     def pro_models(self) -> list[str]:
         return [m.strip() for m in self.gemini_pro_models.split(",") if m.strip()]
+
+    @property
+    def mfa_roles(self) -> set[str]:
+        return {r.strip() for r in self.mfa_required_roles.split(",") if r.strip()}
 
 
 @lru_cache

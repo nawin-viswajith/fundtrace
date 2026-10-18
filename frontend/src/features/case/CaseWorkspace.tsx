@@ -13,6 +13,7 @@ import { RiskTab } from "../risk/RiskTab";
 import { EvidenceTab } from "../evidence/EvidenceTab";
 import { ReportTab } from "../report/ReportTab";
 import { ActionsAuditTab } from "../audit/ActionsAuditTab";
+import { CaseAssistant } from "./CaseAssistant";
 
 const TrailGraphTab = lazy(() => import("../graph/TrailGraphTab"));
 
@@ -79,12 +80,12 @@ export default function CaseWorkspace() {
   const ctx = api.ctx;
   const tabs: TabDef[] = [
     { id: "overview", label: "Overview" },
-    { id: "graph", label: "Trail graph", badge: ctx.graph.stats.transactions },
+    { id: "graph", label: "Money trail", badge: ctx.graph.stats.transactions },
     { id: "timeline", label: "Timeline" },
-    { id: "risk", label: "Risk signals", badge: ctx.rules_summary.triggered },
+    { id: "risk", label: "Warning signs", badge: ctx.rules_summary.triggered },
     { id: "evidence", label: "Evidence", badge: `${ctx.completeness.present}/${ctx.completeness.required}` },
     { id: "report", label: "AI report" },
-    { id: "audit", label: "Actions & audit" },
+    { id: "audit", label: "Notes & history" },
   ];
 
   return (
@@ -121,6 +122,7 @@ export default function CaseWorkspace() {
           <ActionsAuditTab />
         </TabPanel>
       </div>
+      <CaseAssistant />
     </WorkspaceCtx.Provider>
   );
 }

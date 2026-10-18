@@ -12,6 +12,7 @@ python-jose[cryptography]==3.3.0
 bcrypt==5.0.0
 python-multipart==0.0.22
 PyYAML==6.0.3
+segno==1.6.6
 pillow==11.3.0
 networkx==3.6.1
 langgraph==1.0.5

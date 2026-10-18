@@ -1,15 +1,18 @@
 import { ArrowLeftRight, FileText, KeyRound, Flag, CircleDot } from "lucide-react";
 import { useTimeline } from "../../api/hooks";
 import { useWorkspace } from "../case/workspace";
-import { Card, EmptyState, ErrorState, LoadingBlock, MoneyRange, Time } from "../../components/Primitives";
+import { Card, EmptyState, ErrorState, LoadingBlock, Time } from "../../components/Primitives";
 import { ProvenanceChip } from "../../components/Chip";
 import { IdChip } from "../../components/Domain";
 import { humanize } from "../../lib/format";
+import { plainRange, spanOf } from "../graph/moneySummary";
+import { cleanName, statusLabel } from "../graph/plainText";
+import { plainTitle, TRAIL_ROLE } from "./plainTitle";
 import { isGraphId, ROLE_LABEL } from "../../lib/labels";
 
 const KIND = {
-  transaction: { icon: ArrowLeftRight, label: "Transaction" },
-  auth_event: { icon: KeyRound, label: "Login / auth" },
+  transaction: { icon: ArrowLeftRight, label: "Payment" },
+  auth_event: { icon: KeyRound, label: "Sign-in / security" },
   case: { icon: Flag, label: "Case" },
   evidence: { icon: FileText, label: "Evidence" },
 } as const;
@@ -22,77 +25,97 @@ export function TimelineTab() {
   const d = q.data;
   if (!d || d.items.length === 0) return <EmptyState title="Nothing on the timeline">No records were found for this case.</EmptyState>;
   const cur = ctx.case.currency;
+  const names = new Map<string, string>();
+  for (const n of [ctx.payer, ctx.beneficiary, ...(ctx.graph?.nodes ?? [])]) if (n?.type === "account") names.set(n.id, cleanName(n.label));
   return (
     <Card
-      title="Timeline"
-      subtitle="Every record on the trail in time order (IST; hover a time for UTC). This is the text equivalent of the trail graph, traced in both directions."
+      title="What happened, in order"
+      subtitle="Every payment, sign-in and evidence item for this case, oldest first. Times are Indian Standard Time (IST); point at a time to see UTC. Click a record ID to see it on the map."
     >
-      {d.empty && <p className="inline-note">Only the disputed transaction is on the trail — no onward or earlier transfers are visible.</p>}
+      {d.empty && <p className="inline-note">Only the disputed payment is on the trail. We can't see any money moving before or after it.</p>}
       <div className="table-wrap">
         <table className="table timeline-table">
           <caption className="sr-only">Case timeline</caption>
           <thead>
             <tr>
-              <th scope="col">Time (IST)</th>
-              <th scope="col">Kind</th>
+              <th scope="col">When (IST)</th>
               <th scope="col">What happened</th>
               <th scope="col">Status</th>
-              <th scope="col">Reference</th>
-              <th scope="col">Provenance</th>
+              <th scope="col">Payment reference (UTR)</th>
               <th scope="col" className="ta-r">
-                May be disputed funds
+                Disputed money it may carry
               </th>
-              <th scope="col">Record</th>
+              <th scope="col">How we know</th>
             </tr>
           </thead>
           <tbody>
             {d.items.map((it, i) => {
-              const k = KIND[it.kind as keyof typeof KIND] ?? { icon: CircleDot, label: humanize(it.kind) };
+              const k = KIND[it.kind as keyof typeof KIND] ?? {
+                icon: CircleDot,
+                label: humanize(it.kind),
+              };
               const Icon = k.icon;
               const disputed = it.id === d.disputed_txn_id;
               return (
                 <tr key={`${it.id}-${i}`} className={disputed ? "row-disputed" : ""}>
-                  <td data-label="Time">
+                  <td data-label="When">
                     <Time iso={it.time} seconds />
                   </td>
-                  <td data-label="Kind">
-                    <span className="kind-cell">
-                      <Icon size={14} aria-hidden="true" /> {k.label}
+                  <td data-label="What happened" className="tl-what">
+                    <span className="tl-what-body">
+                      <span className="kind-cell tl-kind">
+                        <Icon size={13} aria-hidden="true" /> {k.label}
+                      </span>
+                      <span className={disputed ? "strong" : ""} title={it.title}>
+                        {plainTitle(it, names)}
+                      </span>
+                      {it.role && it.kind === "transaction" && (
+                        <span className="cell-sub">{TRAIL_ROLE[it.role] ?? ROLE_LABEL[it.role] ?? humanize(it.role)}</span>
+                      )}
+                      {it.device && (
+                        <span className="cell-sub">
+                          Device <span className="mono">{it.device}</span>
+                        </span>
+                      )}
+                      {it.note && <span className="cell-sub">{it.note}</span>}
                     </span>
                   </td>
-                  <td data-label="What happened">
-                    <span className={disputed ? "strong" : ""}>{it.title}</span>
-                    {it.role && it.kind === "transaction" && (
-                      <span className="cell-sub">
-                        {ROLE_LABEL[it.role] ?? humanize(it.role)}
-                        {disputed ? " transaction" : ""}
-                      </span>
-                    )}
-                    {it.device && <span className="cell-sub mono">device {it.device}</span>}
-                    {it.note && <span className="cell-sub">{it.note}</span>}
+                  <td data-label="Status" className={it.status ? "" : "tl-empty"}>
+                    {it.status ? <span className={`txn-status txn-${it.status}`}>{statusLabel(it.status)}</span> : <span className="muted">—</span>}
                   </td>
-                  <td data-label="Status">
-                    {it.status ? <span className={`txn-status txn-${it.status}`}>{humanize(it.status)}</span> : <span className="muted">—</span>}
-                  </td>
-                  <td data-label="Reference">
+                  <td data-label="Payment reference (UTR)" className={it.kind === "transaction" ? "" : "tl-empty"}>
                     {it.kind === "transaction" ? (
-                      it.reference ? <span className="mono">{it.reference}</span> : <span className="warn-text">missing</span>
+                      it.reference ? (
+                        <span className="mono">{it.reference}</span>
+                      ) : (
+                        <span className="warn-text">Missing</span>
+                      )
                     ) : (
                       <span className="muted">—</span>
                     )}
                   </td>
-                  <td data-label="Provenance">
-                    <ProvenanceChip provenance={it.provenance} size="sm" />
-                  </td>
-                  <td data-label="May be disputed funds" className="ta-r">
-                    {it.attribution ? <MoneyRange min={it.attribution.min} max={it.attribution.max} currency={cur} /> : <span className="muted">—</span>}
-                  </td>
-                  <td data-label="Record">
-                    {isGraphId(it.id) ? (
-                      <IdChip id={it.id} onClick={() => showOnGraph([it.id])} title={`Show ${it.id} on the trail graph`} />
+                  <td data-label="Disputed money it may carry" className={`ta-r ${disputed || it.attribution ? "" : "tl-empty"}`}>
+                    {disputed ? (
+                      <span className="small">All of it</span>
+                    ) : it.attribution ? (
+                      <span className="num" title="Smallest to largest result of the four ways of tracing the money">
+                        {plainRange(spanOf(it.attribution), cur, {
+                          capital: true,
+                        })}
+                      </span>
                     ) : (
-                      <IdChip id={it.id} />
+                      <span className="muted">—</span>
                     )}
+                  </td>
+                  <td data-label="How we know">
+                    <span className="tl-source">
+                      <ProvenanceChip provenance={it.provenance} size="sm" />
+                      {isGraphId(it.id) ? (
+                        <IdChip id={it.id} onClick={() => showOnGraph([it.id])} title={`Show ${it.id} on the map`} />
+                      ) : (
+                        <IdChip id={it.id} />
+                      )}
+                    </span>
                   </td>
                 </tr>
               );

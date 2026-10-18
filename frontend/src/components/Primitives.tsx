@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { AlertTriangle, Inbox, RotateCw } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { errorMessage } from "../api/client";
 import { formatIST, formatMoney, formatMoneyRange, formatUTC } from "../lib/format";
 
@@ -52,9 +52,11 @@ export function Card({ title, subtitle, actions, children, className = "", as = 
 export function EmptyState({ title, children, icon, action }: { title: string; children?: ReactNode; icon?: ReactNode; action?: ReactNode }) {
   return (
     <div className="empty-state" role="status">
-      <div className="empty-icon" aria-hidden="true">
-        {icon ?? <Inbox size={22} />}
-      </div>
+      {icon && (
+        <div className="empty-icon" aria-hidden="true">
+          {icon}
+        </div>
+      )}
       <p className="empty-title">{title}</p>
       {children && <div className="empty-body">{children}</div>}
       {action && <div className="empty-action">{action}</div>}
@@ -72,7 +74,7 @@ export function ErrorState({ error, onRetry, title = "Couldn't load this" }: { e
       </div>
       {onRetry && (
         <button type="button" className="btn btn-secondary btn-sm" onClick={onRetry}>
-          <RotateCw size={14} aria-hidden="true" /> Retry
+          Retry
         </button>
       )}
     </div>

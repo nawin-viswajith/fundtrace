@@ -41,21 +41,21 @@ def next_actions(db: Session, cases: list[m.DisputeCase]) -> dict[str, dict | No
         if c.status == "resolved":
             out[c.id] = None
         elif c.status == "escalated":
-            out[c.id] = {"label": "Supervisor review of the escalation", "tab": "audit"}
+            out[c.id] = {"label": "A supervisor needs to review the escalation", "tab": "audit"}
         elif c.status == "new":
-            out[c.id] = {"label": "Triage: check the trail and claim the case", "tab": "graph"}
+            out[c.id] = {"label": "Check the money trail and take the case", "tab": "graph"}
         elif holds[c.id]:
-            out[c.id] = {"label": f"Review {holds[c.id]} hold recommendation{'s' if holds[c.id] > 1 else ''}", "tab": "overview"}
+            out[c.id] = {"label": f"Decide on {holds[c.id]} suggested hold{'s' if holds[c.id] > 1 else ''}", "tab": "overview"}
         elif c.status == "ready_for_review":
             out[c.id] = {"label": "Record the decision", "tab": "audit"}
         elif rep is None:
             out[c.id] = {"label": "Run the AI investigation", "tab": "report"}
         elif rep.review_status == "pending":
-            out[c.id] = {"label": "Review the investigation report", "tab": "report"}
+            out[c.id] = {"label": "Review the AI report", "tab": "report"}
         elif open_reqs[c.id]:
-            out[c.id] = {"label": f"Chase {open_reqs[c.id]} evidence request{'s' if open_reqs[c.id] > 1 else ''}", "tab": "evidence"}
+            out[c.id] = {"label": f"Follow up on {open_reqs[c.id]} evidence request{'s' if open_reqs[c.id] > 1 else ''}", "tab": "evidence"}
         else:
-            out[c.id] = {"label": "Move to Ready for review", "tab": "overview"}
+            out[c.id] = {"label": "Mark the case ready for review", "tab": "overview"}
     return out
 
 

@@ -4,8 +4,8 @@ import { Moon, Sun } from "lucide-react";
 export type Theme = "light" | "dark";
 const KEY = "ft-theme";
 
-/** Dark navy is the product default; an explicit choice (stored) always wins. */
-export const DEFAULT_THEME: Theme = "dark";
+/** Light is the product default; an explicit choice (stored) always wins. */
+export const DEFAULT_THEME: Theme = "light";
 
 export function readStoredTheme(): Theme | null {
   try {
@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => readStoredTheme() ?? DEFAULT_THEME);
   const [explicit, setExplicit] = useState<boolean>(() => readStoredTheme() !== null);
 
-  // Tokens default to dark on :root; data-theme is only written once the user has chosen.
+  // Tokens default to light on :root; data-theme is only written once the user has chosen.
   useEffect(() => {
     if (explicit) document.documentElement.setAttribute("data-theme", theme);
     else document.documentElement.removeAttribute("data-theme");
@@ -56,7 +56,7 @@ export function ThemeToggle() {
   const next = theme === "dark" ? "light" : "dark";
   return (
     <button type="button" className="icon-btn" onClick={toggle} aria-label={`Switch to ${next} theme`} title={`Switch to ${next} theme`}>
-      {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+      {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
     </button>
   );
 }

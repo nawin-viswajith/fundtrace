@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app import models as m
 from app.config import get_settings
-from app.services import scoring
+from app.services import evidence_scoring, scoring
 from app.services.attribution import annotate_graph, attribute
 from app.services.graph_store import SqlGraphStore
 from app.services.policy import evaluate_eligibility
@@ -34,12 +34,14 @@ def evidence_dicts(db: Session, case_id: str) -> list[dict]:
 
 
 def evidence_to_dict(e: m.EvidenceItem) -> dict:
-    return {"id": e.id, "case_id": e.case_id, "kind": e.kind, "checklist_key": e.checklist_key, "filename": e.filename,
+    out = {"id": e.id, "case_id": e.case_id, "kind": e.kind, "checklist_key": e.checklist_key, "filename": e.filename,
             "mime": e.mime, "sha256": e.sha256, "size": e.size, "uploaded_by": e.uploaded_by,
             "uploaded_at": e.uploaded_at.isoformat() + "Z", "analysis_status": e.analysis_status, "analysis_note": e.analysis_note,
             "extracted": e.extracted, "reconciliation": e.reconciliation, "is_synthetic": e.is_synthetic,
             "retention_status": e.retention_status or "active", "retention_note": e.retention_note,
-            "deleted_at": e.deleted_at.isoformat() + "Z" if e.deleted_at else None}
+            "deleted_at": e.deleted_at.isoformat() + "Z" if e.deleted_at else None, "dlp": e.dlp}
+    out["score"] = evidence_scoring.score(out)
+    return out
 
 
 def request_dicts(db: Session, case_id: str) -> list[dict]:

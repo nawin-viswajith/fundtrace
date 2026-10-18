@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 import time
 from dataclasses import dataclass, field
 from datetime import timedelta
@@ -57,7 +58,17 @@ class LLMResult:
 class Gateway(Protocol):
     def generate(self, *, node: str, prompt_version: str, contents: list, schema: type[BaseModel], tier: str = "fast",
                  system: str | None = None, temperature: float = 0.2, case_id: str | None = None,
-                 run_id: str | None = None, db=None) -> LLMResult: ...
+                 run_id: str | None = None, db=None, timeout_s: float | None = None) -> LLMResult: ...
+
+
+class CallBuffer:
+    """Stands in for `db` when calls run on worker threads: rows are collected and the caller adds them to its
+    own session afterwards (a session must not be shared between threads). `spend` is the (day, case) spend
+    measured before the threads started, used for the budget guard."""
+
+    def __init__(self, spend: tuple[float, float]):
+        self.spend = spend
+        self.rows: list[m.AICall] = []
 
 
 def _record(res: LLMResult, node: str, prompt_version: str, case_id: str | None, run_id: str | None, db=None) -> None:
@@ -65,6 +76,9 @@ def _record(res: LLMResult, node: str, prompt_version: str, case_id: str | None,
                                           "input_tokens": res.input_tokens, "output_tokens": res.output_tokens + res.thinking_tokens,
                                           "cost_usd": res.cost_usd, "latency_ms": res.latency_ms, "prompt_version": prompt_version}})
     try:
+        if isinstance(db, CallBuffer):
+            db.rows.append(_call_row(res, node, prompt_version, case_id, run_id))
+            return
         if db is not None:
             db.add(_call_row(res, node, prompt_version, case_id, run_id))
             db.flush()
@@ -83,6 +97,8 @@ def _call_row(res: LLMResult, node: str, prompt_version: str, case_id: str | Non
 
 
 def _spend(case_id: str | None, db=None) -> tuple[float, float]:
+    if isinstance(db, CallBuffer):
+        return db.spend
     if db is None:
         with session_scope() as s:
             return _spend(case_id, s)
@@ -98,19 +114,24 @@ class GeminiGateway:
     def __init__(self):
         self.s = get_settings()
         self._client = None
+        self._lock = threading.Lock()
 
     def available(self) -> bool:
         return bool(self.s.llm_enabled and self.s.gcp_project)
 
     def client(self):
+        # One shared client. Without the lock, parallel calls on a fresh instance each built a client, and the ones
+        # overwritten were closed while their requests were still in flight ("client has been closed").
         if self._client is None:
-            from google import genai
+            with self._lock:
+                if self._client is None:
+                    from google import genai
 
-            self._client = genai.Client(vertexai=True, project=self.s.gcp_project, location=self.s.gemini_location)
+                    self._client = genai.Client(vertexai=True, project=self.s.gcp_project, location=self.s.gemini_location)
         return self._client
 
     def generate(self, *, node, prompt_version, contents, schema, tier="fast", system=None, temperature=0.2,
-                 case_id=None, run_id=None, db=None) -> LLMResult:
+                 case_id=None, run_id=None, db=None, timeout_s=None) -> LLMResult:
         if not self.available():
             res = LLMResult(ok=False, status="disabled", error="LLM disabled or GCP project not set")
             _record(res, node, prompt_version, case_id, run_id, db)
@@ -124,7 +145,7 @@ class GeminiGateway:
         from google.genai import types
 
         models = self.s.pro_models if tier == "pro" else self.s.fast_models
-        timeout_s = self.s.llm_pro_timeout_seconds if tier == "pro" else self.s.llm_timeout_seconds
+        timeout_s = timeout_s or (self.s.llm_pro_timeout_seconds if tier == "pro" else self.s.llm_timeout_seconds)
         res = LLMResult(ok=False, status="error")
         for model in models:
             t0 = time.perf_counter()
@@ -189,7 +210,7 @@ class FakeGateway:
         return self.status == "ok"
 
     def generate(self, *, node, prompt_version, contents, schema, tier="fast", system=None, temperature=0.2,
-                 case_id=None, run_id=None, db=None) -> LLMResult:
+                 case_id=None, run_id=None, db=None, timeout_s=None) -> LLMResult:
         self.calls.append({"node": node, "contents": contents, "system": system})
         if self.status != "ok":
             res = LLMResult(ok=False, status=self.status, model="fake", error="fake failure")

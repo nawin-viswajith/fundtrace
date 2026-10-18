@@ -9,10 +9,12 @@ interrupt), so a reviewer can act hours later on any Cloud Run instance.
 """
 from __future__ import annotations
 
+import contextvars
 import json
 import operator
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from typing import Annotated, Any, TypedDict
 
 from langgraph.graph import END, StateGraph
@@ -23,14 +25,17 @@ from app import audit
 from app import models as m
 from app.ai import facts_report, prompts, tools, validator
 from app.ai.evidence import analyse_item
-from app.ai.llm import Gateway, get_gateway
+from app.ai.llm import CallBuffer, Gateway, _spend, get_gateway
 from app.ai.schemas import SECTION_TITLES, ExplorePlan, JudgeResult, ReportDraft
 from app.ai.snapshot import build_snapshot, referenced_records, snapshot_json
+from app.config import get_settings
 from app.services.investigation import build_context
 from app.telemetry import current_trace_id, span
 
 MAX_EXPLORE_ROUNDS = 2
 MAX_DRAFT_ATTEMPTS = 2
+JUDGE_BATCH = 8  # claims per fact-check call: small calls finish well inside the timeout
+JUDGE_WORKERS = 4
 HALLUCINATION_CODES = {"invalid_citation", "invented_id", "number_mismatch", "time_mismatch", "missing_citation"}
 
 
@@ -159,18 +164,8 @@ def build_graph(db: Session, case: m.DisputeCase, gw: Gateway, actor: str):
                     "judge_status": "not_needed", "steps": _step("judge", "skipped", t0, reason="facts-only report")}
         if not gw.available():
             return {"verdicts": {}, "judge_status": "unavailable", "steps": _step("judge", "skipped", t0)}
-        recs = state["snapshot"]["records"]
-        cited = sorted({cid for c in claims for cid in c.get("citations", []) if cid in recs})
-        payload = [{"claim_id": c["id"], "text": c["text"], "basis": c["basis"], "citations": c["citations"]} for c in claims]
-        contents = [f"{prompts.JUDGE_INSTRUCTIONS}\n\nCLAIMS:\n{json.dumps(payload, ensure_ascii=False)}\n\n"
-                    f"CITED RECORDS:\n{snapshot_json(state['snapshot'], cited)}"]
-        res = gw.generate(node="judge", prompt_version=prompts.JUDGE_V, contents=contents, schema=JudgeResult, tier="fast",
-                          system=prompts.GROUND_RULES, case_id=case.id, run_id=state["run_id"], temperature=0.0, db=db)
-        if not res.ok:
-            return {"verdicts": {}, "judge_status": res.status, "steps": _step("judge", res.status, t0)}
-        jr: JudgeResult = res.data
-        verdicts = {v.claim_id: {"verdict": v.verdict.value, "reason": v.reason} for v in jr.verdicts}
-        return {"verdicts": verdicts, "judge_status": "ok", "steps": _step("judge", "ok", t0, judged=len(verdicts), model=res.model)}
+        verdicts, status, detail = judge_claims(db, gw, case.id, state["run_id"], claims, state["snapshot"])
+        return {"verdicts": verdicts, "judge_status": status, "steps": _step("judge", status, t0, judged=len(verdicts), **detail)}
 
     def finalize(state: State) -> dict:
         t0 = time.perf_counter()
@@ -192,12 +187,86 @@ def build_graph(db: Session, case: m.DisputeCase, gw: Gateway, actor: str):
     return g.compile()
 
 
+def judge_claims(db: Session, gw: Gateway, case_id: str, run_id: str | None, claims: list[dict], snapshot: dict) -> tuple[dict, str, dict]:
+    """Fact-check claims in small batches, in parallel. One slow or failed batch leaves only its own claims unjudged.
+
+    Returns (verdicts by claim id, status, detail). Status is "ok" when every batch answered, "partial" when some
+    did, otherwise the failure status of the first batch (e.g. "timeout").
+    """
+    if not claims:
+        return {}, "ok", {"batches": 0}
+    recs = snapshot["records"]
+    batches = [claims[i:i + JUDGE_BATCH] for i in range(0, len(claims), JUDGE_BATCH)]
+    spend = _spend(case_id, db)
+
+    def call(batch: list[dict]):
+        buf = CallBuffer(spend)  # worker threads never touch the request's DB session
+        cited = sorted({cid for c in batch for cid in c.get("citations", []) if cid in recs})
+        payload = [{"claim_id": c["id"], "text": c["text"], "basis": c["basis"], "citations": c["citations"]} for c in batch]
+        contents = [f"{prompts.JUDGE_INSTRUCTIONS}\n\nCLAIMS:\n{json.dumps(payload, ensure_ascii=False)}\n\n"
+                    f"CITED RECORDS:\n{snapshot_json(snapshot, cited)}"]
+        res = gw.generate(node="judge", prompt_version=prompts.JUDGE_V, contents=contents, schema=JudgeResult, tier="fast",
+                          system=prompts.GROUND_RULES, case_id=case_id, run_id=run_id, temperature=0.0, db=buf,
+                          timeout_s=get_settings().llm_judge_timeout_seconds)
+        return batch, res, buf, True  # (claims, result, recorded calls, counts towards the status)
+
+    def one(batch: list[dict]) -> list:
+        first = call(batch)
+        if first[1].status != "timeout" or len(batch) < 2:
+            return [first]
+        # A batch that needs too long is split in half and retried once, in parallel: smaller calls finish in time.
+        halves = [batch[: len(batch) // 2], batch[len(batch) // 2:]]
+        with ThreadPoolExecutor(max_workers=2) as inner:
+            retried = [f.result() for f in [inner.submit(contextvars.copy_context().run, call, h) for h in halves]]
+        return [(batch, first[1], first[2], False)] + retried  # keep the timed-out call's cost row; its halves decide
+
+    with ThreadPoolExecutor(max_workers=min(JUDGE_WORKERS, len(batches))) as ex:
+        # each worker runs in a copy of this context, so its spans join the current trace
+        futures = [ex.submit(contextvars.copy_context().run, one, b) for b in batches]
+        results = [r for f in futures for r in f.result()]
+    verdicts: dict = {}
+    failures: list[str] = []
+    models: set[str] = set()
+    for batch, res, buf, counts in results:
+        for row in buf.rows:
+            db.add(row)
+        if not counts:
+            continue
+        if not res.ok:
+            failures.append(res.status)
+            continue
+        models.add(res.model)
+        ids = {c["id"] for c in batch}
+        for v in res.data.verdicts:
+            if v.claim_id in ids:  # a batch may only judge its own claims
+                verdicts[v.claim_id] = {"verdict": v.verdict.value, "reason": v.reason}
+    db.flush()
+    calls = sum(1 for r in results if r[3])
+    status = "ok" if not failures else ("partial" if len(failures) < calls else failures[0])
+    return verdicts, status, {"batches": len(batches), "calls": calls, "split_after_timeout": len(results) - calls,
+                              "batches_failed": len(failures), "failures": failures, "models": sorted(models)}
+
+
+def report_status(generator: str, flagged: int, total: int, judge_status: str | None) -> str:
+    if generator == "deterministic":
+        return "facts_only"
+    if flagged == 0 and judge_status == "ok":
+        return "verified"
+    if flagged / (total or 1) <= 0.2:
+        return "partially_verified"
+    return "unverified"
+
+
+JUDGE_REASONS = {"timeout": "fact-check timed out", "partial": "fact-check timed out for this batch", "budget": "AI budget limit reached",
+                 "unavailable": "AI unavailable", "error": "fact-check failed", "invalid": "fact-check returned an unreadable answer"}
+
+
 def score_claims(claims: list[dict], verdicts: dict, judge_status: str) -> tuple[list[dict], dict]:
     out = []
     counts = {"supported": 0, "partial": 0, "unsupported": 0, "contradicted": 0, "unjudged": 0, "system_generated": 0}
     hallucinated = flagged = 0
     for c in claims:
-        v = verdicts.get(c["id"], {"verdict": "unjudged", "reason": "judge unavailable" if judge_status != "ok" else "not returned"})
+        v = verdicts.get(c["id"], {"verdict": "unjudged", "reason": JUDGE_REASONS.get(judge_status, "not returned")})
         verdict = v["verdict"]
         counts[verdict] = counts.get(verdict, 0) + 1
         codes = {i["code"] for i in c["issues"] if i["severity"] == "error"}
@@ -226,19 +295,12 @@ def persist_report(db: Session, case: m.DisputeCase, state: State, actor: str) -
     v = state["validation"]
     claims, metrics = score_claims(v["claims"], state.get("verdicts", {}), state.get("judge_status", "unavailable"))
     generator = state.get("generator", "deterministic")
-    total = metrics["claims_total"] or 1
+    status = report_status(generator, metrics["claims_flagged"], metrics["claims_total"], state.get("judge_status"))
     if generator == "deterministic":
-        status = "facts_only"
         # No AI-generated claims: AI confidence and hallucination rate do not apply (shown as "Not analysed").
         metrics["confidence"] = None
         metrics["hallucination_rate"] = None
         metrics["confidence_note"] = "Not applicable: this report was generated from records by code, without AI."
-    elif metrics["claims_flagged"] == 0 and state.get("judge_status") == "ok":
-        status = "verified"
-    elif metrics["claims_flagged"] / total <= 0.2:
-        status = "partially_verified"
-    else:
-        status = "unverified"
     sections = []
     for key, title in SECTION_TITLES.items():
         sections.append({"key": key, "title": title, "claims": [c for c in claims if c["section"] == key]})
@@ -301,3 +363,46 @@ def run_investigation(db: Session, case: m.DisputeCase, actor: str = "system", g
         sp.set_attribute("report.status", rep.status)
         db.flush()
         return rep
+
+
+def rejudge_report(db: Session, report: m.Report, actor: str, role: str, only_unjudged: bool = True,
+                   gateway: Gateway | None = None) -> dict:
+    """Run only the fact-check again on an existing report, against the exact snapshot it was written from.
+
+    The claims do not change, so verdicts, status and confidence are updated in place; every re-run is kept in
+    metrics["judge_runs"] and audited. Other steps need no separate re-run: evidence is analysed per item, and a
+    failed draft already falls back to a facts-only report.
+    """
+    gw = gateway or get_gateway()
+    if report.generator == "deterministic":
+        return {"ok": False, "message": "This facts-only report was built from records by code; there is nothing to fact-check."}
+    run = db.get(m.AIRun, report.run_id)
+    if run is None or not run.snapshot:
+        return {"ok": False, "message": "The snapshot this report was written from is not available."}
+    if not gw.available():
+        return {"ok": False, "message": "AI is not available right now, so the fact-check cannot run."}
+    claims = [c for s in report.sections for c in s["claims"]]
+    targets = [c for c in claims if not only_unjudged or c.get("verdict") == "unjudged"]
+    if not targets:
+        return {"ok": True, "message": "Every claim already has a fact-check verdict.", "judged": 0}
+    new, status, detail = judge_claims(db, gw, report.case_id, report.run_id, targets, run.snapshot)
+    verdicts = {c["id"]: {"verdict": c["verdict"], "reason": c.get("verdict_reason")}
+                for c in claims if c.get("verdict") not in (None, "unjudged") and c["id"] not in {t["id"] for t in targets}}
+    verdicts.update(new)
+    overall = "ok" if all(c["id"] in verdicts for c in claims) else ("partial" if verdicts else status)
+    scored, counts = score_claims(claims, verdicts, overall)
+    by_id = {c["id"]: c for c in scored}
+    report.sections = [{**s, "claims": [by_id[c["id"]] for c in s["claims"]]} for s in report.sections]
+    history = list((report.metrics or {}).get("judge_runs", [])) + [
+        {"at": m.utcnow().isoformat() + "Z", "by": actor, "claims": len(targets), "judged": len(new), "status": status, **detail}]
+    report.metrics = {**(report.metrics or {}), **counts, "judge_status": overall, "judge_runs": history}
+    report.status = report_status(report.generator, counts["claims_flagged"], counts["claims_total"], overall)
+    report.claims_supported, report.claims_flagged = counts["claims_supported"], counts["claims_flagged"]
+    report.confidence, report.hallucination_rate = counts["confidence"], counts["hallucination_rate"]
+    db.flush()
+    audit.record(db, report.case_id, actor, role, "report_rejudged",
+                 {"report_id": report.id, "claims": len(targets), "judged": len(new), "status": status,
+                  "report_status": report.status, "confidence": report.confidence})
+    left = sum(1 for c in scored if c["verdict"] == "unjudged")
+    msg = f"Fact-checked {len(new)} of {len(targets)} claims." + (f" {left} still not judged; you can run it again." if left else "")
+    return {"ok": True, "message": msg, "judged": len(new), "status": status}

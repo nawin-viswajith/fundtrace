@@ -9,7 +9,7 @@ import { SeverityChip, Chip } from "../../components/Chip";
 import { SectionTitle } from "../../components/Domain";
 import { Modal } from "../../components/Overlay";
 import { useToast } from "../../components/Toast";
-import { humanize } from "../../lib/format";
+import { formatParam, isShareParam, paramLabel } from "../../lib/labels";
 import type { RuleCatalogueEntry } from "../../types/api";
 
 function Params({ p, defaults }: { p: Record<string, number>; defaults?: Record<string, number> }) {
@@ -19,8 +19,8 @@ function Params({ p, defaults }: { p: Record<string, number>; defaults?: Record<
     <dl className="param-list param-inline">
       {e.map(([k, v]) => (
         <div key={k} className={defaults && defaults[k] !== v ? "is-changed" : ""} title={defaults && defaults[k] !== v ? `Default ${defaults[k]}` : undefined}>
-          <dt>{humanize(k)}</dt>
-          <dd className="num">{String(v)}</dd>
+          <dt>{paramLabel(k)}</dt>
+          <dd className="num">{formatParam(k, v)}</dd>
         </div>
       ))}
     </dl>
@@ -156,7 +156,11 @@ function RuleEditor({ rule, onClose }: { rule: RuleCatalogueEntry; onClose: () =
           {Object.entries(vals).map(([k, v]) => (
             <label key={k} className="field">
               <span className="field-label">
-                {humanize(k)} <span className="muted">(default {rule.default_params[k]})</span>
+                {paramLabel(k)}{" "}
+                <span className="muted">
+                  (default {formatParam(k, rule.default_params[k])}
+                  {isShareParam(k) && Number.isFinite(Number(v)) && v !== "" ? `; now ${Math.round(Number(v) * 100)}% — enter as a fraction, e.g. 0.8` : ""})
+                </span>
               </span>
               <input
                 className={`input num ${bad.includes(k) ? "is-invalid" : ""}`}

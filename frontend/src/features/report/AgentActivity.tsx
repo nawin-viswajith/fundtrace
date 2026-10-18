@@ -1,4 +1,4 @@
-import { CheckCircle2, CircleSlash, AlertTriangle, Wrench } from "lucide-react";
+import { CheckCircle2, CircleSlash, AlertTriangle } from "lucide-react";
 import type { Report, RunStep } from "../../types/api";
 import { Card } from "../../components/Primitives";
 import { formatMs, humanize } from "../../lib/format";
@@ -31,7 +31,7 @@ export function AgentActivity({ report }: { report: Report }) {
   const run = report.run;
   if (!run) return null;
   return (
-    <Card title="Agent activity" subtitle="What the investigation pipeline did, step by step. Tools are fixed, allow-listed and limited.">
+    <Card title="What the AI did" subtitle="Each step of the investigation, in order. The AI can only use a fixed set of lookups.">
       <ol className="step-list">
         {run.steps.map((s, i) => (
           <li key={i} className={`step step-${s.status}`}>
@@ -49,7 +49,7 @@ export function AgentActivity({ report }: { report: Report }) {
         ))}
       </ol>
       <h4 className="h-sub">
-        <Wrench size={13} aria-hidden="true" /> Tool calls ({run.tool_log.length})
+        Tool calls ({run.tool_log.length})
       </h4>
       {run.tool_log.length === 0 ? (
         <p className="muted small">No tool calls — the agent did not explore (AI unavailable or not needed).</p>

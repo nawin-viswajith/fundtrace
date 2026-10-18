@@ -22,6 +22,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.crypto import EncryptedJSON, EncryptedText
 from app.db import Base
 
 
@@ -38,12 +39,17 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(128))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    # TOTP MFA. The secret is encrypted; recovery codes are stored only as SHA-256 hashes.
+    mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
+    mfa_secret: Mapped[str | None] = mapped_column(EncryptedText("users.mfa_secret"), nullable=True)
+    mfa_last_step: Mapped[int | None] = mapped_column(BigInteger, nullable=True)  # last accepted time step (replay guard)
+    mfa_recovery: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
 
 class Customer(Base):
     __tablename__ = "customers"
     id: Mapped[str] = mapped_column(String(32), primary_key=True)
-    display_name: Mapped[str] = mapped_column(String(128))
+    display_name: Mapped[str] = mapped_column(EncryptedText("customers.display_name"))
     segment: Mapped[str] = mapped_column(String(32), default="retail")
     preferred_language: Mapped[str] = mapped_column(String(16), default="en")
     is_synthetic: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -62,7 +68,7 @@ class Account(Base):
     customer_id: Mapped[str | None] = mapped_column(ForeignKey("customers.id"), nullable=True)
     institution_id: Mapped[str] = mapped_column(ForeignKey("institutions.id"))
     kind: Mapped[str] = mapped_column(String(16))  # savings | current | wallet | merchant | external
-    holder_label: Mapped[str] = mapped_column(String(128))
+    holder_label: Mapped[str] = mapped_column(EncryptedText("accounts.holder_label"))
     masked_number: Mapped[str] = mapped_column(String(32))
     opened_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     opening_balance_minor: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
@@ -132,9 +138,9 @@ class DisputeCase(Base):
     customer_id: Mapped[str] = mapped_column(ForeignKey("customers.id"))
     category: Mapped[str] = mapped_column(String(48))
     category_source: Mapped[str] = mapped_column(String(16), default="intake")  # intake | ai | investigator
-    allegation: Mapped[str] = mapped_column(Text)  # customer-provided, untrusted
+    allegation: Mapped[str] = mapped_column(EncryptedText("dispute_cases.allegation"))  # customer-provided, untrusted
     allegation_language: Mapped[str] = mapped_column(String(16), default="en")
-    allegation_translation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    allegation_translation: Mapped[str | None] = mapped_column(EncryptedText("dispute_cases.allegation_translation"), nullable=True)
     status: Mapped[str] = mapped_column(String(24), default="new")
     priority: Mapped[str] = mapped_column(String(4), default="P3")
     priority_reasons: Mapped[list] = mapped_column(JSON, default=list)
@@ -145,7 +151,7 @@ class DisputeCase(Base):
     due_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     sla_policy: Mapped[str | None] = mapped_column(String(64), nullable=True)
     decision: Mapped[str | None] = mapped_column(String(24), nullable=True)
-    decision_rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
+    decision_rationale: Mapped[str | None] = mapped_column(EncryptedText("dispute_cases.decision_rationale"), nullable=True)
     decided_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     decided_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     is_synthetic: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -160,7 +166,7 @@ class CaseNote(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     case_id: Mapped[str] = mapped_column(ForeignKey("dispute_cases.id"), index=True)
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    body: Mapped[str] = mapped_column(Text)
+    body: Mapped[str] = mapped_column(EncryptedText("case_notes.body"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
@@ -179,12 +185,14 @@ class EvidenceItem(Base):
     uploaded_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     analysis_status: Mapped[str] = mapped_column(String(16), default="not_analysed")
     analysis_note: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    extracted: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    extracted: Mapped[dict | None] = mapped_column(EncryptedJSON("evidence_items.extracted"), nullable=True)
     reconciliation: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     # Retention: active | deletion_requested | deleted. A deleted item keeps its metadata and hash (tombstone).
     retention_status: Mapped[str] = mapped_column(String(24), default="active", server_default="active")
     retention_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # Sensitive-data scan of the file: {backend, status, findings: [{type, label, count, likelihood}], scanned_at}
+    dlp: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     is_synthetic: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
@@ -195,7 +203,7 @@ class EvidenceRequest(Base):
     checklist_key: Mapped[str] = mapped_column(String(48))
     requested_from: Mapped[str] = mapped_column(String(64))
     status: Mapped[str] = mapped_column(String(16), default="open")  # open | received | cancelled
-    note: Mapped[str] = mapped_column(Text, default="")
+    note: Mapped[str] = mapped_column(EncryptedText("evidence_requests.note"), default="")
     requested_by: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
@@ -211,7 +219,7 @@ class Hold(Base):
     status: Mapped[str] = mapped_column(String(16), default="recommended")  # recommended | requested | declined
     recommended_by: Mapped[str] = mapped_column(String(32), default="system")
     decided_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
-    decision_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    decision_note: Mapped[str | None] = mapped_column(EncryptedText("holds.decision_note"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     decided_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
@@ -318,6 +326,21 @@ class Report(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
+class ReportDraft(Base):
+    """Unsaved edits to a report (e.g. a section cleared through the case assistant). Saving creates a new version."""
+    __tablename__ = "report_drafts"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    report_id: Mapped[str] = mapped_column(ForeignKey("reports.id"), index=True)
+    case_id: Mapped[str] = mapped_column(ForeignKey("dispute_cases.id"), index=True)
+    sections: Mapped[list] = mapped_column(JSON, default=list)
+    changes: Mapped[list] = mapped_column(JSON, default=list)  # [{op, section_key, claim_ids, by, via, at}]
+    status: Mapped[str] = mapped_column(String(16), default="open")  # open | saved | discarded
+    saved_report_id: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    created_by: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+
+
 class Policy(Base):
     __tablename__ = "policies"
     id: Mapped[str] = mapped_column(String(32), primary_key=True)
@@ -351,3 +374,24 @@ class AuditEvent(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     prev_hash: Mapped[str] = mapped_column(String(64))
     hash: Mapped[str] = mapped_column(String(64))
+
+
+class IngestEvent(Base):
+    """One ledger delivery (a Pub/Sub message or an uploaded statement) and what happened to it."""
+    __tablename__ = "ingest_events"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    message_id: Mapped[str] = mapped_column(String(128), unique=True)  # Pub/Sub messageId or file hash: dedupes redelivery
+    channel: Mapped[str] = mapped_column(String(16))  # pubsub | upload
+    source_system: Mapped[str] = mapped_column(String(32))
+    format: Mapped[str] = mapped_column(String(32))
+    status: Mapped[str] = mapped_column(String(16))  # processed | partial | rejected
+    records_in: Mapped[int] = mapped_column(Integer, default=0)
+    created: Mapped[int] = mapped_column(Integer, default=0)
+    merged: Mapped[int] = mapped_column(Integer, default=0)
+    duplicates: Mapped[int] = mapped_column(Integer, default=0)
+    rejected: Mapped[list] = mapped_column(JSON, default=list)
+    placeholder_accounts: Mapped[int] = mapped_column(Integer, default=0)
+    cases_refreshed: Mapped[list] = mapped_column(JSON, default=list)
+    error: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    received_by: Mapped[str] = mapped_column(String(128))
+    received_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

@@ -50,8 +50,8 @@ describe("ClaimView", () => {
     renderClaim(good);
     const li = screen.getByTestId("claim-C01");
     expect(li).not.toHaveClass("is-flagged");
-    expect(within(li).getByText("Verified")).toBeInTheDocument();
-    expect(within(li).getByText("Supported")).toBeInTheDocument();
+    expect(within(li).getByText("From a record")).toBeInTheDocument();
+    expect(within(li).getByText("Fact-check OK")).toBeInTheDocument();
     expect(within(li).getByRole("button", { name: /Citation TXN-4001695/ })).toBeInTheDocument();
     expect(within(li).queryByText("Possible hallucination")).toBeNull();
   });
@@ -61,10 +61,10 @@ describe("ClaimView", () => {
     const li = screen.getByTestId("claim-C07");
     expect(li).toHaveClass("is-flagged");
     expect(li).toHaveClass("is-hallucination");
-    expect(within(li).getByText("Possible hallucination")).toBeInTheDocument();
-    expect(within(li).getByText("Contradicted")).toBeInTheDocument();
-    expect(within(li).getByText("invalid_citation")).toBeInTheDocument();
-    expect(within(li).getByText("number_mismatch")).toBeInTheDocument();
+    expect(within(li).getByText("May be wrong")).toBeInTheDocument();
+    expect(within(li).getByText("Records disagree")).toBeInTheDocument();
+    expect(within(li).getByText(/Links to a record that is not in the case records/).closest("li")).toHaveAttribute("title", "invalid_citation");
+    expect(within(li).getByText(/An amount does not match the linked records/)).toBeInTheDocument();
     // A citation that is not in the snapshot is visibly marked.
     expect(within(li).getByRole("button", { name: /ACC-999999 \(not in snapshot\)/ })).toHaveClass("is-missing");
   });
@@ -77,7 +77,7 @@ describe("ClaimView", () => {
     const dialog = screen.getByRole("dialog", { name: "Record TXN-4001695" });
     expect(within(dialog).getByText("₹40,000")).toBeInTheDocument();
     expect(within(dialog).getByText("confirmed (ledger record)")).toBeInTheDocument();
-    await user.click(within(dialog).getByRole("button", { name: /Show on graph/ }));
+    await user.click(within(dialog).getByRole("button", { name: /Show on the money trail/ }));
     expect(onGraph).toHaveBeenCalledWith("TXN-4001695");
     expect(screen.queryByRole("dialog")).toBeNull();
   });
@@ -87,7 +87,7 @@ describe("ClaimView", () => {
     renderClaim(bad);
     await user.click(screen.getByRole("button", { name: /ACC-999999/ }));
     const dialog = screen.getByRole("dialog", { name: "Record ACC-999999" });
-    expect(within(dialog).getByText(/is not in the evidence snapshot. A claim citing it/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/is not in the case records, so the sentence that links to it/)).toBeInTheDocument();
   });
 
   it("supports accept/reject review toggles", async () => {

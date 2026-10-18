@@ -1,0 +1,420 @@
+/* Risk-signal accordion, report draft editing and the floating case assistant. Shared tokens only. */
+
+/* ---------------------------------------------------------------- risk signals: full-width accordion rows */
+.risk-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.risk-toolbar-actions {
+  display: inline-flex;
+  gap: var(--s-2);
+}
+.risk-acc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.risk-row + .risk-row {
+  border-top: 1px solid var(--border);
+}
+.risk-row {
+  border-left: 3px solid transparent;
+}
+.risk-row.risk-triggered {
+  border-left-color: var(--bad);
+}
+.risk-row.risk-not_evaluable {
+  border-left-color: var(--warn);
+}
+.risk-head {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 20px minmax(180px, 1.1fr) minmax(0, 3fr) 130px 190px;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.risk-head:hover {
+  background: var(--surface-2);
+}
+.risk-head:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+.risk-chevron {
+  color: var(--text-3);
+  transition: transform 0.15s ease;
+}
+.risk-row.is-open .risk-chevron {
+  transform: rotate(90deg);
+}
+.risk-name {
+  font-weight: 600;
+}
+.risk-line {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.risk-sev {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.risk-sev.sev-high {
+  color: var(--sev-high-text);
+}
+.risk-sev.sev-medium {
+  color: var(--sev-medium-text);
+}
+.risk-status {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--tone-text, var(--text-2));
+  text-align: right;
+}
+.risk-body {
+  padding: 0 var(--s-4) var(--s-4) calc(var(--s-4) + 20px + var(--s-3));
+}
+.risk-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--s-5);
+}
+.risk-cols .h-sub:first-child {
+  margin-top: 0;
+}
+@media (max-width: 900px) {
+  .risk-head {
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+    grid-template-areas: "chev name status" "chev line line" "chev sev sev";
+    row-gap: 2px;
+  }
+  .risk-chevron { grid-area: chev; }
+  .risk-name { grid-area: name; }
+  .risk-status { grid-area: status; }
+  .risk-line { grid-area: line; white-space: normal; }
+  .risk-sev { grid-area: sev; }
+  .risk-body {
+    padding-left: var(--s-4);
+  }
+  .risk-cols {
+    grid-template-columns: 1fr;
+    gap: var(--s-3);
+  }
+}
+
+/* ---------------------------------------------------------------- report drafts */
+.draft-bar {
+  border: 1px solid var(--warn);
+  background: var(--warn-soft);
+  padding: var(--s-3) var(--s-4);
+}
+.draft-bar-main {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.draft-tag {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--warn-text);
+  border: 1px solid var(--warn);
+  padding: 1px var(--s-2);
+}
+.draft-bar-actions {
+  display: inline-flex;
+  gap: var(--s-2);
+  margin-left: auto;
+}
+.draft-bar .disclosure {
+  margin-top: var(--s-2);
+}
+.report-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+.report-section.is-cleared {
+  background: var(--surface-2);
+  border-style: dashed;
+}
+.report-section.is-focused {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------- case assistant (floating) */
+.assistant-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 48px;
+  padding: 0 var(--s-4);
+  border: 0;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+}
+.assistant-fab:hover {
+  background: var(--accent-hover);
+}
+.assistant-fab:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.assistant-fab.is-open {
+  width: 48px;
+  padding: 0;
+  justify-content: center;
+}
+.assistant-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 84px;
+  z-index: 60;
+  width: 400px;
+  height: min(600px, calc(100vh - 120px));
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-lg);
+}
+.assistant-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--border);
+}
+.assistant-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.assistant-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--s-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.assistant-welcome p {
+  margin: 0 0 var(--s-3);
+  color: var(--text-2);
+}
+.assistant-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.assistant-chip {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  padding: 4px var(--s-2);
+  cursor: pointer;
+  text-align: left;
+}
+.assistant-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.msg {
+  max-width: 92%;
+  padding: var(--s-2) var(--s-3);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+}
+.msg p {
+  margin: 0 0 var(--s-2);
+}
+.msg p:last-child {
+  margin-bottom: 0;
+}
+.msg-user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: var(--on-accent);
+  white-space: pre-wrap;
+}
+.msg-bot {
+  align-self: flex-start;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  align-items: flex-start;
+}
+.msg-error {
+  border-color: var(--bad);
+  color: var(--bad-text);
+}
+.msg-typing {
+  color: var(--text-3);
+  font-style: italic;
+}
+.msg-claims {
+  margin: 0;
+  padding-left: 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+.msg-claims li.is-flagged {
+  color: var(--warn-text);
+}
+.msg-cites {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-left: var(--s-1);
+  vertical-align: middle;
+}
+.msg-warn {
+  color: var(--warn-text);
+}
+.assistant-form {
+  display: flex;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border-top: 1px solid var(--border);
+}
+.assistant-form .textarea {
+  flex: 1;
+  resize: none;
+}
+.assistant-form .btn {
+  align-self: stretch;
+}
+@media (max-width: 600px) {
+  .assistant-panel {
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: auto;
+    height: calc(100vh - 60px);
+  }
+  .assistant-fab {
+    right: 16px;
+    bottom: 16px;
+  }
+  .assistant-fab-label {
+    display: none;
+  }
+  .assistant-fab:not(.is-open) {
+    width: 52px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+@media print {
+  .assistant-fab,
+  .assistant-panel {
+    display: none;
+  }
+}
+
+/* keep the end of a case page clear of the floating assistant button */
+.page-wide {
+  padding-bottom: 96px;
+}
+
+/* ---------------------------------------------------------------- AI report sections as an accordion */
+.report-acc-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.report-row.tone-row-bad {
+  border-left-color: var(--bad);
+}
+.report-row.tone-row-warn {
+  border-left-color: var(--warn);
+}
+.report-row.tone-row-good {
+  border-left-color: var(--good);
+}
+.report-row .risk-head {
+  grid-template-columns: 20px minmax(160px, 1fr) minmax(0, 3fr) 120px 150px;
+}
+.report-body .claim-list {
+  margin-top: 0;
+}
+.report-body-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--s-2);
+}
+.risk-row.is-focused {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.tone-none {
+  color: var(--text-3);
+}
+@media (max-width: 900px) {
+  .report-row .risk-head {
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+  }
+}
+
+/* money-trail map on phones: readable zoom (see NARROW_MIN_ZOOM), a taller map and a hint to drag */
+.graph-phone-hint {
+  display: none;
+  margin: 0 0 var(--s-2);
+}
+@media (max-width: 640px) {
+  .graph-phone-hint {
+    display: block;
+  }
+  .graph-frame {
+    height: 70vh;
+    min-height: 420px;
+  }
+}
+
+/* the assistant button slides away while scrolling down (see CaseAssistant) */
+.assistant-fab {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.assistant-fab.is-tucked {
+  transform: translateY(140%);
+  opacity: 0;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .assistant-fab {
+    transition: none;
+  }
+}
